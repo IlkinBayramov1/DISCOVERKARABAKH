@@ -1,20 +1,21 @@
-import mongoose from 'mongoose';
-import env from './env.js';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { PrismaClient } = require("@prisma/client");
+
+const prisma = new PrismaClient();
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(env.dbUri, {
-      autoIndex: env.nodeEnv !== 'production',
-    });
-
-    console.log('✅ Database connected');
+    await prisma.$connect();
+    console.log('✅ MySQL Connected via Prisma');
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    console.error(`❌ DB Connection Error: ${error.message}`);
     process.exit(1);
   }
 };
 
 export const disconnectDB = async () => {
-  await mongoose.connection.close();
-  console.log('🛑 Database disconnected');
+  await prisma.$disconnect();
 };
+
+export default prisma;

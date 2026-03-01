@@ -1,29 +1,54 @@
-import { Tour } from './tour.model.js';
+import prisma from '../../../config/db.js';
 
 class TourRepository {
     async create(data) {
-        return Tour.create(data);
+        return prisma.tour.create({
+            data,
+        });
     }
 
     async findAll(query = {}) {
-        return Tour.find(query).populate('owner', 'email companyName');
+        const where = {};
+        // Add filters logic if needed
+
+        return prisma.tour.findMany({
+            where,
+            include: {
+                owner: {
+                    select: { email: true, isApproved: true }
+                }
+            }
+        });
     }
 
     async findById(id) {
-        return Tour.findById(id).populate('owner', 'email companyName');
+        return prisma.tour.findUnique({
+            where: { id },
+            include: {
+                owner: {
+                    select: { email: true, isApproved: true }
+                }
+            }
+        });
     }
 
     async update(id, data) {
-        return Tour.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+        return prisma.tour.update({
+            where: { id },
+            data,
+        });
     }
 
     async delete(id) {
-        return Tour.findByIdAndDelete(id);
+        return prisma.tour.delete({
+            where: { id },
+        });
     }
 
-    // Example: Find tours by duration
     async findByDuration(days) {
-        return Tour.find({ 'duration.days': days });
+        return prisma.tour.findMany({
+            where: { durationDays: parseInt(days) }
+        });
     }
 }
 

@@ -1,16 +1,19 @@
-import { User } from './models/user.base.model.js';
+import { userRepository } from './user.repository.js';
 import { ApiError } from '../../core/api.error.js';
 
 export const getProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await userRepository.findById(req.user.id); // req.user.id from JWT
     if (!user) {
       throw ApiError.notFound('User not found');
     }
 
+    // Remove password
+    const { password, ...safeUser } = user;
+
     res.status(200).json({
       success: true,
-      data: user,
+      data: safeUser,
     });
   } catch (error) {
     next(error);
@@ -19,24 +22,20 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    // Prevent password update from this route
-    if (req.body.password) {
-      delete req.body.password;
-    }
+    // Only allow updating certain fields? For now allow body
+    // Remove sensitive fields just in case
+    delete req.body.password;
+    delete req.body.role;
+    delete req.body.isBanned;
+    delete req.body.isApproved;
 
-    // Prevent role update
-    if (req.body.role) {
-      delete req.body.role;
-    }
+    const user = await userRepository.update(req.user.id, req.body);
 
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const { password, ...safeUser } = user;
 
     res.status(200).json({
       success: true,
-      data: user,
+      data: safeUser,
     });
   } catch (error) {
     next(error);

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/index.js';
 import { ApiError } from '../core/api.error.js';
-import { User } from '../modules/users/models/user.base.model.js';
+import prisma from '../config/db.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -15,11 +15,15 @@ export const authMiddleware = async (req, res, next) => {
       throw ApiError.unauthorized('Not authorized to access this route');
     }
 
-    const decoded = jwt.verify(token, env.jwt_secret || process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwtSecret || process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded._id);
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) {
       throw ApiError.unauthorized('User not found');
+    }
+
+    if (!user.isActive) {
+      throw ApiError.unauthorized('User account is inactive');
     }
 
     req.user = user;
@@ -27,4 +31,18 @@ export const authMiddleware = async (req, res, next) => {
   } catch (error) {
     next(ApiError.unauthorized('Not authorized to access this route'));
   }
+};
+
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(ApiError.unauthorized('Not authenticated'));
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return next(ApiError.forbidden(`User role ${req.user.role} is not authorized to access this route`));
+    }
+
+    next();
+  };
 };

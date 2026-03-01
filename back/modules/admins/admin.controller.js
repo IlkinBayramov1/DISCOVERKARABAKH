@@ -1,9 +1,21 @@
-import { User } from '../users/models/user.base.model.js';
+import { userRepository } from '../users/user.repository.js';
 import { ApiError } from '../../core/api.error.js';
+import prisma from '../../config/db.js';
 
 export const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isBanned: true,
+        isApproved: true,
+        createdAt: true,
+        vendorProfile: true, // Include profile data if needed
+      }
+    });
+
     res.status(200).json({
       success: true,
       count: users.length,
@@ -16,13 +28,13 @@ export const getAllUsers = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await userRepository.findById(req.params.id);
 
     if (!user) {
       throw ApiError.notFound('User not found');
     }
 
-    await user.deleteOne();
+    await userRepository.delete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -36,44 +48,46 @@ export const deleteUser = async (req, res, next) => {
 
 export const banUser = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, { isBanned: true }, { new: true });
-    if (!user) throw ApiError.notFound('User not found');
+    const user = await userRepository.update(req.params.id, { isBanned: true });
+    // Prisma throws if not found usually, but update returns object. 
+    // If we want safe check, findById first or handle prisma error.
+    // updateUser in repo assumes ID exists or prisma throws.
+    // Let's rely on repo or wrap. Repo update maps to prisma.update which throws P2025 if not found.
+
     res.status(200).json({ success: true, message: 'User banned', data: user });
   } catch (error) {
+    // Handle Prisma "Record to update not found."
+    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
     next(error);
   }
 };
 
 export const unbanUser = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, { isBanned: false }, { new: true });
-    if (!user) throw ApiError.notFound('User not found');
+    const user = await userRepository.update(req.params.id, { isBanned: false });
     res.status(200).json({ success: true, message: 'User unbanned', data: user });
   } catch (error) {
+    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
     next(error);
   }
 };
 
 export const approveUser = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
-    if (!user) throw ApiError.notFound('User not found');
+    const user = await userRepository.update(req.params.id, { isApproved: true });
     res.status(200).json({ success: true, message: 'User approved', data: user });
   } catch (error) {
+    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
     next(error);
   }
 };
 
 export const rejectUser = async (req, res, next) => {
   try {
-    // Rejection strategy: Delete user OR Set isApproved false?
-    // User asked "reject". Usually deletions are cleaner for "pending" ones, but maybe they want to keep record?
-    // Let's implement SOFT reject (isApproved: false). If they want delete, they can use deleteUser endpoint.
-    // Actually, "reject" often implies "Denied" status. let's just ensure isApproved = false.
-    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: false }, { new: true });
-    if (!user) throw ApiError.notFound('User not found');
+    const user = await userRepository.update(req.params.id, { isApproved: false });
     res.status(200).json({ success: true, message: 'User rejected (isApproved=false)', data: user });
   } catch (error) {
+    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
     next(error);
   }
 };

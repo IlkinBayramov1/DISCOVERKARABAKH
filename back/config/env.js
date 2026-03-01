@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const requiredEnvs = ['NODE_ENV', 'PORT', 'DB_URI'];
+const requiredEnvs = ['NODE_ENV', 'PORT', 'DATABASE_URL'];
 
 requiredEnvs.forEach((key) => {
   if (!process.env[key]) {
@@ -13,7 +13,7 @@ requiredEnvs.forEach((key) => {
 const env = {
   nodeEnv: process.env.NODE_ENV,
   port: process.env.PORT,
-  dbUri: process.env.DB_URI,
+  dbUrl: process.env.DATABASE_URL,
 };
 
 export default env;

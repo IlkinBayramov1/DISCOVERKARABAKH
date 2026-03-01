@@ -1,24 +1,38 @@
-import { User } from './models/user.base.model.js';
+import prisma from '../../config/db.js';
 
 class UserRepository {
   async create(data) {
-    return User.create(data);
+    return prisma.user.create({
+      data,
+    });
   }
 
   async findByEmail(email) {
-    return User.findOne({ email }).select('+password');
+    return prisma.user.findUnique({
+      where: { email },
+    });
   }
 
   async findById(id) {
-    return User.findById(id);
+    return prisma.user.findUnique({
+      where: { id },
+      include: {
+        vendorProfile: true, // Auto-include profile if exists
+      }
+    });
   }
 
   async update(id, data) {
-    return User.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    return prisma.user.update({
+      where: { id },
+      data,
+    });
   }
 
   async delete(id) {
-    return User.findByIdAndDelete(id);
+    return prisma.user.delete({
+      where: { id },
+    });
   }
 }
 

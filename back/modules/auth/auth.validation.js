@@ -3,10 +3,10 @@ import Joi from 'joi';
 export const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  role: Joi.string().valid('user', 'vendor', 'tourist', 'resident', 'investor').default('user'),
+  role: Joi.string().valid('user', 'vendor', 'tourist', 'resident', 'investor', 'admin', 'driver').default('user'),
   // Vendor specific fields
   companyName: Joi.string().when('role', { is: 'vendor', then: Joi.required() }),
-  category: Joi.string().valid('hotel', 'tour').when('role', { is: 'vendor', then: Joi.required() }),
+  category: Joi.string().valid('hotel', 'tour', 'event').when('role', { is: 'vendor', then: Joi.required() }),
   // Tourist fields
   nationality: Joi.string().when('role', { is: 'tourist', then: Joi.required() }),
   passportNumber: Joi.string().optional(),
