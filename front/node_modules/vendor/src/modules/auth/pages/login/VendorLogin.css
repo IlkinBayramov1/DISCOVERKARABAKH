@@ -1,0 +1,274 @@
+/* VendorLogin.css */
+
+:root {
+    --primary: #5c3ff0;
+    --secondary: #1f1d2b;
+    --bg-gradient: linear-gradient(135deg, #1f1d2b 0%, #15141e 100%);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-active: #ffffff;
+    --text-muted: #8b8e98;
+    --input-bg: rgba(0, 0, 0, 0.2);
+}
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:'Inter',-apple-system,sans-serif;
+background:var(--bg-gradient);
+color:var(--text-active);
+min-height:100vh;
+}
+
+/* FULL SCREEN CONTAINER */
+
+.auth-split-container{
+display:flex;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:var(--secondary);
+}
+
+/* LEFT IMAGE PANEL */
+
+.auth-image-panel{
+flex:1;
+background:url('../../../../assets/karabakh_bg.png') center/cover no-repeat;
+position:relative;
+display:none;
+}
+
+@media(min-width:900px){
+.auth-image-panel{
+display:block;
+}
+}
+
+.auth-image-overlay{
+position:absolute;
+inset:0;
+background:linear-gradient(to right,rgba(0,0,0,0.5),transparent);
+padding:4rem;
+display:flex;
+flex-direction:column;
+justify-content:flex-end;
+}
+
+.auth-image-overlay h1{
+font-size:3rem;
+margin:0 0 .5rem 0;
+color:#fff;
+letter-spacing:-1px;
+}
+
+.auth-image-overlay p{
+font-size:1.5rem;
+font-weight:500;
+color:var(--primary);
+margin:0 0 1rem 0;
+text-transform:uppercase;
+letter-spacing:2px;
+}
+
+.auth-image-overlay span{
+font-size:1.1rem;
+color:rgba(255,255,255,0.8);
+max-width:400px;
+}
+
+/* RIGHT FORM PANEL */
+
+.auth-form-panel{
+flex:1.4; /* əvvəl 1 idi */
+background:var(--bg-gradient);
+display:flex;
+align-items:center;
+justify-content:center;
+padding:3rem;
+}
+
+/* FORM WRAPPER (2x WIDTH) */
+
+.auth-form-wrapper{
+width:100%;
+max-width:1400px; /* əvvəl 700px idi */
+padding:4rem 5rem;
+border-radius:24px;
+}
+
+/* GLASS EFFECT */
+
+.glassmorphism{
+background:var(--glass-bg);
+backdrop-filter:blur(16px);
+-webkit-backdrop-filter:blur(16px);
+border:1px solid var(--glass-border);
+box-shadow:0 24px 40px rgba(0,0,0,0.2);
+}
+
+.auth-form-wrapper h2{
+font-size:2rem;
+margin:0 0 .5rem 0;
+font-weight:600;
+}
+
+.auth-subtext{
+color:var(--text-muted);
+margin:0 0 2.5rem 0;
+font-size:.95rem;
+}
+
+/* ALERT */
+
+.auth-alert{
+padding:1rem;
+border-radius:12px;
+margin-bottom:1.5rem;
+font-size:.9rem;
+}
+
+.auth-alert.error{
+background:rgba(255,60,60,0.1);
+border:1px solid rgba(255,60,60,0.3);
+color:#ff5c5c;
+}
+
+/* FORM */
+
+.split-form{
+display:flex;
+flex-direction:column;
+gap:1.5rem;
+}
+
+/* INPUTS */
+
+.input-group{
+position:relative;
+}
+
+.input-group input,
+.input-group select{
+width:100%;
+padding:1.2rem 1rem;
+background:var(--input-bg);
+border:1px solid var(--glass-border);
+border-radius:12px;
+color:#fff;
+font-size:1rem;
+outline:none;
+transition:all .3s ease;
+}
+
+.input-group select{
+appearance:none;
+cursor:pointer;
+}
+
+.input-group select option{
+background:var(--secondary);
+color:#fff;
+}
+
+.input-group input:focus,
+.input-group select:focus{
+border-color:var(--primary);
+box-shadow:0 0 0 4px rgba(92,63,240,0.1);
+}
+
+/* FLOAT LABEL */
+
+.input-group label{
+position:absolute;
+left:1rem;
+top:50%;
+transform:translateY(-50%);
+color:var(--text-muted);
+pointer-events:none;
+transition:.3s ease;
+font-size:1rem;
+}
+
+.input-group input:focus~label,
+.input-group input:valid~label,
+.input-group select:focus~label,
+.input-group select:valid~label{
+top:0;
+transform:translateY(-50%) scale(.85);
+background:var(--secondary);
+padding:0 .4rem;
+color:var(--primary);
+}
+
+/* BUTTON */
+
+.auth-submit-btn{
+margin-top:1rem;
+width:100%;
+padding:1.2rem;
+border:none;
+border-radius:12px;
+background:var(--primary);
+color:#fff;
+font-size:1.1rem;
+font-weight:600;
+cursor:pointer;
+transition:background .3s ease,transform .1s ease;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.auth-submit-btn:hover:not(:disabled){
+background:#4a2ee6;
+}
+
+.auth-submit-btn:active:not(:disabled){
+transform:scale(.98);
+}
+
+.auth-submit-btn:disabled{
+opacity:.7;
+cursor:not-allowed;
+}
+
+/* SPINNER */
+
+.spinner{
+width:24px;
+height:24px;
+border:3px solid rgba(255,255,255,0.3);
+border-top-color:#fff;
+border-radius:50%;
+animation:spin 1s infinite linear;
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
+/* FOOTER */
+
+.auth-footer{
+margin-top:2rem;
+text-align:center;
+color:var(--text-muted);
+font-size:.95rem;
+}
+
+.auth-footer a{
+color:var(--primary);
+text-decoration:none;
+font-weight:500;
+margin-left:.4rem;
+transition:color .3s ease;
+}
+
+.auth-footer a:hover{
+text-decoration:underline;
+color:#7b61ff;
+}

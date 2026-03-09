@@ -53,14 +53,21 @@ export class PricingEngine {
                 const dayRules = pricingMatrix[i];
 
                 if (i === 0 && dayRules.closedToArrival) {
+                    // Only the exact check-in date is evaluated for closedToArrival
                     throw ApiError.badRequest(`Arrival is blocked on start date: ${dayRules.date}`);
+                }
+
+                // Closed to departure evaluates only on the last *staying* night or the morning of checkout (depending on hotel policy)
+                // For now, we evaluate it on the last booked night index
+                if (i === pricingMatrix.length - 1 && dayRules.closedToDeparture) {
+                    throw ApiError.badRequest(`Departure is blocked on date: ${checkOutDate}`);
                 }
 
                 if (totalNights < dayRules.minStay) {
                     throw ApiError.badRequest(`Minimum stay length violation. Requires at least ${dayRules.minStay} nights.`);
                 }
                 if (dayRules.maxStay && totalNights > dayRules.maxStay) {
-                    throw ApiError.badRequest(`Maximum stay length violation.`);
+                    throw ApiError.badRequest(`Maximum stay length violation. Allowed max is ${dayRules.maxStay} nights.`);
                 }
 
                 // Child / Guest Surcharge Logic placeholder depending on RatePlan limits (Future Scope)
@@ -70,7 +77,7 @@ export class PricingEngine {
                 itemNightlyLog.push({
                     date: dayRules.date,
                     basePrice: dayRules.basePrice,
-                    currency: dayRules.currency
+                    currency: dayRules.currency || 'AZN'
                 });
             }
 
@@ -84,7 +91,7 @@ export class PricingEngine {
         }
 
         // Apply Global or Hotel bounded Taxes
-        const hotelId = data.vendorId; // Inherited globally from Booking Validation context
+        const hotelId = data.entityId; // Inherited globally from Booking Validation context
         const applicableTaxes = await prisma.taxRule.findMany({
             where: {
                 OR: [

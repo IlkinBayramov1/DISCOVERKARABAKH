@@ -1,0 +1,305 @@
+/* CreateHotel.css */
+
+.hotel-create-container {
+    min-height: 100vh;
+    padding: 4rem 2rem;
+    background: var(--bg-gradient, linear-gradient(135deg, #1f1d2b 0%, #15141e 100%));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.hotel-create-card {
+    width: 100%;
+    max-width: 900px;
+    padding: 3.5rem 4rem;
+    border-radius: 24px;
+}
+
+.card-header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.card-header h2 {
+    font-size: 2.2rem;
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+}
+
+.card-header p {
+    color: #8b8e98;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.hotel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.8rem;
+}
+
+.info-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.time-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Base input styling repeating from auth for consistency, 
+   ideal to move to global CSS later, but localized here for modularity */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    padding: 1.2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.input-group select option {
+    background: #1f1d2b;
+    color: #fff;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    border-color: #5c3ff0;
+    box-shadow: 0 0 0 4px rgba(92, 63, 240, 0.1);
+}
+
+.input-group label {
+    position: absolute;
+    left: 1rem;
+    top: 1.2rem;
+    color: #8b8e98;
+    pointer-events: none;
+    transition: 0.3s ease;
+    font-size: 1rem;
+    background: transparent;
+}
+
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label,
+.input-group textarea:focus~label,
+.input-group textarea:not(:placeholder-shown)~label,
+.input-group select~label {
+    top: -0.6rem;
+    left: 0.8rem;
+    font-size: 0.85rem;
+    color: #5c3ff0;
+    background: #252331;
+    /* Blends with the glass card pseudo background */
+    padding: 0 0.5rem;
+    border-radius: 4px;
+}
+
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-primary {
+    padding: 1.2rem 2.5rem;
+    border: none;
+    border-radius: 12px;
+    background: #5c3ff0;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #4a2ee6;
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.alert.error {
+    background: rgba(255, 60, 60, 0.1);
+    border: 1px solid rgba(255, 60, 60, 0.3);
+    color: #ff5c5c;
+}
+
+.alert.success {
+    background: rgba(164, 245, 202, 0.1);
+    border: 1px solid rgba(164, 245, 202, 0.3);
+    color: #a4f5ca;
+}
+
+@media (max-width: 768px) {
+
+    .form-grid,
+    .info-grid,
+    .time-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hotel-create-card {
+        padding: 2rem;
+    }
+}
+
+/* Facilities & Images Section */
+.facilities-section,
+.images-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.facilities-section h3,
+.images-section h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.facilities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.facility-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.facility-checkbox:hover {
+    background: rgba(92, 63, 240, 0.1);
+    border-color: rgba(92, 63, 240, 0.3);
+}
+
+.facility-checkbox input[type="checkbox"] {
+    accent-color: #5c3ff0;
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+}
+
+.facility-checkbox span {
+    font-size: 0.95rem;
+    color: #e2e8f0;
+}
+
+/* Images Section */
+.image-input-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.image-input {
+    flex: 1;
+}
+
+.btn-secondary {
+    padding: 1.2rem 1.5rem;
+    border: 1px solid #5c3ff0;
+    color: #5c3ff0;
+    background: transparent;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(92, 63, 240, 0.1);
+}
+
+.image-preview-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.image-preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-img-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 60, 60, 0.9);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.remove-img-btn:hover {
+    background: #ff3c3c;
+    transform: scale(1.1);
+}

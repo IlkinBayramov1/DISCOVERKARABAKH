@@ -7,9 +7,9 @@ const prisma = new PrismaClient();
 export const connectDB = async () => {
   try {
     await prisma.$connect();
-    console.log('✅ MySQL Connected via Prisma');
+    console.log(' MySQL Connected via Prisma');
   } catch (error) {
-    console.error(`❌ DB Connection Error: ${error.message}`);
+    console.error(` DB Connection Error: ${error.message}`);
     process.exit(1);
   }
 };

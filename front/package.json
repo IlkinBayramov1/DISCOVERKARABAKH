@@ -1,0 +1,13 @@
+{
+  "name": "front",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=web",
+    "dev:vendor": "npm run dev --workspace=vendor",
+    "dev:admin": "npm run dev --workspace=admin"
+  }
+}

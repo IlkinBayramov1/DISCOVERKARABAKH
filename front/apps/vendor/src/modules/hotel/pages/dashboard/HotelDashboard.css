@@ -1,0 +1,456 @@
+/* HotelDashboard.css */
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header h1 {
+    font-size: 1.8rem;
+    margin: 0 0 0.2rem 0;
+    color: #0f172a;
+}
+
+.dashboard-header p {
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: #5c3ff0;
+    color: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #4a2ee6;
+}
+
+.empty-state {
+    padding: 5rem 2rem;
+    text-align: center;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.empty-icon {
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #0f172a;
+}
+
+.empty-state p {
+    margin: 0 0 1rem 0;
+    max-width: 400px;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.5rem;
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.loading-state {
+    padding: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: #64748b;
+}
+
+.hotel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.hotel-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+.hotel-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
+}
+
+.hotel-card-header {
+    padding: 1.2rem 1.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-badge.rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.featured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.8rem;
+    background: #f3f0ff;
+    color: #5c3ff0;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.hotel-card-body {
+    padding: 1.2rem 1.5rem;
+    flex: 1;
+}
+
+.hotel-card-body h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    color: #0f172a;
+}
+
+.hotel-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.hotel-card-footer {
+    padding: 1.2rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-outline {
+    padding: 0.6rem 1rem;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.btn-link {
+    color: #5c3ff0;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+.map-link {
+    color: #475569;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.map-link:hover {
+    color: #5c3ff0;
+    text-decoration: underline;
+}
+
+/* KPI Stats Section */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.kpi-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    background: #f3f0ff;
+    color: #5c3ff0;
+    border-radius: 12px;
+}
+
+.kpi-card.highlight {
+    background: linear-gradient(135deg, #5c3ff0, #8a6ef5);
+    color: #ffffff;
+    border: none;
+}
+
+.kpi-card.highlight .kpi-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.kpi-card.highlight .kpi-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Image Slider inside Card */
+.hotel-image-slider {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    margin-top: 1rem;
+    background: #f1f5f9;
+}
+
+.hotel-image-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+}
+
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #334155;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.hotel-image-slider:hover .slider-btn {
+    opacity: 1;
+}
+
+.slider-btn:hover {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.slider-btn.prev {
+    left: 10px;
+}
+
+.slider-btn.next {
+    right: 10px;
+}
+
+.slider-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+}
+
+.slider-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.slider-dots .dot.active {
+    background: #ffffff;
+    transform: scale(1.2);
+}
+
+.no-image-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #94a3b8;
+    margin-top: 1rem;
+}
+
+/* Review Title Row */
+.title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.title-row h3 {
+    margin: 0;
+    max-width: 70%;
+}
+
+.review-summary {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    color: #b45309;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.review-summary .star-icon {
+    color: #f59e0b;
+}
+
+.review-count {
+    color: #78350f;
+    font-size: 0.75rem;
+    margin-left: 2px;
+}
+
+/* Card Actions inside body */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.card-actions button {
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 0.5rem;
+}
+
+.btn-delete-prop {
+    flex: 0 0 auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-prop:hover {
+    background: #fecaca;
+    color: #dc2626;
+}

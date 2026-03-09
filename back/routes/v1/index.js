@@ -12,10 +12,13 @@ import restaurantRoutes from '../../modules/businesses/restaurant/restaurant.rou
 import attractionRoutes from '../../modules/businesses/attraction/index.js';
 import bookingRoutes from '../../modules/booking/booking.routes.js';
 import reviewRoutes from '../../modules/interactions/review/review.routes.js';
+import uploadRoutes from '../../modules/shared/upload/upload.routes.js';
 
 const router = Router();
 
 router.use('/', healthRoutes);
+router.use('/upload', uploadRoutes);
+
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/admins', adminRoutes);

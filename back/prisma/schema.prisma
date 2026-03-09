@@ -157,6 +157,7 @@ model User {
   cargoVehicles CargoVehicle[] @relation("VendorCargoVehicles")
   bookings      Booking[]
   reviews       Review[]
+  roomReviews   RoomReview[]
   tickets       Ticket[]
   wishlist      Wishlist[]
 
@@ -226,7 +227,7 @@ model VendorProfile {
 
 model TouristProfile {
   id             String  @id @default(uuid())
-  nationality    String
+  nationality    String?
   passportNumber String?
   interests      Json?
   userId         String  @unique
@@ -234,9 +235,9 @@ model TouristProfile {
 }
 
 model ResidentProfile {
-  id            String @id @default(uuid())
-  permitNumber  String
-  localAddress  String
+  id            String  @id @default(uuid())
+  permitNumber  String?
+  localAddress  String?
   familyMembers Json?
   userId        String @unique
   user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -487,6 +488,27 @@ model RoomType {
   roomAmenities  RoomAmenity[]
   availabilities RoomAvailability[]
   pricingList    DailyPricing[]
+  images         RoomImage[]
+  reviews        RoomReview[]
+}
+
+model RoomImage {
+  id         String   @id @default(uuid())
+  roomTypeId String
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  url        String
+  order      Int      @default(0)
+}
+
+model RoomReview {
+  id         String   @id @default(uuid())
+  roomTypeId String
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating     Float
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
 }
 
 model Room {

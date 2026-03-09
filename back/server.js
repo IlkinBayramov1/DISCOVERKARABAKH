@@ -16,8 +16,8 @@ const startServer = async () => {
   const io = initSocket(server);
 
   server.listen(env.port, () => {
-    console.log(`🚀 Server running on port ${env.port}`);
-    console.log(`📡 Socket.io initialized`);
+    console.log(` Server running on port ${env.port}`);
+    console.log(` Socket.io initialized`);
   });
 };
 

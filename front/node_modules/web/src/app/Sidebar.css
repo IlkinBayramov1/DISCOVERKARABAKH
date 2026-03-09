@@ -1,0 +1,147 @@
+.web-sidebar {
+    position: absolute;
+    top: 0;
+    left: -280px;
+    /* Hidden by default */
+    width: 280px;
+    height: 100%;
+    background: var(--bg-card);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 40;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.web-sidebar.open {
+    transform: translateX(280px);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(2px);
+    z-index: 35;
+}
+
+.mobile-only {
+    display: flex;
+}
+
+.sidebar-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sidebar-nav {
+    padding: 16px;
+    flex: 1;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background: var(--secondary-hover);
+    color: var(--text-dark);
+}
+
+.nav-link.active {
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary);
+}
+
+.nav-link svg {
+    margin-right: 16px;
+}
+
+.nav-link.expandable {
+    width: 100%;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+/* Nested Navigation */
+.nav-group {
+    margin-top: 16px;
+}
+
+.sub-nav {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+    padding-left: 20px;
+    /* Indent */
+    border-left: 2px solid #e2e8f0;
+    margin-left: 24px;
+}
+
+.sub-nav.open {
+    max-height: 200px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.sub-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.sub-nav-link svg {
+    margin-right: 12px;
+}
+
+.sub-nav-link:hover {
+    background: var(--secondary-hover);
+    color: var(--primary);
+}
+
+.sub-nav-link.active {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Desktop behaviors */
+@media (min-width: 768px) {
+    .web-sidebar {
+        /* Desktop sidebars generally stick rather than slide */
+        position: fixed;
+        top: 70px;
+        /* Below Navbar */
+        height: calc(100vh - 70px);
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: none;
+    }
+}

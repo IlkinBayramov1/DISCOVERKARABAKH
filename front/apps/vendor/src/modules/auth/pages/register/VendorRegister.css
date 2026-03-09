@@ -1,0 +1,78 @@
+/* Reusing base styles */
+@import './../login/VendorLogin.css';
+
+
+/* REGISTER IMAGE BACKGROUND */
+
+.register-bg{
+background:url('../../../../assets/karabakh_bg.png') center/cover no-repeat;
+filter:brightness(0.9);
+}
+
+
+/* IMAGE OVERLAY */
+
+.auth-image-overlay{
+background:linear-gradient(to right,rgba(0,0,0,0.6),transparent);
+}
+
+
+/* SUCCESS VIEW */
+
+.success-view{
+text-align:center;
+padding:5rem 3rem;
+max-width:900px;
+margin:auto;
+}
+
+
+/* SUCCESS ICON */
+
+.success-icon{
+font-size:4rem;
+color:#a4f5ca;
+background:rgba(164,245,202,0.1);
+width:110px;
+height:110px;
+line-height:110px;
+border-radius:50%;
+margin:2rem auto;
+border:1px solid rgba(164,245,202,0.3);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+
+/* SUCCESS TEXT */
+
+.success-message{
+color:var(--text-muted);
+font-size:1.05rem;
+line-height:1.6;
+margin-bottom:2.5rem;
+max-width:600px;
+margin-left:auto;
+margin-right:auto;
+}
+
+
+/* BACK BUTTON */
+
+.back-to-login{
+display:inline-block;
+padding:1rem 2.2rem;
+background:rgba(255,255,255,0.1);
+color:#fff;
+text-decoration:none;
+border-radius:12px;
+font-weight:500;
+transition:all .3s ease;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+.back-to-login:hover{
+background:rgba(255,255,255,0.2);
+transform:translateY(-2px);
+}

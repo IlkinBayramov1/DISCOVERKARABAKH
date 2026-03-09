@@ -1,0 +1,22 @@
+/* VendorLayout.css */
+
+.vendor-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fa;
+    color: #1a1d27;
+    overflow: hidden;
+}
+
+.vendor-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.vendor-page-wrapper {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}

@@ -22,6 +22,9 @@ class BookingService {
         const strategy = bookingStrategyRegistry.getStrategy(type);
         if (!strategy) throw ApiError.badRequest(`Unsupported booking type: ${type}`);
 
+        data.entityId = entityId;
+        data.userId = userId;
+
         // 1. Contextual validation & Availability Lock
         const context = await strategy.validateAvailability(data);
 
@@ -98,6 +101,42 @@ class BookingService {
                 items: true
             }
         });
+    }
+
+    async updateVendorBookingStatus(bookingId, vendorId, action) {
+        const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+        if (!booking) throw ApiError.notFound('Booking not found');
+        if (booking.vendorId !== vendorId) throw ApiError.forbidden('You are not authorized to update this booking.');
+
+        let newStatus = '';
+        if (action === 'approve') newStatus = 'confirmed';
+        else if (action === 'reject') newStatus = 'cancelled';
+        else throw ApiError.badRequest('Invalid action. Must be approve or reject');
+
+        const strategy = bookingStrategyRegistry.getStrategy(booking.bookingType);
+
+        const updatedBooking = await prisma.$transaction(async (tx) => {
+            const b = await tx.booking.update({
+                where: { id: bookingId },
+                data: { status: newStatus }
+            });
+
+            await tx.bookingAuditLog.create({
+                data: {
+                    bookingId,
+                    action: action === 'approve' ? 'vendor_approved' : 'vendor_rejected',
+                    meta: { initator: 'vendor', vendorId, timestamp: new Date() }
+                }
+            });
+
+            return b;
+        });
+
+        if (newStatus === 'cancelled' && strategy && typeof strategy.onBookingCancelled === 'function') {
+            await strategy.onBookingCancelled(updatedBooking);
+        }
+
+        return updatedBooking;
     }
 
     async cancelBooking(bookingId, userId) {

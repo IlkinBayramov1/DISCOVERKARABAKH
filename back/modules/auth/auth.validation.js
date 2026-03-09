@@ -8,13 +8,13 @@ export const registerSchema = Joi.object({
   companyName: Joi.string().when('role', { is: 'vendor', then: Joi.required() }),
   category: Joi.string().valid('hotel', 'tour', 'event').when('role', { is: 'vendor', then: Joi.required() }),
   // Tourist fields
-  nationality: Joi.string().when('role', { is: 'tourist', then: Joi.required() }),
+  nationality: Joi.string().when('role', { is: 'tourist', then: Joi.optional() }),
   passportNumber: Joi.string().optional(),
   interests: Joi.array().items(Joi.string()).optional(),
 
   // Resident fields
-  permitNumber: Joi.string().when('role', { is: 'resident', then: Joi.required() }),
-  localAddress: Joi.string().when('role', { is: 'resident', then: Joi.required() }),
+  permitNumber: Joi.string().when('role', { is: 'resident', then: Joi.optional() }),
+  localAddress: Joi.string().when('role', { is: 'resident', then: Joi.optional() }),
   familyMembers: Joi.array().items(Joi.object({
     name: Joi.string(),
     relation: Joi.string()

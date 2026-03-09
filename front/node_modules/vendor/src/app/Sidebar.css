@@ -1,0 +1,118 @@
+/* Sidebar.css */
+
+.vendor-sidebar {
+    width: 280px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-brand {
+    padding: 2.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebar-brand h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1d27;
+    letter-spacing: -0.5px;
+}
+
+.sidebar-nav {
+    padding: 2rem 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sidebar-icon {
+    margin-right: 1rem;
+    color: #94a3b8;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.sidebar-link:hover .sidebar-icon {
+    color: #5c3ff0;
+    transform: scale(1.1);
+}
+
+.sidebar-link.active {
+    background: rgba(92, 63, 240, 0.08);
+    color: #5c3ff0;
+    position: relative;
+    font-weight: 600;
+}
+
+.sidebar-link.active .sidebar-icon {
+    color: #5c3ff0;
+}
+
+.sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: #5c3ff0;
+    border-radius: 0 4px 4px 0;
+}
+
+.sidebar-footer {
+    padding: 2rem;
+}
+
+.upgrade-box {
+    background: linear-gradient(135deg, rgba(92, 63, 240, 0.05), rgba(92, 63, 240, 0.1));
+    border: 1px solid rgba(92, 63, 240, 0.15);
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.upgrade-box p {
+    color: #334155;
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.btn-upgrade {
+    width: 100%;
+    padding: 0.8rem;
+    background: #5c3ff0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-upgrade:hover {
+    background: #4a2ee6;
+}

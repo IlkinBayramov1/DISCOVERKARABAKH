@@ -13,5 +13,6 @@ router.patch('/:id/cancel', bookingController.cancel);
 
 // Vendor viewing all bookings mapped to their physical entities
 router.get('/vendor', authorize('vendor'), bookingController.getVendorDashboard);
+router.patch('/vendor/:id/status', authorize('vendor'), bookingController.updateVendorBookingStatus);
 
 export default router;

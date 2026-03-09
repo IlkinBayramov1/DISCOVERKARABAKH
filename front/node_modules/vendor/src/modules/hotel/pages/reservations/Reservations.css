@@ -1,0 +1,182 @@
+.split-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.select-filter {
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #475569;
+    cursor: pointer;
+    background: transparent;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.bookings-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.bookings-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.bookings-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.bookings-table tr:hover {
+    background: #f8fafc;
+}
+
+.bookings-table tr:last-child td {
+    border-bottom: none;
+}
+
+.booking-id strong {
+    color: #0f172a;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.guest-email {
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+.booking-date {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+    color: #0f172a;
+    margin-bottom: 0.2rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.neutral {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.payment-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-badge.paid {
+    background: #10b981;
+    color: white;
+}
+
+.payment-badge.unpaid {
+    background: #64748b;
+    color: white;
+}
+
+.payment-badge.refunded {
+    background: #ef4444;
+    color: white;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-approve,
+.btn-reject {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-approve {
+    background: #10b981;
+    color: white;
+}
+
+.btn-approve:hover {
+    background: #059669;
+}
+
+.btn-reject {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.btn-reject:hover {
+    background: #fef2f2;
+}

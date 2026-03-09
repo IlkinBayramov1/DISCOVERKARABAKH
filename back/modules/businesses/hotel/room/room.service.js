@@ -14,11 +14,20 @@ class RoomService {
             throw ApiError.forbidden('You do not own this hotel.');
         }
 
+        const { images, amenities, ...roomData } = data;
+
         return prisma.roomType.create({
             data: {
-                ...data,
-                hotelId
-            }
+                ...roomData,
+                hotelId,
+                images: images?.length ? {
+                    create: images.map((url, index) => ({ url, order: index }))
+                } : undefined,
+                roomAmenities: amenities?.length ? {
+                    create: amenities.map(name => ({ amenityName: name }))
+                } : undefined
+            },
+            include: { images: true, roomAmenities: true }
         });
     }
 
@@ -28,7 +37,8 @@ class RoomService {
     async getRoomsByHotel(hotelId) {
         return prisma.roomType.findMany({
             where: { hotelId },
-            orderBy: { price: 'asc' }
+            include: { images: true, roomAmenities: true },
+            orderBy: { name: 'asc' }
         });
     }
 
@@ -45,17 +55,45 @@ class RoomService {
         if (!room) throw ApiError.notFound('Room not found in this hotel');
         if (room.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
+        const { images, amenities, ...roomData } = data;
+
         const updated = await prisma.roomType.update({
             where: { id: roomId },
-            data
+            data: roomData
+        });
+
+        // Sync Images
+        if (images !== undefined) {
+            await prisma.roomImage.deleteMany({ where: { roomTypeId: roomId } });
+            if (images.length > 0) {
+                await prisma.roomImage.createMany({
+                    data: images.map((url, index) => ({ roomTypeId: roomId, url, order: index }))
+                });
+            }
+        }
+
+        // Sync Amenities
+        if (amenities !== undefined) {
+            await prisma.roomAmenity.deleteMany({ where: { roomTypeId: roomId } });
+            if (amenities.length > 0) {
+                await prisma.roomAmenity.createMany({
+                    data: amenities.map(name => ({ roomTypeId: roomId, amenityName: name }))
+                });
+            }
+        }
+
+        // Fetch complete object with relations
+        const fullRoom = await prisma.roomType.findUnique({
+            where: { id: roomId },
+            include: { images: true, roomAmenities: true }
         });
 
         // Event trigger if we dropped inventory drastically
-        if (updated.inventoryCount === 0) {
+        if (fullRoom.totalInventory === 0) {
             hotelEvents.emit(ROOM_INVENTORY_DEPLETED, { hotelId, roomId });
         }
 
-        return updated;
+        return fullRoom;
     }
 
     async deleteRoomType(hotelId, roomId, vendorId) {

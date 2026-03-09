@@ -20,6 +20,33 @@ class HotelController {
         }
     }
 
+    async getVendorHotels(req, res, next) {
+        try {
+            const hotels = await hotelService.findByVendor(req.user.id);
+            return successResponse(res, hotels, { count: hotels.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getVendorRooms(req, res, next) {
+        try {
+            const rooms = await hotelService.findRoomsByVendor(req.user.id);
+            return successResponse(res, rooms, { count: rooms.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getVendorHotelReviews(req, res, next) {
+        try {
+            const reviews = await hotelService.findReviewsByVendor(req.user.id);
+            return successResponse(res, reviews, { count: reviews.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getHotelById(req, res, next) {
         try {
             const hotel = await hotelService.findById(req.params.id);

@@ -1,0 +1,227 @@
+.home-container {
+    width: 100%;
+    min-height: calc(100vh - 70px);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    min-height: 500px;
+    background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1920');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 20px;
+    margin-top: -50px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hero-title span {
+    color: #cbd5e1;
+    /* Subtle silver/blue tone */
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 3rem;
+    font-weight: 400;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Global specific Glassmorphism overrides for Search Engine */
+.search-engine.glassmorphism {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+    /* Pill shape */
+    padding: 10px 10px;
+    width: 100%;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 10px 24px;
+    border-radius: 999px;
+    transition: background 0.2s;
+}
+
+.search-field:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.search-field label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-field input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    width: 100%;
+}
+
+.search-field input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 8px;
+}
+
+.search-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 32px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.search-btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+}
+
+/* Promo Grid */
+.promo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.promo-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 300px;
+    cursor: pointer;
+}
+
+.promo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.promo-card:hover img {
+    transform: scale(1.05);
+}
+
+.promo-card-content {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7) !important;
+    color: var(--text-dark);
+}
+
+.promo-card-content h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.promo-card-content p {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .search-engine.glassmorphism {
+        border-radius: 24px;
+        padding: 16px;
+    }
+
+    .search-form {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .search-field {
+        width: 100%;
+    }
+
+    .search-divider {
+        width: 100%;
+        height: 1px;
+        margin: 0;
+    }
+
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}

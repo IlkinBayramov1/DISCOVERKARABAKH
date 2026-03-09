@@ -34,8 +34,9 @@ export class HotelBookingStrategy extends BookingStrategy {
         if (!hotel) throw ApiError.notFound('Hotel not found');
         if (hotel.status !== 'active') throw ApiError.badRequest('Hotel is not actively accepting reservations');
 
-        // Add dynamically resolved hotelId to the data payload so PricingEngine can resolve applicable Hotel Taxes
-        data.vendorId = hotel.id;
+        // Add dynamically resolved ownerId to the data payload so BookingService can map the Booking to the Vendor
+        data.vendorId = hotel.ownerId;
+        data.hotelId = hotel.id;
 
         // Basic verification that selected roomTypes actually belong to this hotel
         for (const item of items) {
@@ -47,8 +48,27 @@ export class HotelBookingStrategy extends BookingStrategy {
                 throw ApiError.badRequest(`Occupancy limit exceeded for RoomType: ${roomType.name}`);
             }
 
-            // Real Availability checking & Serialization Locking goes here in Production Phase:
-            // e.g. await lockInventoryService.pessimisticLock(item.roomTypeId, item.checkIn, item.checkOut)
+            // Real Availability checking
+            const checkInDate = new Date(item.checkIn);
+            const checkOutDate = new Date(item.checkOut);
+
+            const pricingMatrix = await prisma.dailyPricing.findMany({
+                where: {
+                    roomTypeId: item.roomTypeId,
+                    date: { gte: checkInDate, lt: checkOutDate }
+                }
+            });
+
+            const totalNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            if (pricingMatrix.length !== totalNights) {
+                throw ApiError.badRequest(`Missing pricing rules for requested dates.`);
+            }
+
+            for (const day of pricingMatrix) {
+                if (day.availableRooms <= day.reservedRooms) {
+                    throw ApiError.badRequest(`Room ${roomType.name} is fully booked on ${day.date.toISOString().split('T')[0]}`);
+                }
+            }
         }
 
         return { hotel, items, guests };
@@ -103,6 +123,24 @@ export class HotelBookingStrategy extends BookingStrategy {
 
     // Hook triggered upon Successful Commit of the Transaction
     async onBookingSuccess(booking) {
+        // Increment reservedRooms
+        if (booking.items && booking.items.length > 0) {
+            for (const item of booking.items) {
+                await prisma.roomAvailability.updateMany({
+                    where: {
+                        roomTypeId: item.roomTypeId,
+                        date: {
+                            gte: new Date(item.checkIn),
+                            lt: new Date(item.checkOut)
+                        }
+                    },
+                    data: {
+                        reservedRooms: { increment: 1 }
+                    }
+                });
+            }
+        }
+
         // Broadcast Domain isolated Event
         hotelEvents.emit('RESERVATION_CREATED', {
             bookingId: booking.id,
@@ -115,6 +153,29 @@ export class HotelBookingStrategy extends BookingStrategy {
     }
 
     async onBookingCancelled(booking) {
+        // Decrement reservedRooms
+        const fullBooking = await prisma.booking.findUnique({
+            where: { id: booking.id },
+            include: { items: true }
+        });
+
+        if (fullBooking && fullBooking.items) {
+            for (const item of fullBooking.items) {
+                await prisma.roomAvailability.updateMany({
+                    where: {
+                        roomTypeId: item.roomTypeId,
+                        date: {
+                            gte: new Date(item.checkIn),
+                            lt: new Date(item.checkOut)
+                        }
+                    },
+                    data: {
+                        reservedRooms: { decrement: 1 }
+                    }
+                });
+            }
+        }
+
         // Broadcast Cancellation Event 
         hotelEvents.emit('RESERVATION_CANCELLED', {
             bookingId: booking.id,
