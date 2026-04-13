@@ -3,8 +3,8 @@
 .vendor-layout {
     display: flex;
     min-height: 100vh;
-    background: #f8f9fa;
-    color: #1a1d27;
+    background: var(--bg-light);
+    color: var(--text-main);
     overflow: hidden;
 }
 

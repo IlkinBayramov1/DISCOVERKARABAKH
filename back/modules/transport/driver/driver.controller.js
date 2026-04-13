@@ -23,6 +23,15 @@ export const getMyDriverProfile = async (req, res, next) => {
     }
 };
 
+export const getTransportVendors = async (req, res, next) => {
+    try {
+        const vendors = await driverService.getTransportVendors();
+        res.status(200).json({ success: true, data: vendors });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getDrivers = async (req, res, next) => {
     try {
         const result = await driverService.getDrivers(req.user.id, req.user.role, req.query);

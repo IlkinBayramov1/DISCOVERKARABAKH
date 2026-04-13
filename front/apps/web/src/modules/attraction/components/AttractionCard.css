@@ -1,0 +1,134 @@
+.attraction-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.attraction-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(92, 63, 240, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.attraction-card-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.attraction-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.attraction-card:hover .attraction-card-image img {
+    transform: scale(1.05);
+}
+
+.attraction-card-badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.attraction-card-badges .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.badge.featured {
+    background: linear-gradient(135deg, #5C3FF0 0%, #3F2C99 100%);
+    color: white;
+}
+
+.badge.category {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.attraction-card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.attraction-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.attraction-card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #ffffff;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #fff;
+    font-weight: 600;
+}
+
+.attraction-card-location {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    margin: 0 0 1rem 0;
+}
+
+.attraction-card-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+    flex-grow: 1;
+}
+
+.attraction-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.price span span {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+.price .free {
+    color: #10B981;
+}

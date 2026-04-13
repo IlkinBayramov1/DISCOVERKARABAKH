@@ -1,0 +1,55 @@
+:root {
+    --primary: #5c3ff0;
+    --primary-light: rgba(92, 63, 240, 0.1);
+    --secondary: #1f1d2b;
+    --bg-light: #f8f9fa;
+    --bg-white: #ffffff;
+    --text-main: #1a1d27;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --input-bg: #f1f5f9;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --bg-gradient: linear-gradient(135deg, #1f1d2b 0%, #15141e 100%);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+}
+
+/* Global Input Resets to prevent white-on-white issues */
+input, select, textarea {
+    color: var(--text-main) !important; /* Force dark text on light backgrounds */
+    background-color: var(--input-bg);
+}
+
+/* Specific Focus Fix */
+input:focus, select:focus, textarea:focus {
+    background-color: var(--bg-white) !important;
+    color: var(--text-main) !important;
+}
+
+/* Chrome/Edge/Safari Autofill Fix - Crucial for dark/light contrast */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-main) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-white) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}

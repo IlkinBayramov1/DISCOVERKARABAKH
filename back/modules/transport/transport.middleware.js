@@ -7,3 +7,11 @@ export const transportBanMiddleware = (req, res, next) => {
     }
     next();
 };
+
+export const cargoRoleMiddleware = (req, res, next) => {
+    // Tourists cannot use Cargo services
+    if (req.user && req.user.role === 'tourist') {
+        return next(ApiError.forbidden('Tourists are not allowed to use Cargo services.'));
+    }
+    next();
+};

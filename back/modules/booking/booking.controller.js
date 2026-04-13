@@ -1,5 +1,6 @@
 import { bookingService } from './booking.service.js';
 import { successResponse } from '../../core/api.response.js';
+import { ApiError } from '../../core/api.error.js';
 
 class BookingController {
     async create(req, res, next) {
@@ -12,6 +13,35 @@ class BookingController {
             // e.g. body: { entityId: 'uuid', type: 'hotel', items: [...], guests: [...], ... }
             const booking = await bookingService.createBooking(req.user.id, type, entityId, data);
             return successResponse(res, booking, { message: 'Booking initialized successfully' }, 201);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async preview(req, res, next) {
+        try {
+            const { type, entityId, ...data } = req.body;
+            const previewData = await bookingService.previewPrice(req.user.id, type, entityId, data);
+            return successResponse(res, previewData, { message: 'Price calculated successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async lock(req, res, next) {
+        try {
+            const { type, entityId, ...data } = req.body;
+            const lockData = await bookingService.lockInventory(req.user.id, type, entityId, data);
+            return successResponse(res, lockData, { message: 'Inventory locked for checkout' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getById(req, res, next) {
+        try {
+            const booking = await bookingService.getBookingById(req.params.id, req.user.id);
+            return successResponse(res, booking);
         } catch (error) {
             next(error);
         }

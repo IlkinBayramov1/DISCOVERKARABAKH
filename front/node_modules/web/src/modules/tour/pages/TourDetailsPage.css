@@ -1,0 +1,17 @@
+/* TourDetailsPage specific styles */
+.itinerary-step::before {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 50px;
+    bottom: -10px;
+    width: 2px;
+    background: #E5E7EB;
+    border-left: 2px dashed #93C5FD;
+}
+
+@media (max-width: 640px) {
+    .itinerary-step::before {
+        display: none;
+    }
+}

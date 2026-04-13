@@ -18,6 +18,7 @@ class RestaurantRepository {
                 vendorId,
                 name: data.name,
                 slug: data.slug,
+                city: data.city,
                 description: data.description || {},
                 priceRange: data.priceRange,
                 address: data.address,
@@ -63,7 +64,7 @@ class RestaurantRepository {
 
     // Advanced search with Filters and Haversine Distance (Native Query for Production Scale)
     async search(filters, pagination) {
-        const { lat, lng, radiusKm, cuisineId, priceRange, isFeatured, status = 'active' } = filters;
+        const { lat, lng, radiusKm, city, cuisineId, priceRange, isFeatured, status = 'active' } = filters;
         const limit = pagination.limit || 20;
         const offset = pagination.offset || 0;
 
@@ -71,6 +72,7 @@ class RestaurantRepository {
 
         if (priceRange) whereClause.priceRange = priceRange;
         if (isFeatured !== undefined) whereClause.isFeatured = isFeatured;
+        if (city) whereClause.city = city;
 
         if (cuisineId) {
             whereClause.cuisines = {
@@ -111,6 +113,7 @@ class RestaurantRepository {
             * sin( radians( r.latitude ) ) ) ) AS distance
             FROM Restaurant r
             WHERE r.status = ${status}
+            ${city ? Prisma.sql`AND r.city = ${city}` : Prisma.empty}
             ${priceRange ? Prisma.sql`AND r.priceRange = ${priceRange}` : Prisma.empty}
             ${isFeatured ? Prisma.sql`AND r.isFeatured = true` : Prisma.empty}
             HAVING distance <= ${radiusKm || 50}
@@ -132,6 +135,8 @@ class RestaurantRepository {
             where: { id },
             data: {
                 name: data.name,
+                slug: data.slug,
+                city: data.city,
                 description: data.description,
                 priceRange: data.priceRange,
                 address: data.address,

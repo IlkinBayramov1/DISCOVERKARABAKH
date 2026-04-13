@@ -22,6 +22,19 @@ class PricingRepository {
             where: { type }
         });
     }
+
+    async update(id, data) {
+        return prisma.ridePricing.update({
+            where: { id },
+            data,
+        });
+    }
+
+    async delete(id) {
+        return prisma.ridePricing.delete({
+            where: { id },
+        });
+    }
 }
 
 export const pricingRepository = new PricingRepository();

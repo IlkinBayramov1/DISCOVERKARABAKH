@@ -1,0 +1,95 @@
+.attraction-filters {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 100px;
+}
+
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-bar input {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: white;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.search-bar input:focus {
+    border-color: var(--primary, #5C3FF0);
+}
+
+.search-bar button {
+    background: var(--primary, #5C3FF0);
+    border: none;
+    border-radius: 8px;
+    padding: 0 1rem;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-bar button:hover {
+    background: #3F2C99;
+}
+
+.filter-group h4 {
+    color: white;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.3s;
+}
+
+.pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pill.active {
+    background: var(--primary, #5C3FF0);
+    color: white;
+    border-color: var(--primary, #5C3FF0);
+}
+
+.filter-group select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: white;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+}
+
+.filter-group select option {
+    background: #111827;
+    color: white;
+}

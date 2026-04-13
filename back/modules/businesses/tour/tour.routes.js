@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     createTour,
     getTours,
+    getVendorTours,
     getTourById,
     updateTour,
     deleteTour
@@ -12,6 +13,7 @@ import roleMiddleware from '../../../middlewares/role.middleware.js';
 const router = Router();
 
 router.get('/', getTours);
+router.get('/vendor/my-tours', authMiddleware, roleMiddleware(['vendor']), getVendorTours);
 router.get('/:id', getTourById);
 
 router.use(authMiddleware);

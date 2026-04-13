@@ -8,6 +8,7 @@ export interface IUser {
     isBanned: boolean;
     isTransportBanned: boolean;
     isApproved: boolean;
+    vendorProfile?: IVendorProfile;
     createdAt: string;
     updatedAt: string;
 }

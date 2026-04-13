@@ -7,9 +7,17 @@ class FraudDetectionService {
         this.RISK_THRESHOLDS = {
             HighCancellationVelocity: 50, // Flag if cancelled > 3 times past 24H
             SimultaneousBookingIP: 30,    // Flag if > 2 active bookings on exact same dates
+            NewUserHighValue: 40,         // Flag if new user books expensive stay
+            InventoryHoarding: 50,        // Flag if user books too many rooms at once
+            LastMinuteLargeBooking: 30,   // Flag if user books 3+ rooms for today
+            Blacklisted: 100,             // Flag if user data is in blacklist
             AbnormalGuestPattern: 20
         };
 
+        this.NEW_USER_DAYS = 7;
+        this.MAX_ROOMS_PER_BOOKING = 5;
+        this.LAST_MINUTE_ROOMS_LIMIT = 3;
+        this.HIGH_VALUE_THRESHOLD = 2000;
         this.MAX_ALLOWABLE_RISK = 80;
     }
 
@@ -26,7 +34,55 @@ class FraudDetectionService {
         let reasons = [];
 
         try {
-            // 1. High Cancellation Velocity (Chargeback / Bot mitigation)
+            // 0. Fetch User Context
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { createdAt: true, email: true, phone: true }
+            });
+
+            if (user) {
+                // Check if user credentials (email or phone) are blacklisted
+                const blacklisted = await prisma.blacklist.findFirst({
+                    where: {
+                        OR: [
+                            { value: user.email },
+                            { value: user.phone || 'N/A' }
+                        ]
+                    }
+                });
+
+                if (blacklisted) {
+                    riskScore += this.RISK_THRESHOLDS.Blacklisted;
+                    reasons.push(`User is blacklisted (Match: ${blacklisted.value}). Reason: ${blacklisted.reason || 'No reason provided'}`);
+                }
+
+                const daysSinceCreation = (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+                const isNewUser = daysSinceCreation <= this.NEW_USER_DAYS;
+
+                // Check for High Value (if totalAmount is provided in payload or calculated)
+                const totalAmount = data.totalAmount || 0; 
+                if (isNewUser && totalAmount >= this.HIGH_VALUE_THRESHOLD) {
+                    riskScore += this.RISK_THRESHOLDS.NewUserHighValue;
+                    reasons.push(`New account (created ${Math.round(daysSinceCreation)} days ago) making high-value booking.`);
+                }
+            }
+
+            // 1. Bulk Inventory Hoarding (Current Transaction)
+            const totalRoomsRequested = data.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            if (totalRoomsRequested > this.MAX_ROOMS_PER_BOOKING) {
+                riskScore += this.RISK_THRESHOLDS.InventoryHoarding;
+                reasons.push(`Bulk booking detected: Requesting ${totalRoomsRequested} rooms at once.`);
+            }
+
+            // 2. Last-Minute Large Booking (Urgency Check)
+            const today = new Date().toISOString().split('T')[0];
+            const isLastMinute = data.items.some(item => item.checkIn === today);
+            if (isLastMinute && totalRoomsRequested >= this.LAST_MINUTE_ROOMS_LIMIT) {
+                riskScore += this.RISK_THRESHOLDS.LastMinuteLargeBooking;
+                reasons.push(`Last-minute large booking for today with ${totalRoomsRequested} rooms.`);
+            }
+
+            // 3. High Cancellation Velocity (Chargeback / Bot mitigation)
             const recentCancellations = await prisma.bookingAuditLog.count({
                 where: {
                     booking: { userId: userId },
@@ -72,11 +128,28 @@ class FraudDetectionService {
 
             // 3. (Future Extension) Validate IP address mismatch vs Card Country
 
-            return {
+            const result = {
                 isApproved: riskScore < this.MAX_ALLOWABLE_RISK,
                 score: riskScore,
                 reasons
             };
+
+            // 4. Persistence: Always log Significant Risk evaluations to Audit Log
+            if (riskScore > 0 || !result.isApproved) {
+                await prisma.bookingAuditLog.create({
+                    data: {
+                        action: 'risk_evaluation',
+                        details: JSON.stringify({
+                            score: riskScore,
+                            reasons: reasons,
+                            isApproved: result.isApproved,
+                            context: { userId, totalAmount: data.totalAmount || 0 }
+                        })
+                    }
+                }).catch(err => console.error('[FraudService] Failed to log risk audit:', err));
+            }
+
+            return result;
 
         } catch (error) {
             console.error('[FraudService] Risk Calculation Failed:', error);

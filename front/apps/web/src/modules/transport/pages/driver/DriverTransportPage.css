@@ -1,0 +1,139 @@
+.driver-registration-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.driver-registration-container .form-wrapper {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #eaeaea;
+}
+
+.driver-registration-container h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1f2937;
+}
+
+.driver-registration-container p {
+    color: #6b7280;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.driver-form .form-group {
+    margin-bottom: 20px;
+}
+
+.driver-form .form-group.row {
+    display: flex;
+    gap: 20px;
+}
+
+.driver-form .input-group {
+    flex: 1;
+}
+
+.driver-form label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 14px;
+}
+
+.driver-form input,
+.driver-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #1f2937;
+    transition: all 0.2s;
+    background: #f9fafb;
+}
+
+.driver-form input:focus,
+.driver-form select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.success-message {
+    text-align: center;
+    background: #ecfdf5;
+    border: 1px solid #10b981;
+    padding: 40px;
+    border-radius: 12px;
+}
+
+.success-message h2 {
+    color: #047857;
+}
+
+.error-alert {
+    background: #fef2f2;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #fca5a5;
+    font-size: 14px;
+}
+
+/* Status Card */
+.status-message-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+}
+
+.status-icon {
+    font-size: 48px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    background: #f3f4f6;
+    border-radius: 50%;
+}
+
+.status-icon.approved {
+    background: #ecfdf5;
+}
+
+.status-icon.pending {
+    background: #eff6ff;
+}
+
+.status-icon.rejected {
+    background: #fef2f2;
+}
+
+.loading-spinner {
+    min-height: 300px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

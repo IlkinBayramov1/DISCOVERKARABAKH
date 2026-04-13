@@ -2,6 +2,7 @@ import { bookingStrategyRegistry } from './booking.strategy.js';
 import { HotelBookingStrategy } from './strategies/hotel.strategy.js';
 import { TourBookingStrategy } from './strategies/tour.strategy.js';
 import { EventBookingStrategy } from './strategies/event.strategy.js';
+import { paymentService } from '../payments/payment.service.js';
 import prisma from '../../config/db.js';
 import { ApiError } from '../../core/api.error.js';
 import crypto from 'crypto';
@@ -45,8 +46,10 @@ class BookingService {
                     userId,
                     vendorId: data.vendorId, // Enforced by Strategy validation layer
 
-                    status: 'draft',
+                    status: 'pending_payment',
                     paymentStatus: 'initiated',
+                    paymentMethod: data.paymentMethod || 'Credit Card',
+                    specialRequests: data.specialRequests || null,
 
                     totalPrice,
                     currency: data.currency || 'AZN',
@@ -73,8 +76,87 @@ class BookingService {
             return newBooking;
         });
 
-        // 5. Fire Hooks (Confirmations, Redis Unlocks, Webhooks)
-        await strategy.onBookingSuccess(booking);
+        // 5. Initiate Payment Transaction (Realistic Step)
+        const transaction = await paymentService.initiatePayment(booking.id, userId, data.paymentProvider || 'local');
+
+        // 6. Fire Hooks (Confirmations moved to Payment Callback Success)
+        // await strategy.onBookingSuccess(booking);
+
+        return { ...booking, paymentUrl: transaction.paymentUrl };
+    }
+
+    async previewPrice(userId, type, entityId, data) {
+        const strategy = bookingStrategyRegistry.getStrategy(type);
+        if (!strategy) throw ApiError.badRequest(`Unsupported booking type: ${type}`);
+
+        data.entityId = entityId;
+        data.userId = userId;
+
+        // 1. Contextual validation
+        const context = await strategy.validateAvailability(data);
+
+        // 2. Exact Price Calculation
+        // Since `strategy.calculatePrice` calls `pricingEngine.calculateStayPrice` which returns full break down to `context.pricingResult`.
+        const totalPrice = await strategy.calculatePrice(context, data);
+
+        // Include taxes and detailed logic natively from context
+        return {
+            exactTotal: totalPrice,
+            pricingResult: context.pricingResult || null,
+            contextItems: data.items
+        };
+    }
+
+    async lockInventory(userId, type, entityId, data) {
+        const strategy = bookingStrategyRegistry.getStrategy(type);
+        if (!strategy) throw ApiError.badRequest(`Unsupported booking type: ${type}`);
+        if (type !== 'hotel') return { locked: false, message: 'Locking only supported for hotels currenty' };
+
+        data.entityId = entityId;
+        data.userId = userId;
+
+        // 1. Validate availability (this also checks existing locks)
+        await strategy.validateAvailability(data);
+
+        // 2. Acquire locks for each room type in the booking
+        const { inventoryLockService } = await import('../businesses/hotel/availability/inventoryLock.service.js');
+        
+        const lockIds = [];
+        for (const item of data.items) {
+            const lockId = await inventoryLockService.acquireLock(userId, item.roomTypeId, item.checkIn, item.checkOut);
+            if (!lockId) {
+                // Should not happen if validateAvailability passed, but for safety:
+                throw ApiError.badRequest(`Failed to acquire lock for ${item.roomTypeId}. It might have just been taken.`);
+            }
+            lockIds.push(lockId);
+        }
+
+        return { locked: true, lockIds, expiresAt: new Date(Date.now() + 10 * 60 * 1000) };
+    }
+
+    async getBookingById(bookingId, userId) {
+        const booking = await prisma.booking.findFirst({
+            where: { id: bookingId, userId },
+            include: {
+                hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true } },
+                items: true,
+                guests: true
+            }
+        });
+        if (!booking) throw ApiError.notFound('Booking not found');
+
+        // Manually stitch room names since no direct Prisma relation exists for roomType in BookingItem
+        if (booking.items && booking.items.length > 0) {
+            const roomIds = booking.items.map(i => i.roomTypeId).filter(Boolean);
+            const rooms = await prisma.roomType.findMany({
+                where: { id: { in: roomIds } },
+                select: { id: true, name: true }
+            });
+            booking.items = booking.items.map(item => {
+                const rt = rooms.find(r => r.id === item.roomTypeId);
+                return { ...item, roomType: rt || null };
+            });
+        }
 
         return booking;
     }

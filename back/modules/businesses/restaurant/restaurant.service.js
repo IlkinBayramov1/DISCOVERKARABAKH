@@ -25,6 +25,7 @@ class RestaurantService {
             lng: query.lng ? parseFloat(query.lng) : null,
             radiusKm: query.radius ? parseFloat(query.radius) : 50,
             cuisineId: query.cuisineId,
+            city: query.city,
             priceRange: query.priceRange ? parseInt(query.priceRange) : null,
             isFeatured: query.isFeatured === 'true',
             status: 'active'

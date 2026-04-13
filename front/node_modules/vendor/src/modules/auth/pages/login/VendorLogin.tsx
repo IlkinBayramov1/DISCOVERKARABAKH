@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth.api';
-import { setToken } from '@/shared/utils/token';
+import { setToken, setVendorCategory } from '@/shared/utils/token';
 import './VendorLogin.css';
 
 export default function VendorLogin() {
@@ -18,9 +18,36 @@ export default function VendorLogin() {
 
         try {
             const response = await authApi.login({ email, password });
+
+            const role = response.data?.user?.role;
+            if (role !== 'vendor' && role !== 'admin') {
+                throw new Error('Giriş qadağandır. Bu portal yalnız Vendorlar üçündür.');
+            }
+
             if (response.data?.token) {
                 setToken(response.data.token);
-                navigate('/vendor/dashboard');
+
+                // Redirect dynamically
+                const user = response.data.user;
+                const category = user.vendorProfile?.category;
+
+                if (category) {
+                    setVendorCategory(category);
+                }
+
+                if (category === 'transport') {
+                    navigate('/transport/dashboard');
+                } else if (category === 'tour') {
+                    navigate('/tours');
+                } else if (category === 'attraction') {
+                    navigate('/attractions');
+                } else if (category === 'restaurant') {
+                    navigate('/restaurant/dashboard');
+                } else if (category === 'event') {
+                    navigate('/events');
+                } else {
+                    navigate('/hotel/dashboard');
+                }
             }
         } catch (err: unknown) {
             if (err instanceof Error) {

@@ -4,7 +4,11 @@ class AttractionRepository {
     async create(data) {
         return await prisma.attraction.create({
             data,
-            include: { category: true }
+            include: { 
+                category: true,
+                images: true,
+                stats: true
+            }
         });
     }
 
@@ -33,6 +37,7 @@ class AttractionRepository {
 
         if (filters.categoryId) whereClause.categoryId = filters.categoryId;
         if (filters.status) whereClause.status = filters.status;
+        if (filters.city) whereClause.city = filters.city;
         if (filters.isFeatured !== undefined) whereClause.isFeatured = filters.isFeatured;
 
         // Optional Location Bounding Logic (Mocked slightly here, actual PostGIS logic requires raw queries)
@@ -44,7 +49,7 @@ class AttractionRepository {
             where: whereClause,
             include: {
                 category: true,
-                images: { where: { isCover: true }, take: 1 },
+                images: { orderBy: { order: 'asc' } },
                 stats: true
             },
             orderBy: {
@@ -61,7 +66,11 @@ class AttractionRepository {
         return await prisma.attraction.update({
             where: { id },
             data,
-            include: { category: true }
+            include: { 
+                category: true,
+                images: true,
+                stats: true
+            }
         });
     }
 

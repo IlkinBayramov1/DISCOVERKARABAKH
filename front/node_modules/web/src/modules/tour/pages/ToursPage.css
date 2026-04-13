@@ -1,0 +1,14 @@
+.tour-search-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.tour-search-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, #1e40af, #3b82f6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom checkbox styling overrides if needed, generic ones provided in ToursPage.tsx */

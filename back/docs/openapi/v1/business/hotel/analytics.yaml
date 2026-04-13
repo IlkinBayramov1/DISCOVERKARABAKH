@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: Hotel Analytics API
+  version: 1.0.0
+  description: Analytics endpoints for vendors to track hotel performance.
+
+paths:
+  /hotels/analytics:
+    get:
+      summary: Get Hotel Vendor Analytics
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      description: Returns revenue, booking counts, and occupancy rates for the vendor's hotels.
+      parameters:
+        - name: startDate
+          in: query
+          description: "Start date for analytics (YYYY-MM-DD). Default: 30 days ago."
+          schema: { type: string, format: date }
+        - name: endDate
+          in: query
+          description: "End date for analytics (YYYY-MM-DD). Default: today."
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Analytics data successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: object
+                    properties:
+                      totalRevenue: { type: number, description: "Təsdiq olunmuş və tamamlanmış bronların ümumi məbləği", example: 1250.50 }
+                      bookingCount: { type: integer, description: "Uğurlu bronların sayı", example: 45 }
+                      cancellationCount: { type: integer, description: "Ləğv olunmuş bronların sayı", example: 5 }
+                      occupancyRate: { type: number, example: 78.5, description: "Orta doluluq faizi. Düstur: ((Toplam Otaq - Mövcud Otaq) / Toplam Otaq) * 100" }
+                  trends:
+                    type: object
+                    properties:
+                      revenue:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date, example: "2024-03-20" }
+                            amount: { type: number, example: 150.0 }
+        '403':
+          description: Forbidden - Only vendors and admins can access analytics.

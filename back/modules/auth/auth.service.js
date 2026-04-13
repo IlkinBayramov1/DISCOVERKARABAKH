@@ -4,6 +4,30 @@ import { signToken } from '../../utils/jwt.util.js';
 import { ApiError } from '../../core/api.error.js';
 import prisma from '../../config/db.js'; // Direct prisma access for transactions
 
+const ROLE_PERMISSIONS = {
+  tourist: [
+    'passenger_only',
+    'hotel_booking',
+    'tour_booking',
+    'event_booking',
+    'restaurant_booking'
+  ],
+  user: [
+    'cargo_access',
+    'passenger_only',
+    'hotel_booking',
+    'tour_booking',
+    'event_booking',
+    'restaurant_booking'
+  ],
+  admin: [
+    'admin_panel'
+  ],
+  vendor: [
+    'vendor_panel'
+  ]
+};
+
 class AuthService {
   async register(data) {
     const { email, password, role } = data;
@@ -49,11 +73,6 @@ class AuthService {
         await tx.residentProfile.create({
           data: { userId: user.id, permitNumber, localAddress }
         });
-      } else if (role === 'investor') {
-        const { investmentFocus, budgetRange, companyName } = data;
-        await tx.investorProfile.create({
-          data: { userId: user.id, investmentFocus, budgetRange, companyName }
-        });
       }
 
       return user;
@@ -66,8 +85,9 @@ class AuthService {
       };
     }
 
+    const permissions = ROLE_PERMISSIONS[result.role] || [];
     const token = signToken({ id: result.id, role: result.role });
-    return { user: result, token };
+    return { user: { ...result, permissions }, token };
   }
 
   async login(email, password) {
@@ -103,6 +123,9 @@ class AuthService {
     // Remove password from response
     const userWithoutPass = { ...user };
     delete userWithoutPass.password;
+
+    const permissions = ROLE_PERMISSIONS[user.role] || [];
+    userWithoutPass.permissions = permissions;
 
     return { user: userWithoutPass, token };
   }

@@ -1,0 +1,60 @@
+.room-reviews-container {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.empty-reviews-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    margin-top: 2rem;
+    padding: 4rem;
+    text-align: center;
+}
+
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 400px;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.placeholder-content h3 {
+    font-size: 1.5rem;
+    color: #0f172a;
+    margin: 0;
+}
+
+.placeholder-content p {
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.info-box {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(99, 102, 241, 0.05);
+    color: #4f46e5;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}

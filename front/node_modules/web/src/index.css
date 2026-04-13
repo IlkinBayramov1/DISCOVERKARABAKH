@@ -283,10 +283,3 @@ ul {
   min-height: calc(100vh - 70px - 200px);
   /* header + footer rough height */
 }
-
-/* On Desktop, when sidebar is injected in DOM vs absolutely positioned */
-@media (min-width: 768px) {
-  .web-main-content.sidebar-open {
-    padding-left: 280px;
-  }
-}

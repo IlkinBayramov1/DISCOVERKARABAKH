@@ -48,6 +48,7 @@ class ShipmentService {
             idempotencyKey: data.idempotencyKey || null,
             pickupLocation: data.pickupLocation,
             dropoffLocation: data.dropoffLocation,
+            waypoints: data.waypoints,
             weightKg: data.weightKg,
             volumeM3: data.volumeM3 || 0,
             dimensions: data.dimensions,
@@ -116,6 +117,10 @@ class ShipmentService {
         const shipment = await shipmentRepository.findById(id);
         if (!shipment) throw ApiError.notFound('Shipment not found');
         return shipment;
+    }
+
+    async getAllShipments(query) {
+        return shipmentRepository.findAll(query);
     }
 
     _enforceTransition(currentStatus, nextStatus) {

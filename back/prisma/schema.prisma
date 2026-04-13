@@ -64,6 +64,8 @@ enum BusinessType {
   event
   tour
   restaurant
+  transport
+  attraction
 }
 
 enum EventStatus {
@@ -137,10 +139,11 @@ model User {
   isBanned          Boolean @default(false)
   isTransportBanned Boolean @default(false)
   isApproved        Boolean @default(true)
+  phone             String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Profiles
   vendorProfile   VendorProfile?
   touristProfile  TouristProfile?
@@ -148,7 +151,7 @@ model User {
   investorProfile InvestorProfile?
   driverProfile   DriverProfile?
 
-  // Relations
+  // Existing relations...
   hotels        Hotel[]
   tours         Tour[]
   events        Event[]        @relation("VendorEvents")
@@ -168,6 +171,17 @@ model User {
   Attraction         Attraction[]
   AttractionFavorite AttractionFavorite[]
   AttractionReview   AttractionReview[]
+  locations          Location[]           @relation("VendorLocations")
+}
+
+model Blacklist {
+  id        String   @id @default(uuid())
+  type      String   // 'email', 'phone', 'ip'
+  value     String   @unique
+  reason    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([value])
 }
 
 // Profiles
@@ -195,6 +209,9 @@ model DriverProfile {
 
   currentVehicleId String?  @unique
   currentVehicle   Vehicle? @relation(fields: [currentVehicleId], references: [id])
+
+  currentCargoVehicleId String?       @unique
+  currentCargoVehicle   CargoVehicle? @relation(fields: [currentCargoVehicleId], references: [id])
 
   rides        Ride[]             @relation("DriverRides")
   shipments    Shipment[]         @relation("DriverShipments")
@@ -255,10 +272,13 @@ model InvestorProfile {
 model Location {
   id         Int      @id @default(autoincrement())
   name       String   @db.VarChar(255)
+  address    String?  @db.VarChar(255)
   lat        Float
   lng        Float
-  type       String // metro, street, airport
+  type       String // metro, street, airport, Hotel, Attraction, Custom
   popularity Int      @default(0)
+  vendorId   String? 
+  vendor     User?    @relation("VendorLocations", fields: [vendorId], references: [id])
   createdAt  DateTime @default(now())
 
   @@fulltext([name])
@@ -273,9 +293,14 @@ model Hotel {
   description  String  @db.Text
   starRating   Int?
   propertyType String  @default("hotel") // hotel, resort, villa, apartment
+  city         String?
 
   checkInTime  String?
   checkOutTime String?
+
+  cancellationPolicy String? @db.Text
+  childPolicy        String? @db.Text
+  petPolicy          String? @db.Text
 
   address   String
   latitude  Float?
@@ -300,6 +325,11 @@ model Hotel {
   reviews    Review[]
   dailyStats HotelDailyStat[]
   bookings   Booking[]
+  pricingRules PricingRule[]
+  calendarNotes HotelCalendarNote[]
+  nearbyPOIs    HotelPOI[]
+  promotions    Promotion[]
+  searchSnapshot HotelSearchSnapshot?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -352,6 +382,7 @@ model Ride {
 
   pickupLocation  Json
   dropoffLocation Json
+  waypoints       Json?
 
   price       Float?
   distanceKm  Float?
@@ -414,6 +445,8 @@ model Booking {
   items     BookingItem[]
   guests    Guest[]
   auditLogs BookingAuditLog[]
+  transactions PaymentTransaction[]
+
   Tour      Tour?             @relation(fields: [tourId], references: [id])
   tourId    String?
   Event     Event?            @relation(fields: [eventId], references: [id])
@@ -470,6 +503,7 @@ model RoomType {
   id          String  @id @default(uuid())
   name        String
   description String? @db.Text
+  isActive    Boolean @default(true)
 
   maxAdults     Int     @default(2)
   maxChildren   Int     @default(0)
@@ -490,6 +524,8 @@ model RoomType {
   pricingList    DailyPricing[]
   images         RoomImage[]
   reviews        RoomReview[]
+  inventoryLocks InventoryLock[]
+  pricingRules   PricingRule[]
 }
 
 model RoomImage {
@@ -515,7 +551,10 @@ model Room {
   id         String  @id @default(uuid())
   roomNumber String
   floor      String?
-  status     String  @default("available")
+  status     String  @default("AVAILABLE") // AVAILABLE, DIRTY, CLEANING, OUT_OF_ORDER
+  
+  housekeepingNote String? @db.Text
+  lastCleanedAt    DateTime?
 
   roomTypeId String
   roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
@@ -554,6 +593,7 @@ model DailyPricing {
 
   minStay           Int     @default(1)
   maxStay           Int?
+  isStopped         Boolean @default(false)
   closedToArrival   Boolean @default(false)
   closedToDeparture Boolean @default(false)
 
@@ -576,6 +616,65 @@ model RoomAvailability {
   roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
   @@unique([roomTypeId, date])
+}
+
+model PricingRule {
+  id          String   @id @default(uuid())
+  hotelId     String
+  roomTypeId  String?  // If null, applies to all rooms in the hotel
+  name        String
+  description String?  @db.Text
+
+  type        String   // WEEKEND, SEASONAL, HOLIDAY, SPECIAL
+  adjustment  String   // PERCENTAGE, FIXED_OVERRIDE, FIXED_ADDITION
+  value       Float
+
+  startDate   DateTime? @db.Date // For Seasonal/Holiday
+  endDate     DateTime? @db.Date
+  daysOfWeek  String?   // For Weekend: "Fri,Sat"
+  
+  occupancyThreshold Float? // Trigger rule when occupancy % is >= this value
+  
+  priority    Int      @default(0) // Higher number = higher priority
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel    Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomType RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId, roomTypeId])
+}
+
+model HotelCalendarNote {
+  id      String   @id @default(uuid())
+  hotelId String
+  date    DateTime @db.Date
+  note    String   @db.Text
+  type    String   @default("info") // info, warning, success, event
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelId, date])
+}
+
+model InventoryLock {
+  id         String   @id @default(uuid())
+  roomTypeId String
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date
+  userId     String   @default("anonymous") // Support guest checkout locks if needed
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([roomTypeId, startDate, endDate])
+  @@index([expiresAt])
 }
 
 model HotelImage {
@@ -608,12 +707,13 @@ model RoomAmenity {
   roomTypeId  String
   roomType    RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
   amenityName String
+  category    String   @default("General")
 }
 
 model TaxRule {
   id      String  @id @default(uuid())
   name    String
-  type    String // percentage, fixed
+  type    String // percentage, fixed_per_stay, fixed_per_night, fixed_per_person_per_night
   value   Float
   hotelId String?
 }
@@ -621,16 +721,23 @@ model TaxRule {
 model Promotion {
   id            String   @id @default(uuid())
   name          String
+  code          String   @unique
   discountType  String // percentage, fixed
   discountValue Float
   validFrom     DateTime
   validTo       DateTime
 
+  minBookingValue Float @default(0)
+  maxUses        Int    @default(0) // 0 means unlimited
+  usedCount      Int    @default(0)
+  
   minStay    Int?
   mobileOnly Boolean @default(false)
   geniusOnly Boolean @default(false)
+  isActive   Boolean @default(true)
 
   hotelId String?
+  hotel   Hotel?  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 }
 
 model HotelDailyStat {
@@ -651,11 +758,27 @@ model HotelDailyStat {
 }
 
 model HotelSearchSnapshot {
-  hotelId        String  @id
+  hotelId        String   @id
+  hotel          Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   minPrice       Float
   reviewScore    Float
   availableToday Boolean
   popularity     Int
+  updatedAt      DateTime @updatedAt
+}
+
+model HotelPOI {
+  id           String     @id @default(uuid())
+  hotelId      String
+  hotel        Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  attractionId String
+  attraction   Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  
+  distance     Float?     // In kilometers, for manual override
+  description  String?    @db.Text
+  order        Int        @default(0)
+
+  @@unique([hotelId, attractionId])
 }
 
 model Wishlist {
@@ -670,6 +793,7 @@ model Tour {
   name        String
   slug        String?
   description String  @db.Text
+  city        String?
   address     String
   phone       String?
   email       String?
@@ -761,6 +885,7 @@ model Restaurant {
   id          String @id @default(uuid())
   name        String
   slug        String @unique
+  city        String?
   description Json? // For i18n support
   priceRange  Int // 1 to 4 ($, $$, $$$, $$$$)
 
@@ -914,6 +1039,9 @@ model Review {
   restaurantId String?
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
 
+  attractionId String?
+  attraction   Attraction? @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+
   status String @default("pending") // pending, approved, rejected
 
   createdAt DateTime @default(now())
@@ -922,6 +1050,7 @@ model Review {
   @@unique([userId, hotelId])
   @@unique([userId, tourId])
   @@unique([userId, eventId])
+  @@unique([userId, attractionId])
   @@index([restaurantId, userId]) // Fast lookup for generic restaurant reviews
 }
 
@@ -953,6 +1082,8 @@ model CargoVehicle {
   currentLoadWeight Float @default(0)
   currentLoadVolume Float @default(0)
 
+  currentDriver DriverProfile?
+
   shipments Shipment[]
 
   createdAt DateTime @default(now())
@@ -978,6 +1109,7 @@ model Shipment {
 
   pickupLocation  Json
   dropoffLocation Json
+  waypoints       Json?
 
   weightKg              Float
   volumeM3              Float?
@@ -1034,6 +1166,7 @@ model Attraction {
   id          String @id @default(uuid())
   name        String
   slug        String @unique
+  city        String?
   description String @db.Text
   address     String
   latitude    Float
@@ -1056,7 +1189,9 @@ model Attraction {
   stats        AttractionStat?
   favorites    AttractionFavorite[]
   reviews      AttractionReview[]
+  generalReviews Review[]
   workingHours AttractionWorkingHour[]
+  nearbyHotels   HotelPOI[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1119,4 +1254,28 @@ model AttractionReview {
   createdAt    DateTime   @default(now())
 
   @@unique([userId, attractionId])
+}
+
+model PaymentTransaction {
+  id              String   @id @default(uuid())
+  bookingId       String
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  provider        String   // 'local', 'pasha', 'kapital'
+  providerTransId String?  @unique
+  
+  amount          Float
+  currency        String   @default("AZN")
+  status          String   @default("pending") // pending, success, failed, reversed
+  
+  paymentUrl      String?  @db.Text
+  callbackUrl     String?  @db.Text
+  
+  errorMessage    String?  @db.Text
+  rawResponse     Json?    // Store full bank response
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
 }

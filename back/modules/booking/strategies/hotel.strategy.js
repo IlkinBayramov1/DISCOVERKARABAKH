@@ -4,6 +4,8 @@ import { ApiError } from '../../../core/api.error.js';
 import { pricingEngine } from '../../businesses/hotel/pricing/pricing.engine.js';
 import { hotelEvents } from '../../businesses/hotel/hotel.events.js';
 import { fraudDetectionService } from '../../businesses/hotel/fraud/fraud.service.js';
+import { inventoryLockService } from '../../businesses/hotel/availability/inventoryLock.service.js';
+import { notificationService } from '../../shared/notification/notification.service.js';
 
 export class HotelBookingStrategy extends BookingStrategy {
 
@@ -18,10 +20,17 @@ export class HotelBookingStrategy extends BookingStrategy {
         }
 
         // --- Fraud & Risk Check Pipeline ---
-        if (userId) { // Ensures we have contexts (guest checkouts handled alternatively)
-            const riskAssessment = await fraudDetectionService.evaluateTransactionRisk(userId, { items });
+        if (userId) { 
+            // Calculate a dry-run price for risk assessment
+            const { totalAmount } = await pricingEngine.calculateStayPrice({ entityId, items });
+
+            const riskAssessment = await fraudDetectionService.evaluateTransactionRisk(userId, { 
+                items, 
+                totalAmount 
+            });
+
             if (!riskAssessment.isApproved) {
-                // Return a generic error to attackers so they don't map the bounds
+                // Return a generic error to prevent mapping security bounds
                 throw ApiError.forbidden('Transaction declined due to security policy violations.');
             }
         }
@@ -38,11 +47,13 @@ export class HotelBookingStrategy extends BookingStrategy {
         data.vendorId = hotel.ownerId;
         data.hotelId = hotel.id;
 
-        // Basic verification that selected roomTypes actually belong to this hotel
         for (const item of items) {
             const roomType = hotel.roomTypes.find(r => r.id === item.roomTypeId);
             if (!roomType) {
                 throw ApiError.badRequest(`Requested RoomType (${item.roomTypeId}) does not belong to this Hotel`);
+            }
+            if (!roomType.isActive) {
+                throw ApiError.badRequest(`Room ${roomType.name} is currently inactive and not accepting reservations.`);
             }
             if ((item.adults + item.children) > (roomType.maxAdults + roomType.maxChildren)) {
                 throw ApiError.badRequest(`Occupancy limit exceeded for RoomType: ${roomType.name}`);
@@ -59,14 +70,44 @@ export class HotelBookingStrategy extends BookingStrategy {
                 }
             });
 
+            // Fetch actual availability records
+            const availabilityMatrix = await prisma.roomAvailability.findMany({
+                where: {
+                    roomTypeId: item.roomTypeId,
+                    date: { gte: checkInDate, lt: checkOutDate }
+                }
+            });
+
             const totalNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-            if (pricingMatrix.length !== totalNights) {
-                throw ApiError.badRequest(`Missing pricing rules for requested dates.`);
+            if (pricingMatrix.length !== totalNights || availabilityMatrix.length !== totalNights) {
+                throw ApiError.badRequest(`Missing pricing or availability rules for requested dates.`);
             }
 
-            for (const day of pricingMatrix) {
-                if (day.availableRooms <= day.reservedRooms) {
-                    throw ApiError.badRequest(`Room ${roomType.name} is fully booked on ${day.date.toISOString().split('T')[0]}`);
+            for (const day of availabilityMatrix) {
+                // Count active locks for this date
+                const activeLocks = await inventoryLockService.getActiveLocksForDate(item.roomTypeId, day.date);
+                
+                const trulyAvailable = day.totalRooms - (day.reservedRooms + activeLocks);
+
+                if (trulyAvailable <= 0) {
+                    throw ApiError.badRequest(`Room ${roomType.name} is fully booked or held on ${day.date.toISOString().split('T')[0]}`);
+                }
+
+                // Pricing record for MLOS and StopSell constraints
+                const pricingDay = pricingMatrix.find(p => p.date.getTime() === day.date.getTime());
+                if (!pricingDay) throw ApiError.badRequest(`Missing pricing record for ${day.date.toISOString().split('T')[0]}`);
+
+                // Stop Sell Enforcement
+                if (pricingDay.isStopped) {
+                    throw ApiError.badRequest(`Sales for ${roomType.name} are temporarily stopped for ${day.date.toISOString().split('T')[0]}.`);
+                }
+
+                // MLOS (Min/Max Stay) Enforcement
+                if (totalNights < pricingDay.minStay) {
+                    throw ApiError.badRequest(`Minimum stay for ${roomType.name} on ${pricingDay.date.toISOString().split('T')[0]} is ${pricingDay.minStay} night(s). You requested ${totalNights}.`);
+                }
+                if (pricingDay.maxStay && totalNights > pricingDay.maxStay) {
+                    throw ApiError.badRequest(`Maximum stay for ${roomType.name} on ${pricingDay.date.toISOString().split('T')[0]} is ${pricingDay.maxStay} night(s). You requested ${totalNights}.`);
                 }
             }
         }
@@ -138,6 +179,16 @@ export class HotelBookingStrategy extends BookingStrategy {
                         reservedRooms: { increment: 1 }
                     }
                 });
+
+                // Release user's temporary locks for these rooms
+                await prisma.inventoryLock.deleteMany({
+                    where: {
+                        userId: booking.userId,
+                        roomTypeId: item.roomTypeId,
+                        startDate: new Date(item.checkIn),
+                        endDate: new Date(item.checkOut)
+                    }
+                });
             }
         }
 
@@ -149,7 +200,8 @@ export class HotelBookingStrategy extends BookingStrategy {
             timestamp: new Date()
         });
 
-        // E.g Decrement Inventory Availabilities based on locked records
+        // Fire Email/SMS Notification
+        await notificationService.sendBookingConfirmation(booking);
     }
 
     async onBookingCancelled(booking) {
@@ -183,6 +235,7 @@ export class HotelBookingStrategy extends BookingStrategy {
             timestamp: new Date()
         });
 
-        // E.g Release optimistic locks or revert RoomAvailability increments
+        // Fire Cancellation Notification
+        await notificationService.sendBookingCancellation(fullBooking);
     }
 }

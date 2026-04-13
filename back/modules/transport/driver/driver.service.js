@@ -20,11 +20,80 @@ class DriverService {
         const existing = await driverRepository.findByUserId(userId);
         if (existing) throw ApiError.badRequest('Driver profile already exists');
 
-        // Create profile
-        // Status defaults to Pending
-        return driverRepository.create({
-            userId,
-            ...data
+        const { 
+            driverType,
+            vehicleBrand, 
+            vehicleModel, 
+            vehicleColor, 
+            vehiclePlateNumber, 
+            
+            // Passenger specific
+            vehicleSeats,
+            vehicleCategory, 
+
+            // Cargo specific
+            maxWeightKg,
+            maxVolumeM3,
+            cargoType,
+
+            ...driverData 
+        } = data;
+
+        // Start Transaction to create Driver and Vehicle
+        return await prisma.$transaction(async (tx) => {
+            // Create Profile
+            let driver = await tx.driverProfile.create({
+                data: {
+                    userId,
+                    status: 'Pending',
+                    ...driverData
+                }
+            });
+
+            const vehicleVendorId = driverData.managedById || userId;
+
+            if (driverType === 'passenger') {
+                const vehicle = await tx.vehicle.create({
+                    data: {
+                        vendorId: vehicleVendorId,
+                        brand: vehicleBrand,
+                        model: vehicleModel,
+                        color: vehicleColor,
+                        plateNumber: vehiclePlateNumber,
+                        category: vehicleCategory,
+                        year: new Date().getFullYear(), // Default
+                        seats: vehicleSeats,
+                        luggage: 2, // Default MVP
+                        status: 'Active'
+                    }
+                });
+
+                driver = await tx.driverProfile.update({
+                    where: { id: driver.id },
+                    data: { currentVehicleId: vehicle.id }
+                });
+            } else if (driverType === 'cargo') {
+                const cargoVehicle = await tx.cargoVehicle.create({
+                    data: {
+                        vendorId: vehicleVendorId,
+                        brand: vehicleBrand,
+                        model: vehicleModel,
+                        licensePlate: vehiclePlateNumber, // Note: CargoVehicle uses licensePlate not plateNumber
+                        cargoType: cargoType,
+                        maxWeightKg: maxWeightKg,
+                        maxVolumeM3: maxVolumeM3,
+                        year: new Date().getFullYear(),
+                        status: 'Available'
+                    }
+                });
+
+                driver = await tx.driverProfile.update({
+                    where: { id: driver.id },
+                    data: { currentCargoVehicleId: cargoVehicle.id }
+                });
+            }
+
+            return driver;
         });
     }
 
@@ -32,6 +101,33 @@ class DriverService {
         const profile = await driverRepository.findByUserId(userId);
         if (!profile) throw ApiError.notFound('Driver profile not found');
         return profile;
+    }
+
+    async getTransportVendors() {
+        // Find users with role 'vendor' and a vendorProfile with category 'transport'
+        const vendors = await prisma.user.findMany({
+            where: {
+                role: 'vendor',
+                isActive: true, // Only active vendors
+                vendorProfile: {
+                    category: 'transport'
+                }
+            },
+            select: {
+                id: true,
+                vendorProfile: {
+                    select: {
+                        companyName: true
+                    }
+                }
+            }
+        });
+
+        // Map to a simpler format for frontend dropdowns
+        return vendors.map(v => ({
+            id: v.id,
+            companyName: v.vendorProfile?.companyName || 'Bilinməyən Şirkət'
+        }));
     }
 
     async getDrivers(userId, role, query) {

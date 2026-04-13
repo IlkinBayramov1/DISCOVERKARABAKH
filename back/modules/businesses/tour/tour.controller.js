@@ -13,6 +13,15 @@ export const createTour = async (req, res, next) => {
     }
 };
 
+export const getVendorTours = async (req, res, next) => {
+    try {
+        const tours = await tourRepository.findAll({ ownerId: req.user.id });
+        res.status(200).json({ success: true, count: tours.length, data: tours });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getTours = async (req, res, next) => {
     try {
         const tours = await tourRepository.findAll(req.query);

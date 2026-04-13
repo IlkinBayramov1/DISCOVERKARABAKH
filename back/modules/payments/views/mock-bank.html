@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Bank - Checkout</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .logo { font-weight: bold; font-size: 1.5rem; color: #2c3e50; margin-bottom: 1.5rem; display: block; }
+        .amount { font-size: 2rem; font-weight: 800; color: #27ae60; margin: 1rem 0; }
+        .details { color: #7f8c8d; margin-bottom: 2rem; }
+        .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219150; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="logo">🏦 LOCAL BANK</span>
+        <div class="details">Payment Request for Transaction: <br><strong id="transId">...</strong></div>
+        <div class="amount" id="amountDisplay">0.00 AZN</div>
+        
+        <form id="paymentForm" method="POST">
+            <input type="hidden" name="transId" id="transIdInput">
+            <input type="hidden" name="status" id="statusInput">
+            
+            <button type="button" class="btn btn-success" onclick="submitPayment('approved')">Approve Payment</button>
+            <button type="button" class="btn btn-danger" onclick="submitPayment('failed')">Cancel / Decline</button>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const transId = urlParams.get('transId');
+        const amount = urlParams.get('amount');
+        const currency = urlParams.get('currency') || 'AZN';
+
+        document.getElementById('transId').textContent = transId;
+        document.getElementById('transIdInput').value = transId;
+        document.getElementById('amountDisplay').textContent = `${amount} ${currency}`;
+
+        function submitPayment(status) {
+            document.getElementById('statusInput').value = status;
+            const form = document.getElementById('paymentForm');
+            // Setting action to our callback endpoint
+            form.action = `/payments/callback/local?transId=${transId}&status=${status}`;
+            form.submit();
+        }
+    </script>
+</body>
+</html>

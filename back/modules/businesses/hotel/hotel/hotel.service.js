@@ -1,5 +1,6 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
+import { hotelMapper } from './hotel.mapper.js';
 
 class HotelService {
     /**
@@ -7,14 +8,14 @@ class HotelService {
      */
     async create(vendorId, data) {
         // Map payload strictly to Prisma schema
-        const { amenities, images, ...rest } = data;
+        const { amenities, images, nearbyPOIs, ...rest } = data;
 
         const hotel = await prisma.hotel.create({
             data: {
                 ...rest,
                 ownerId: vendorId,
                 status: 'pending',
-                // Handle many-to-many relationship for amenities with connectOrCreate
+                // Handle many-to-many relationship for amenities
                 amenities: amenities && amenities.length > 0 ? {
                     create: amenities.map(amenityName => ({
                         amenity: {
@@ -25,15 +26,29 @@ class HotelService {
                         }
                     }))
                 } : undefined,
+                // Handle Nearby POIs
+                nearbyPOIs: nearbyPOIs && nearbyPOIs.length > 0 ? {
+                    create: nearbyPOIs.map(poi => ({
+                        attractionId: poi.attractionId,
+                        distance: poi.distance,
+                        description: poi.description,
+                        order: poi.order || 0
+                    }))
+                } : undefined,
                 // Handle One-to-Many images relationship
                 images: images && images.length > 0 ? {
                     create: images.map((url, index) => ({ url, order: index }))
                 } : undefined
             },
-            include: { amenities: { include: { amenity: true } } }
+            include: { 
+                amenities: { include: { amenity: true } },
+                images: true,
+                reviews: true,
+                roomTypes: { include: { pricingList: true } }
+            }
         });
 
-        return hotel;
+        return hotelMapper.toHotelDTO(hotel);
     }
 
     /**
@@ -45,14 +60,80 @@ class HotelService {
             lat,
             lng,
             radiusKm = 10,
-            amenityIds,
+            amenityNames, // e.g. "Free WiFi,Pool"
             search,
             starRating,
+            city,
+            minPrice,
+            maxPrice,
+            minRating,
+            checkIn,  // YYYY-MM-DD
+            checkOut, // YYYY-MM-DD
+            sortBy, // "price_asc", "price_desc", "rating_desc", "recommended"
             limit = 20,
             skip = 0
         } = query;
 
+        let totalNights = 0;
+        let start = null;
+        let end = null;
+
+        if (checkIn && checkOut) {
+            start = new Date(checkIn);
+            end = new Date(checkOut);
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end > start) {
+                totalNights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            }
+        }
+
+        let availableRoomTypeIds = null;
+        if (totalNights > 0) {
+            // Find all RoomTypes that have EXACTLY 'totalNights' available days in the range
+            // This ensures no missing dates and no fully booked/stopped dates.
+            
+            const roomTypesWithAvailability = await prisma.roomAvailability.groupBy({
+                by: ['roomTypeId'],
+                where: {
+                    date: { gte: start, lt: end },
+                    availableRooms: { gt: 0 }
+                },
+                _count: { roomTypeId: true },
+                having: {
+                    roomTypeId: {
+                        _count: { equals: totalNights }
+                    }
+                }
+            });
+
+            const availIds = roomTypesWithAvailability.map(r => r.roomTypeId);
+
+            const roomTypesWithPricing = await prisma.dailyPricing.groupBy({
+                by: ['roomTypeId'],
+                where: {
+                    roomTypeId: { in: availIds },
+                    date: { gte: start, lt: end },
+                    isStopped: false
+                },
+                _count: { roomTypeId: true },
+                having: {
+                    roomTypeId: {
+                        _count: { equals: totalNights }
+                    }
+                }
+            });
+
+            availableRoomTypeIds = roomTypesWithPricing.map(r => r.roomTypeId);
+        }
+
         let whereClause = { status: 'active' };
+
+        if (availableRoomTypeIds !== null) {
+            whereClause.roomTypes = {
+                some: {
+                    id: { in: availableRoomTypeIds }
+                }
+            };
+        }
 
         if (search) {
             whereClause.name = { contains: search };
@@ -63,15 +144,51 @@ class HotelService {
             whereClause.starRating = { gte: parseInt(starRating) };
         }
 
-        // Relational Amenity Filtering (Strict matching constraint)
-        if (amenityIds) {
-            // amenityIds expected as "id1,id2"
-            const idsList = amenityIds.split(',');
-            whereClause.amenities = {
-                some: { amenityId: { in: idsList } }
+        if (city) {
+            whereClause.city = city;
+        }
+
+        // Relational Amenity Filtering by Name (Require ALL selected)
+        if (amenityNames) {
+            const namesList = amenityNames.split(',').map(n => n.trim());
+            whereClause.AND = [
+                ...(whereClause.AND || []),
+                ...namesList.map(name => ({
+                    amenities: { some: { amenity: { name } } }
+                }))
+            ];
+        }
+
+        // Price Range Filtering (via RoomTypes -> DailyPricing)
+        if (minPrice || maxPrice) {
+            whereClause.roomTypes = {
+                some: {
+                    pricingList: {
+                        some: {
+                            basePrice: {
+                                ...(minPrice ? { gte: parseFloat(minPrice) } : {}),
+                                ...(maxPrice ? { lte: parseFloat(maxPrice) } : {})
+                            }
+                        }
+                    }
+                }
             };
         }
 
+        const includeRelations = { 
+            amenities: { include: { amenity: true } }, 
+            images: true,
+            roomTypes: { 
+                include: { 
+                    pricingList: { orderBy: { basePrice: 'asc' }, take: 1 } 
+                } 
+            },
+            reviews: { where: { status: 'approved' }, select: { rating: true } }
+        };
+
+        // Determine Prisma OrderBy (if standard)
+        let prismaOrderBy = [{ isFeatured: 'desc' }, { featuredPriority: 'desc' }];
+        
         // Geospatial Logic - Prisma Native RAW Haversine
         if (lat && lng) {
             const latitude = parseFloat(lat);
@@ -90,22 +207,31 @@ class HotelService {
 
             const validIds = nearbyHotels.map(h => h.id);
             whereClause.id = { in: validIds };
-
-            return prisma.hotel.findMany({
-                where: whereClause,
-                include: { amenities: { include: { amenity: true } }, images: true }
-            });
         }
 
-        // Default flat lookup if no Coordinates
-        return prisma.hotel.findMany({
+        // Default flat lookup (or filtered by Geolocation IDs)
+        const hotels = await prisma.hotel.findMany({
             where: whereClause,
-            include: { amenities: { include: { amenity: true } }, images: true },
+            include: includeRelations,
             take: parseInt(limit),
             skip: parseInt(skip),
-            orderBy: [{ isFeatured: 'desc' }, { featuredPriority: 'desc' }] // Feature prioritization
+            orderBy: prismaOrderBy
         });
+
+        const processed = hotels.map(h => hotelMapper.toHotelDTO(h));
+
+        // Complex In-memory Sorting
+        if (sortBy === 'price_asc') {
+            processed.sort((a, b) => a.startingPrice - b.startingPrice);
+        } else if (sortBy === 'price_desc') {
+            processed.sort((a, b) => b.startingPrice - a.startingPrice);
+        } else if (sortBy === 'rating_desc') {
+            processed.sort((a, b) => b.rating - a.rating);
+        }
+
+        return processed;
     }
+
 
     async findByVendor(vendorId) {
         const hotels = await prisma.hotel.findMany({
@@ -116,25 +242,13 @@ class HotelService {
                 images: true,
                 reviews: {
                     where: { status: 'approved' },
-                     select: { rating: true }
+                    select: { rating: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
         });
 
-        return hotels.map(hotel => {
-            const reviewCount = hotel.reviews ? hotel.reviews.length : 0;
-            const rating = reviewCount > 0
-                ? hotel.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
-                : 0;
-
-            const { reviews, ...hotelData } = hotel;
-            return {
-                ...hotelData,
-                reviewCount,
-                rating
-            };
-        });
+        return hotels.map(hotel => hotelMapper.toHotelDTO(hotel));
     }
 
     async findRoomsByVendor(vendorId) {
@@ -175,27 +289,53 @@ class HotelService {
             where: { id: hotelId },
             include: {
                 amenities: { include: { amenity: true } },
-                roomTypes: true,
+                roomTypes: {
+                    include: {
+                        images: true,
+                        roomAmenities: true,
+                        pricingList: {
+                            orderBy: { basePrice: 'asc' },
+                            take: 1
+                        }
+                    }
+                },
                 images: true,
                 dailyStats: {
                     orderBy: { date: 'desc' },
                     take: 7
+                },
+                nearbyPOIs: {
+                    include: {
+                        attraction: {
+                            select: {
+                                id: true,
+                                name: true,
+                                latitude: true,
+                                longitude: true,
+                                images: { take: 1 }
+                            }
+                        }
+                    },
+                    orderBy: { order: 'asc' }
                 }
             }
         });
 
         if (!hotel) throw ApiError.notFound('Hotel not found');
-        return hotel;
+
+        return hotelMapper.toHotelDTO(hotel);
     }
 
     async update(hotelId, vendorId, data, userRole) {
-        const hotel = await this.findById(hotelId);
+        // We fetch raw record to perform ownership check before it gets stripped by DTO mapping
+        const rawHotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+        if (!rawHotel) throw ApiError.notFound('Hotel not found');
 
-        if (hotel.ownerId !== vendorId && userRole !== 'admin') {
+        if (rawHotel.ownerId !== vendorId && userRole !== 'admin') {
             throw ApiError.forbidden('Not authorized to access this Hotel');
         }
 
-        const { amenities, images, ...rest } = data;
+        const { amenities, images, nearbyPOIs, ...rest } = data;
 
         // Disconnect old amenities, re-map new ones using connectOrCreate
         let amenitiesUpdate = undefined;
@@ -214,6 +354,20 @@ class HotelService {
             };
         }
 
+        // Handle Nearby POIs Update
+        let poiUpdate = undefined;
+        if (nearbyPOIs) {
+            await prisma.hotelPOI.deleteMany({ where: { hotelId } });
+            poiUpdate = {
+                create: nearbyPOIs.map(poi => ({
+                    attractionId: poi.attractionId,
+                    distance: poi.distance,
+                    description: poi.description,
+                    order: poi.order || 0
+                }))
+            };
+        }
+
         let imagesUpdate = undefined;
         if (images) {
             await prisma.hotelImage.deleteMany({ where: { hotelId } });
@@ -222,20 +376,106 @@ class HotelService {
             };
         }
 
-        return prisma.hotel.update({
+        const updated = await prisma.hotel.update({
             where: { id: hotelId },
-            data: { ...rest, amenities: amenitiesUpdate, images: imagesUpdate },
-            include: { amenities: { include: { amenity: true } }, images: true }
+            data: { 
+                ...rest, 
+                amenities: amenitiesUpdate, 
+                images: imagesUpdate,
+                nearbyPOIs: poiUpdate
+            },
+            include: { 
+                amenities: { include: { amenity: true } }, 
+                images: true,
+                nearbyPOIs: { include: { attraction: true } }
+            }
         });
+
+        return hotelMapper.toHotelDTO(updated);
     }
 
     async delete(hotelId, vendorId, userRole) {
-        const hotel = await this.findById(hotelId);
-        if (hotel.ownerId !== vendorId && userRole !== 'admin') {
+        const rawHotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+        if (!rawHotel) throw ApiError.notFound('Hotel not found');
+
+        if (rawHotel.ownerId !== vendorId && userRole !== 'admin') {
             throw ApiError.forbidden('Not authorized');
         }
 
         return prisma.hotel.delete({ where: { id: hotelId } });
+    }
+
+    async getAnalytics(vendorId, query) {
+        const { startDate, endDate } = query;
+        const start = startDate ? new Date(startDate) : new Date(new Date().setDate(new Date().getDate() - 30));
+        const end = endDate ? new Date(endDate) : new Date();
+
+        // 1. Overall Stats - Revenue and confirmed booking count
+        const stats = await prisma.booking.aggregate({
+            where: {
+                vendorId,
+                bookingType: 'hotel',
+                status: { in: ['confirmed', 'completed'] },
+                createdAt: { gte: start, lte: end }
+            },
+            _sum: { totalPrice: true },
+            _count: { id: true }
+        });
+
+        // 2. Cancellation Stats - Insight into lost business
+        const cancellations = await prisma.booking.count({
+            where: {
+                vendorId,
+                bookingType: 'hotel',
+                status: 'cancelled',
+                createdAt: { gte: start, lte: end }
+            }
+        });
+
+        // 3. Daily Revenue Trend - For chart visualization
+        const rawRevenueTrend = await prisma.booking.groupBy({
+            by: ['createdAt'],
+            where: {
+                vendorId,
+                status: { in: ['confirmed', 'completed'] },
+                createdAt: { gte: start, lte: end }
+            },
+            _sum: { totalPrice: true },
+            orderBy: { createdAt: 'asc' }
+        });
+
+        // 4. Occupancy Rate - Core KPI for hospitality
+        const occupancyData = await prisma.roomAvailability.aggregate({
+            where: {
+                roomType: { hotel: { ownerId: vendorId } },
+                date: { gte: start, lte: end }
+            },
+            _avg: {
+                availableRooms: true,
+                totalRooms: true
+            }
+        });
+
+        const totalRoomsAvg = occupancyData._avg.totalRooms || 0;
+        const availableRoomsAvg = occupancyData._avg.availableRooms || 0;
+        const occupancyRate = totalRoomsAvg > 0 
+            ? ((totalRoomsAvg - availableRoomsAvg) / totalRoomsAvg) * 100 
+            : 0;
+
+        return {
+            summary: {
+                totalRevenue: stats._sum.totalPrice || 0,
+                bookingCount: stats._count.id || 0,
+                cancellationCount: cancellations,
+                occupancyRate: Math.round(occupancyRate * 10) / 10
+            },
+            trends: {
+                revenue: rawRevenueTrend.map(t => ({
+                    date: t.createdAt.toISOString().split('T')[0],
+                    amount: t._sum.totalPrice
+                }))
+            }
+        };
     }
 }
 

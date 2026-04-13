@@ -29,7 +29,7 @@ const RIDE_STATES = {
 
 class TransferService {
     async createTransfer(userId, data) {
-        let { pickupLocation, dropoffLocation, distanceKm, durationMin, vehicleCategory } = data;
+        let { pickupLocation, dropoffLocation, waypoints, distanceKm, durationMin, vehicleCategory } = data;
 
         // Fallback Haversine Calculation if DistanceKm is not provided by Frontend OSRM Router
         if (!distanceKm && pickupLocation && dropoffLocation) {
@@ -59,6 +59,7 @@ class TransferService {
             passengerId: userId,
             pickupLocation: pickupLocation,
             dropoffLocation: dropoffLocation,
+            waypoints: waypoints,
             distanceKm: distanceKm,
             durationMin: durationMin,
             price: data.price || price,
@@ -93,6 +94,10 @@ class TransferService {
 
     async getDriverTransfers(driverId, query) {
         return transferRepository.findAll({ ...query, driverId });
+    }
+
+    async getAllTransfers(query) {
+        return transferRepository.findAll(query);
     }
 
     async updateStatus(id, status, userId) {

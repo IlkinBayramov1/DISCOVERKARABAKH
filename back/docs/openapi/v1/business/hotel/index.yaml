@@ -1,0 +1,78 @@
+openapi: 3.0.0
+info:
+  title: Hotel Module API
+  version: 1.0.0
+  description: API for managing Hotels, Room Types, and Availability. Split into modular files for better maintainability.
+
+# Shared Constants (Source of Truth)
+x-constants:
+  $ref: './constants.yaml'
+
+# Domain Events
+x-events:
+  $ref: './events.yaml'
+
+paths:
+  # Merging paths from sub-modules
+  /hotels:
+    $ref: './hotel.yaml#/paths/~1hotels'
+  /hotels/validate-coupon:
+    $ref: './hotel.yaml#/paths/~1hotels~1validate-coupon'
+  /hotels/vendor/my-hotels:
+    $ref: './hotel.yaml#/paths/~1hotels~1vendor~1my-hotels'
+  /hotels/vendor/my-rooms:
+    $ref: './hotel.yaml#/paths/~1hotels~1vendor~1my-rooms'
+  /hotels/vendor/reviews:
+    $ref: './hotel.yaml#/paths/~1hotels~1vendor~1reviews'
+  /hotels/{id}:
+    $ref: './hotel.yaml#/paths/~1hotels~1{id}'
+  /hotels/{hotelId}/calendar:
+    $ref: './calendar.yaml#/paths/~1hotels~1{hotelId}~1calendar'
+  /hotels/{hotelId}/calendar/bulk-update:
+    $ref: './calendar.yaml#/paths/~1hotels~1{hotelId}~1calendar~1bulk-update'
+  /hotels/{hotelId}/notes:
+    $ref: './calendar.yaml#/paths/~1hotels~1{hotelId}~1notes'
+  /hotels/fraud/blacklist:
+    $ref: './fraud.yaml#/paths/~1hotels~1fraud~1blacklist'
+  /hotels/fraud/blacklist/risk-logs:
+    $ref: './fraud.yaml#/paths/~1hotels~1fraud~1blacklist~1risk-logs'
+  /hotels/fraud/blacklist/{id}:
+    $ref: './fraud.yaml#/paths/~1hotels~1fraud~1blacklist~1{id}'
+  /hotels/analytics:
+    $ref: './analytics.yaml#/paths/~1hotels~1analytics'
+  /hotels/{hotelId}/pricing-rules:
+    $ref: './revenue.yaml#/paths/~1hotels~1{hotelId}~1pricing-rules'
+  /hotels/{hotelId}/rooms:
+    $ref: './room.yaml#/paths/~1hotels~1{hotelId}~1rooms'
+  /hotels/{hotelId}/rooms/{roomId}:
+    $ref: './room.yaml#/paths/~1hotels~1{hotelId}~1rooms~1{roomId}'
+  /hotels/{hotelId}/rooms/physical-rooms:
+    $ref: './room_management.yaml#/paths/~1hotels~1{hotelId}~1rooms~1physical-rooms'
+  /hotels/{hotelId}/rooms/physical-rooms/{roomId}:
+    $ref: './room_management.yaml#/paths/~1hotels~1{hotelId}~1rooms~1physical-rooms~1{roomId}'
+  /hotels/{hotelId}/booking/calculate-price:
+    $ref: './booking.yaml#/paths/~1hotels~1{hotelId}~1booking~1calculate-price'
+  /hotels/{hotelId}/rooms/{roomId}/lock:
+    $ref: './booking.yaml#/paths/~1hotels~1{hotelId}~1rooms~1{roomId}~1lock'
+  /hotels/{hotelId}/rooms/locks/{lockId}:
+    $ref: './booking.yaml#/paths/~1hotels~1{hotelId}~1rooms~1locks~1{lockId}'
+
+components:
+  schemas:
+    # Most schemas are in schemas.yaml
+    BookingItem:
+      $ref: './schemas.yaml#/components/schemas/BookingItem'
+    PricingCalculationRequest:
+      $ref: './schemas.yaml#/components/schemas/PricingCalculationRequest'
+    PricingCalculationResponse:
+      $ref: './schemas.yaml#/components/schemas/PricingCalculationResponse'
+    InventoryLockRequest:
+      $ref: './schemas.yaml#/components/schemas/InventoryLockRequest'
+    InventoryLock:
+      $ref: './schemas.yaml#/components/schemas/InventoryLock'
+    PricingRule:
+      $ref: './revenue.yaml#/components/schemas/PricingRule'
+    PricingRuleCreate:
+      $ref: './revenue.yaml#/components/schemas/PricingRuleCreate'
+    PricingRuleUpdate:
+      $ref: './revenue.yaml#/components/schemas/PricingRuleUpdate'

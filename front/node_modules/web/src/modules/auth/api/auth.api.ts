@@ -11,12 +11,26 @@ export interface IUserRegisterPayload {
     role: 'tourist' | 'resident';
 }
 
+export interface IUser {
+    _id: string;
+    email: string;
+    role: 'tourist' | 'resident' | 'driver' | 'admin';
+    name?: string;
+    avatar?: string;
+}
+
 export interface IAuthResponse {
     success: boolean;
     data?: {
         token: string;
-        user: any;
+        user: IUser;
     };
+    message?: string;
+}
+
+export interface IGetMeResponse {
+    success: boolean;
+    data?: IUser;
     message?: string;
 }
 
@@ -28,6 +42,11 @@ export const authApi = {
 
     registerUser: async (payload: IUserRegisterPayload): Promise<IAuthResponse> => {
         const response = await httpClient.post<IAuthResponse>('/auth/register', payload);
+        return response.data;
+    },
+
+    getMe: async (): Promise<IGetMeResponse> => {
+        const response = await httpClient.get<IGetMeResponse>('/auth/me');
         return response.data;
     }
 };

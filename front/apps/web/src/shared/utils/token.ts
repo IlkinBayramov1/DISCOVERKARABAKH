@@ -12,3 +12,15 @@ export const setToken = (token: string): void => {
 export const removeToken = (): void => {
     localStorage.removeItem('web_token');
 };
+
+export const getUserRole = (): string | null => {
+    const token = getToken();
+    if (!token) return null;
+    try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        return decoded.role || null;
+    } catch (e) {
+        return null; // Invalid token or no role
+    }
+};

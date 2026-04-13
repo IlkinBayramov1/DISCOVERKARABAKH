@@ -10,6 +10,9 @@ class UserRepository {
   async findByEmail(email) {
     return prisma.user.findUnique({
       where: { email },
+      include: {
+        vendorProfile: true, // Needed for auth routing based on category
+      }
     });
   }
 

@@ -1,5 +1,15 @@
 import prisma from '../../../../config/db.js';
-import { hotelEvents } from '../hotel.events.js';
+import { 
+    hotelEvents, 
+    PRICING_UPDATED, 
+    AVAILABILITY_UPDATED, 
+    ROOM_TYPE_CREATED, 
+    ROOM_TYPE_UPDATED, 
+    ROOM_TYPE_DELETED,
+    RESERVATION_CREATED,
+    RESERVATION_CANCELLED,
+    REVIEW_CREATED
+} from '../hotel.events.js';
 
 class SnapshotUpdaterService {
 
@@ -9,14 +19,46 @@ class SnapshotUpdaterService {
 
     _registerListeners() {
         // Triggered post Booking OR Cancel to recalculate instantaneous Availabilities
-        hotelEvents.on('RESERVATION_CREATED', this._handleInventoryChange.bind(this));
-        hotelEvents.on('RESERVATION_CANCELLED', this._handleInventoryChange.bind(this));
+        hotelEvents.on(RESERVATION_CREATED, this._handleInventoryChange.bind(this));
+        hotelEvents.on(RESERVATION_CANCELLED, this._handleInventoryChange.bind(this));
 
         // Triggered upon successful Review creation
-        hotelEvents.on('REVIEW_CREATED', this._handleReviewChange.bind(this));
+        hotelEvents.on(REVIEW_CREATED, this._handleReviewChange.bind(this));
+
+        // Real-time Pricing and Availability Sync
+        hotelEvents.on(PRICING_UPDATED, this._handlePricingChange.bind(this));
+        hotelEvents.on(AVAILABILITY_UPDATED, this._handleInventoryChange.bind(this));
+
+        // Room Type lifecycle
+        hotelEvents.on(ROOM_TYPE_CREATED, this._handleInventoryChange.bind(this));
+        hotelEvents.on(ROOM_TYPE_UPDATED, this._handleInventoryChange.bind(this));
+        hotelEvents.on(ROOM_TYPE_DELETED, this._handleInventoryChange.bind(this));
 
         // Cron-triggered full catalog flush
         hotelEvents.on('NIGHTLY_CATALOG_SYNC', this._fullCatalogSync.bind(this));
+    }
+
+    /**
+     * Recomputes `minPrice` dynamically when pricing overrides are updated.
+     */
+    async _handlePricingChange({ hotelId }) {
+        if (!hotelId) return;
+
+        try {
+            const pricing = await prisma.dailyPricing.aggregate({
+                where: {
+                    roomType: { hotelId: hotelId },
+                    date: { gte: new Date() } 
+                },
+                _min: { basePrice: true }
+            });
+
+            const minPrice = pricing._min.basePrice || 0;
+            await this._mergeSnapshot(hotelId, { minPrice });
+
+        } catch (error) {
+            console.error(`[Snapshot Updater] Error processing Pricing Sync for Hotel: ${hotelId}`, error);
+        }
     }
 
     /**

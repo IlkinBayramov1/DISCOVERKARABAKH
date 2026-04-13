@@ -8,7 +8,10 @@ const router = Router();
 router.use(authMiddleware);
 
 router.post('/', bookingController.create);
+router.post('/preview', bookingController.preview);
+router.post('/lock', bookingController.lock);
 router.get('/my', bookingController.getMine);
+router.get('/my/:id', bookingController.getById);
 router.patch('/:id/cancel', bookingController.cancel);
 
 // Vendor viewing all bookings mapped to their physical entities

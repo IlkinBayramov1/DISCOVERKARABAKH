@@ -101,6 +101,8 @@ export default function VendorRegister() {
                                 <option value="tour">Tours & Guide</option>
                                 <option value="transport">Transportation</option>
                                 <option value="restaurant">Restaurant & Food</option>
+                                <option value="attraction">Attractions & Fun</option>
+                                <option value="event">Events & Festivals</option>
                             </select>
                         </div>
 

@@ -1,0 +1,470 @@
+components:
+  schemas:
+    RoomCalendar:
+      type: object
+      properties:
+        roomTypeId: { type: string }
+        roomTypeName: { type: string }
+        totalInventory: { type: number }
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string, format: date }
+              basePrice: { type: number, nullable: true }
+              minStay: { type: number }
+              maxStay: { type: number, nullable: true }
+              isStopped: { type: boolean }
+              availableRooms: 
+                type: number
+                description: "Satışda olan otaq sayı. Düstur: Toplam - (Bron edilmiş + Müvəqqəti dondurulmuş)"
+              reservedRooms: { type: number }
+              occupancyRate: { type: number, description: "Doluluq faizi (0-100)" }
+              isLowInventory: { type: boolean, description: "Kritik hədd (otaq sayı 1 və ya daha az qaldıqda)" }
+              closedToArrival: { type: boolean, description: "Girişə bağlıdır (CTA)" }
+              closedToDeparture: { type: boolean, description: "Çıxışa bağlıdır (CTD)" }
+              activeRestrictions:
+                type: array
+                items:
+                  type: string
+                  enum: [SS, CTA, CTD, MLOS]
+                description: "Aktiv məhdudiyyətlər: SS (Stop Sales), CTA (Closed to Arrival), CTD (Closed to Departure), MLOS (Min length of stay)"
+
+    CalendarBulkUpdate:
+      type: object
+      required: [roomTypeId, startDate, endDate]
+      properties:
+        roomTypeId: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        days: 
+          type: array
+          items: 
+            type: string
+            enum: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+          description: "Yalnız seçilmiş günləri yeniləmək üçün filtr (məsələn, yalnız həftə sonları)"
+        basePrice: { type: number, description: "Sabit qiymət təyin etmək üçün" }
+        priceAdjustment:
+          type: object
+          properties:
+            type: { type: string, enum: [percentage, fixed] }
+            value: { type: number, description: "Artım və ya azalma miqdarı (məs: 10 faiz və ya 20 AZN)" }
+          description: "Mövcud qiymətlərə nisbətən toplu düzəliş etmək üçün"
+        availableRooms: { type: number }
+        minStay: { type: number }
+        maxStay: { type: number, nullable: true }
+        isStopped: { type: boolean }
+        closedToArrival: { type: boolean }
+        closedToDeparture: { type: boolean }
+
+    CalendarNote:
+      type: object
+      properties:
+        id: { type: string }
+        date: { type: string, format: date }
+        note: { type: string }
+        type: { type: string, enum: [info, warning, success, event] }
+
+    CalendarNoteCreate:
+      type: object
+      required: [date, note]
+      properties:
+        date: { type: string, format: date }
+        note: { type: string }
+        type: { type: string, enum: [info, warning, success, event] }
+
+    Blacklist:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [email, phone, ip] }
+        value: { type: string }
+        reason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    BlacklistCreate:
+      type: object
+      required: [type, value]
+      properties:
+        type: { type: string, enum: [email, phone, ip] }
+        value: { type: string }
+        reason: { type: string }
+
+    FraudRiskLog:
+      type: object
+      properties:
+        id: { type: string }
+        action: { type: string, example: "risk_evaluation" }
+        details:
+          type: object
+          properties:
+            score: { type: number }
+            reasons: { type: array, items: { type: string } }
+            isApproved: { type: boolean }
+        context: { type: object }
+        createdAt: { type: string, format: date-time }
+
+    Hotel:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string, nullable: true }
+        description: { type: string }
+        starRating: { type: integer, nullable: true }
+        propertyType: { type: string }
+        city: { type: string, nullable: true }
+        address: { type: string }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        phone: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        status: { type: string }
+        checkInTime: { type: string, nullable: true, example: "14:00" }
+        checkOutTime: { type: string, nullable: true, example: "12:00" }
+        cancellationPolicy: { type: string, nullable: true }
+        childPolicy: { type: string, nullable: true }
+        petPolicy: { type: string, nullable: true }
+        reviewCount: { type: integer }
+        rating: { type: number }
+        startingPrice: { type: number }
+        nearbyPOIs:
+          type: array
+          items: { $ref: '#/components/schemas/HotelPOI' }
+        amenities: 
+          type: array
+          items:
+            type: object
+            properties:
+              amenity:
+                type: object
+                properties:
+                  name: { type: string }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string }
+              order: { type: integer }
+        roomTypes:
+          type: array
+          items: { type: object, description: "Detailed room types" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    HotelPOI:
+      type: object
+      properties:
+        id: { type: string }
+        distance: { type: number, description: "Distance in km" }
+        calculatedDistance: { type: number, description: "System calculated distance" }
+        description: { type: string, nullable: true }
+        order: { type: integer }
+        attraction:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+            latitude: { type: number }
+            longitude: { type: number }
+
+    HotelPOICreate:
+      type: object
+      required: [attractionId]
+      properties:
+        attractionId: { type: string }
+        distance: { type: number, description: "Optional manual distance" }
+        description: { type: string }
+        order: { type: integer }
+
+    HotelCreate:
+      type: object
+      required: [name, description, propertyType, address, ownerId]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        propertyType: { type: string, default: "hotel" }
+        starRating: { type: integer, minimum: 1, maximum: 5 }
+        city: { type: string }
+        address: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        phone: { type: string }
+        email: { type: string }
+        checkInTime: { type: string, example: "14:00" }
+        checkOutTime: { type: string, example: "12:00" }
+        cancellationPolicy: { type: string }
+        childPolicy: { type: string }
+        petPolicy: { type: string }
+        amenities: { type: array, items: { type: string }, example: ["WiFi", "Pool"] }
+        images: { type: array, items: { type: string } }
+        nearbyPOIs: { type: array, items: { $ref: '#/components/schemas/HotelPOICreate' } }
+
+    HotelUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        propertyType: { type: string }
+        starRating: { type: integer, minimum: 1, maximum: 5 }
+        city: { type: string }
+        address: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        phone: { type: string }
+        email: { type: string }
+        checkInTime: { type: string }
+        checkOutTime: { type: string }
+        cancellationPolicy: { type: string }
+        childPolicy: { type: string }
+        petPolicy: { type: string }
+        status: { type: string, enum: [pending, active, rejected, inactive] }
+        amenities: { type: array, items: { type: string } }
+        images: { type: array, items: { type: string } }
+        nearbyPOIs: { type: array, items: { $ref: '#/components/schemas/HotelPOICreate' } }
+
+    Coupon:
+      type: object
+      properties:
+        id: { type: string }
+        code: { type: string, example: "KARABAKH2024" }
+        name: { type: string }
+        discountType: { type: string, enum: [percentage, fixed] }
+        discountValue: { type: number }
+        validFrom: { type: string, format: date-time }
+        validTo: { type: string, format: date-time }
+        minBookingValue: { type: number }
+        maxUses: { type: integer }
+        usedCount: { type: integer }
+        isActive: { type: boolean }
+
+    CouponValidation:
+      type: object
+      properties:
+        isValid: { type: boolean }
+        code: { type: string }
+        name: { type: string }
+        discountAmount: { type: number }
+        discountType: { type: string }
+        discountValue: { type: number }
+
+    TaxRule:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string, enum: [percentage, fixed_per_stay, fixed_per_night, fixed_per_person_per_night] }
+        value: { type: number }
+        hotelId: { type: string, nullable: true }
+
+    TaxRuleCreate:
+      type: object
+      required: [name, type, value]
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [percentage, fixed_per_stay, fixed_per_night, fixed_per_person_per_night] }
+        value: { type: number }
+
+    PhysicalRoom:
+      type: object
+      properties:
+        id: { type: string }
+        roomNumber: { type: string }
+        floor: { type: string, nullable: true }
+        status: { type: string, enum: [AVAILABLE, DIRTY, CLEANING, OUT_OF_ORDER], description: "Otağın cari vəziyyəti. 'AVAILABLE' edildikdə lastCleanedAt avtomatik yenilənir." }
+        housekeepingNote: { type: string, nullable: true }
+        lastCleanedAt: { type: string, format: date-time, nullable: true, description: "Otağın sonuncu dəfə nə vaxt təmizləndiyi (Avtomatik qeyd olunur)" }
+        roomTypeId: { type: string }
+        roomType: { $ref: '#/components/schemas/RoomType' }
+
+    PhysicalRoomUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [AVAILABLE, DIRTY, CLEANING, OUT_OF_ORDER] }
+        housekeepingNote: { type: string, nullable: true }
+        floor: { type: string, nullable: true }
+        roomNumber: { type: string }
+
+    RoomAmenity:
+      type: object
+      properties:
+        amenityName: { type: string }
+        category: { type: string, example: "Media" }
+
+    RoomType:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        baseOccupancy: { type: integer }
+        maxAdults: { type: integer }
+        maxChildren: { type: integer }
+        totalInventory: { type: integer }
+        roomAmenities:
+          type: array
+          items: { $ref: '#/components/schemas/RoomAmenity' }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string }
+              order: { type: integer }
+
+    RoomTypeCreate:
+      type: object
+      required: [name, baseOccupancy, maxAdults, totalInventory]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        baseOccupancy: { type: integer }
+        maxAdults: { type: integer }
+        maxChildren: { type: integer }
+        totalInventory: { type: integer }
+        amenities:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              category: { type: string }
+        images: { type: array, items: { type: string } }
+
+    RoomTypeUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        baseOccupancy: { type: integer }
+        maxAdults: { type: integer }
+        maxChildren: { type: integer }
+        totalInventory: { type: integer }
+        amenities:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              category: { type: string }
+        images: { type: array, items: { type: string } }
+
+    RoomReview:
+      type: object
+      properties:
+        id: { type: string }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        user:
+          type: object
+          properties:
+            email: { type: string }
+
+    RoomReviewCreate:
+      type: object
+      required: [rating]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string }
+
+    HotelSearchSnapshot:
+      type: object
+      properties:
+        hotelId: { type: string }
+        minPrice: { type: number }
+        reviewScore: { type: number }
+        availableToday: { type: boolean }
+        popularity: { type: integer }
+        updatedAt: { type: string, format: date-time }
+
+    InventoryLock:
+      type: object
+      properties:
+        id: { type: string }
+        roomTypeId: { type: string }
+        userId: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        expiresAt: { type: string, format: date-time }
+
+    PricingCalculationResponse:
+      type: object
+      properties:
+        grossTotal: { type: number, description: "Bütün endirimlərdən və vergilərdən əvvəlki cəmi məbləğ" }
+        discountAmount: { type: number, description: "Tətbiq olunmuş endirim məbləği" }
+        discountDetails:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            code: { type: string }
+            name: { type: string }
+        totalAfterDiscount: { type: number, description: "Endirimdən sonrakı, vergidən əvvəlki məbləğ" }
+        taxes:
+          type: array
+          items: { $ref: '#/components/schemas/TaxItem' }
+        totalTaxes: { type: number, description: "Bütün tətbiq olunmuş vergilərin cəmi" }
+        exactTotal: { type: number, description: "Ödəniləcək yekun məbləğ (Total + Taxes)" }
+        breakdowns:
+          type: array
+          items: { $ref: '#/components/schemas/RoomStayBreakdown' }
+
+    TaxItem:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string }
+        value: { type: number }
+        amount: { type: number, description: "Bu vergi növü üzrə hesablanmış konkret məbləğ" }
+
+    RoomStayBreakdown:
+      type: object
+      properties:
+        roomTypeId: { type: string }
+        subtotal: { type: number }
+        log:
+          type: array
+          items: { $ref: '#/components/schemas/NightlyPriceLog' }
+
+    NightlyPriceLog:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        originalPrice: { type: number }
+        finalPrice: { type: number }
+        isAdjusted: { type: boolean, description: "Qiymətin dinamik qaydalarla dəyişdirilib-dəyişdirilmədiyi" }
+        occupancyAtBooking: { type: number }
+        currency: { type: string, default: "AZN" }
+
+    PricingCalculationRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/BookingItem' }
+        couponCode: { type: string, nullable: true }
+
+    BookingItem:
+      type: object
+      required: [roomTypeId, checkIn, checkOut]
+      properties:
+        roomTypeId: { type: string }
+        ratePlanId: { type: string, nullable: true }
+        checkIn: { type: string, format: date }
+        checkOut: { type: string, format: date }
+        adults: { type: integer, default: 2 }
+        children: { type: integer, default: 0 }
+
+    InventoryLockRequest:
+      type: object
+      required: [roomTypeId, startDate, endDate]
+      properties:
+        roomTypeId: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+

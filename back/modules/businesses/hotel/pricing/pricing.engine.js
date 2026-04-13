@@ -41,6 +41,21 @@ export class PricingEngine {
                 orderBy: { date: 'asc' }
             });
 
+            // Load availability for occupancy calculation
+            const availabilityMatrix = await prisma.roomAvailability.findMany({
+                where: {
+                    roomTypeId: item.roomTypeId,
+                    date: {
+                        gte: checkInDate,
+                        lt: checkOutDate
+                    }
+                }
+            });
+
+            // Load active Pricing Rules for this Hotel/Room
+            const { revenueService } = await import('./revenue.service.js');
+            const activeRules = await revenueService.getRules(data.entityId, item.roomTypeId);
+
             if (pricingMatrix.length !== totalNights) {
                 throw ApiError.badRequest(`Missing pricing sequence rules for one or more requested dates.`);
             }
@@ -51,6 +66,16 @@ export class PricingEngine {
             // Sequential Iteration Validation for MinStays / Arrival Blocks
             for (let i = 0; i < pricingMatrix.length; i++) {
                 const dayRules = pricingMatrix[i];
+                
+                // Find occupancy data for this specific day
+                const dayAvailability = availabilityMatrix.find(a => 
+                    a.date.toISOString().split('T')[0] === dayRules.date.toISOString().split('T')[0]
+                );
+                
+                let currentOccupancy = 0;
+                if (dayAvailability && dayAvailability.totalRooms > 0) {
+                    currentOccupancy = (dayAvailability.reservedRooms / dayAvailability.totalRooms) * 100;
+                }
 
                 if (i === 0 && dayRules.closedToArrival) {
                     // Only the exact check-in date is evaluated for closedToArrival
@@ -72,11 +97,18 @@ export class PricingEngine {
 
                 // Child / Guest Surcharge Logic placeholder depending on RatePlan limits (Future Scope)
 
-                itemTotal += dayRules.basePrice;
+                // Apply Revenue Management Rules
+                const { revenueService: revSvc } = await import('./revenue.service.js');
+                const finalPrice = revSvc.applyRules(dayRules.basePrice, activeRules, dayRules.date, currentOccupancy);
+
+                itemTotal += finalPrice;
 
                 itemNightlyLog.push({
                     date: dayRules.date,
-                    basePrice: dayRules.basePrice,
+                    originalPrice: dayRules.basePrice,
+                    finalPrice: finalPrice,
+                    isAdjusted: finalPrice !== dayRules.basePrice,
+                    occupancyAtBooking: Math.round(currentOccupancy * 10) / 10,
                     currency: dayRules.currency || 'AZN'
                 });
             }
@@ -90,8 +122,19 @@ export class PricingEngine {
             });
         }
 
+        // Handle Coupon/Promotion Logic
+        let discountAmount = 0;
+        let appliedPromotion = null;
+        if (data.couponCode) {
+            const { promotionService } = await import('./promotion.service.js');
+            appliedPromotion = await promotionService.validateCoupon(data.couponCode, grossTotal, data.entityId);
+            discountAmount = promotionService.calculateDiscount(grossTotal, appliedPromotion);
+        }
+
+        const totalAfterDiscount = Math.max(0, grossTotal - discountAmount);
+
         // Apply Global or Hotel bounded Taxes
-        const hotelId = data.entityId; // Inherited globally from Booking Validation context
+        const hotelId = data.entityId; 
         const applicableTaxes = await prisma.taxRule.findMany({
             where: {
                 OR: [
@@ -101,24 +144,52 @@ export class PricingEngine {
             }
         });
 
+        // Get total guest count and nights for specific tax types
+        const totalGuests = data.items.reduce((sum, item) => sum + (item.adults || 0) + (item.children || 0), 0);
+        const totalNightsAcrossRooms = data.items.reduce((sum, item) => {
+            const start = new Date(item.checkIn);
+            const end = new Date(item.checkOut);
+            return sum + Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        }, 0);
+
         let totalTaxes = 0;
         const mappedTaxes = applicableTaxes.map(tax => {
             let taxAmount = 0;
-            if (tax.type === 'percentage') {
-                taxAmount = grossTotal * (tax.value / 100);
-            } else if (tax.type === 'fixed') {
-                taxAmount = tax.value; // Applied once per reservation currently
+            const type = tax.type.toLowerCase();
+
+            if (type === 'percentage') {
+                taxAmount = totalAfterDiscount * (tax.value / 100);
+            } else if (type === 'fixed_per_stay' || type === 'fixed') {
+                taxAmount = tax.value; 
+            } else if (type === 'fixed_per_night') {
+                taxAmount = tax.value * totalNightsAcrossRooms;
+            } else if (type === 'fixed_per_person_per_night') {
+                taxAmount = tax.value * totalGuests * totalNightsAcrossRooms;
             }
+
             totalTaxes += taxAmount;
-            return { name: tax.name, amount: taxAmount };
+            return { 
+                name: tax.name, 
+                type: tax.type,
+                value: tax.value,
+                amount: Math.round(taxAmount * 100) / 100 
+            };
         });
 
-        const exactTotal = grossTotal + totalTaxes;
+        const exactTotal = Math.round((totalAfterDiscount + totalTaxes) * 100) / 100;
 
         return {
             grossTotal,
-            exactTotal,
+            discountAmount,
+            discountDetails: appliedPromotion ? {
+                id: appliedPromotion.id,
+                code: appliedPromotion.code,
+                name: appliedPromotion.name
+            } : null,
+            totalAfterDiscount,
             taxes: mappedTaxes,
+            totalTaxes: Math.round(totalTaxes * 100) / 100,
+            exactTotal,
             breakdowns: nightlyBreakdowns
         };
     }

@@ -1,0 +1,264 @@
+/* TourReviews.css */
+/* Modern, Clean & Professional Tour Reviews Dashboard Styles */
+
+/* ============================================
+   CSS VARIABLES (Design Tokens)
+   ============================================ */
+:root {
+  --primary: #0f172a;
+  --primary-light: #1e293b;
+  --primary-rgb: 15, 23, 42;
+  
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --accent-rgb: 245, 158, 11;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  
+  --bg-body: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --bg-border: #e2e8f0;
+  
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+}
+
+/* ============================================
+   DASHBOARD CONTAINER
+   ============================================ */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+}
+
+/* ============================================
+   DASHBOARD HEADER
+   ============================================ */
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ============================================
+   GLASSMORPHISM CARD
+   ============================================ */
+.glassmorphism-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem;
+  text-align: center;
+  margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.glassmorphism-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.glassmorphism-card:hover::before {
+  opacity: 1;
+}
+
+/* Empty State Icon */
+.glassmorphism-card > svg:first-child {
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  opacity: 0.3;
+  transition: all var(--transition-normal);
+}
+
+.glassmorphism-card:hover > svg:first-child {
+  opacity: 0.6;
+  transform: scale(1.1);
+}
+
+/* Title */
+.glassmorphism-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 0.75rem 0;
+}
+
+/* Description */
+.glassmorphism-card > p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Rating Preview Section */
+.rating-preview {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px dashed var(--bg-border);
+}
+
+.star-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.star-row svg {
+  color: #e2e8f0;
+  transition: all var(--transition-fast);
+}
+
+.star-row svg:hover {
+  color: var(--accent-light);
+  transform: scale(1.2);
+}
+
+.rating-preview p {
+  color: var(--text-light);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1.5rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .glassmorphism-card {
+    padding: 2rem 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .glassmorphism-card h3 {
+    font-size: 1.25rem;
+  }
+  
+  .rating-preview {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .glassmorphism-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+  }
+  
+  .star-row svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.glassmorphism-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Star shimmer animation */
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.star-row svg {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.star-row svg:nth-child(1) { animation-delay: 0ms; }
+.star-row svg:nth-child(2) { animation-delay: 200ms; }
+.star-row svg:nth-child(3) { animation-delay: 400ms; }
+.star-row svg:nth-child(4) { animation-delay: 600ms; }
+.star-row svg:nth-child(5) { animation-delay: 800ms; }
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+.glassmorphism-card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .glassmorphism-card,
+  .star-row svg {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authApi, type ILoginCredentials } from '../api/auth.api';
-import { setToken } from '../../../shared/utils/token';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { LogIn } from 'lucide-react';
 import './Auth.css';
 
 export default function WebLogin() {
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = (location.state as any)?.from?.pathname;
+    const dest = from && from !== '/' ? from : '/hotels';
+
     const [formData, setFormData] = useState<ILoginCredentials>({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -17,10 +23,9 @@ export default function WebLogin() {
 
         try {
             const res = await authApi.login(formData);
-            if (res.success && res.data?.token) {
-                setToken(res.data.token);
-                // Trigger a hard reload to ensure layout state (like navbar user profile) updates
-                window.location.href = '/';
+            if (res.success && res.data?.token && res.data?.user) {
+                login(res.data.token, res.data.user);
+                navigate(dest, { replace: true });
             } else {
                 setError(res.message || 'Login failed');
             }
@@ -32,7 +37,7 @@ export default function WebLogin() {
     };
 
     return (
-        <div className="auth-container flex-align-center justify-center min-h-screen pb-20">
+        <div className="auth-container flex-align-center justify-center">
             <div className="auth-card glassmorphism p-8 max-w-md w-full">
                 <div className="text-center mb-6">
                     <div className="auth-icon-wrapper mx-auto mb-4 bg-primary-light text-primary">

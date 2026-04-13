@@ -1,4 +1,6 @@
 import { shipmentService } from './shipment.service.js';
+import { driverRepository } from '../../driver/driver.repository.js';
+import { ApiError } from '../../../../core/api.error.js';
 
 export const createShipment = async (req, res, next) => {
     try {
@@ -48,6 +50,30 @@ export const getShipment = async (req, res, next) => {
     try {
         const shipment = await shipmentService.getShipmentById(req.params.id);
         res.status(200).json({ success: true, data: shipment });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllShipments = async (req, res, next) => {
+    try {
+        const result = await shipmentService.getAllShipments(req.query);
+        res.status(200).json({ success: true, count: result.count, data: result.shipments });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getMyShipments = async (req, res, next) => {
+    try {
+        const driverProfile = await driverRepository.findByUserId(req.user.id);
+        if (!driverProfile) {
+            throw ApiError.notFound('Driver profile not found');
+        }
+        
+        // Fetch shipments assigned to this driver
+        const result = await shipmentService.getAllShipments({ driverId: driverProfile.id });
+        res.status(200).json({ success: true, count: result.count, data: result.shipments });
     } catch (error) {
         next(error);
     }

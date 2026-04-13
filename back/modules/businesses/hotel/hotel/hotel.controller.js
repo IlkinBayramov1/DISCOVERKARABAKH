@@ -73,6 +73,36 @@ class HotelController {
             next(error);
         }
     }
+
+    async getAnalytics(req, res, next) {
+        try {
+            const analytics = await hotelService.getAnalytics(req.user.id, req.query);
+            return successResponse(res, analytics);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async validateCoupon(req, res, next) {
+        try {
+            const { code, total, hotelId } = req.body;
+            const { promotionService } = await import('../pricing/promotion.service.js');
+            
+            const promo = await promotionService.validateCoupon(code, total, hotelId);
+            const discount = promotionService.calculateDiscount(total, promo);
+            
+            return successResponse(res, {
+                isValid: true,
+                code: promo.code,
+                name: promo.name,
+                discountAmount: discount,
+                discountType: promo.discountType,
+                discountValue: promo.discountValue
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const hotelController = new HotelController();

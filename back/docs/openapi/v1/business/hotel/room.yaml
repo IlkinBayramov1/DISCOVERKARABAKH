@@ -1,0 +1,129 @@
+paths:
+  /hotels/{hotelId}/rooms:
+    get:
+      summary: Get all room types for a specific hotel
+      tags: [Room Management]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of room types
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: './schemas.yaml#/components/schemas/RoomType' }
+    post:
+      summary: Create a new room type
+      tags: [Room Management]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/RoomTypeCreate' }
+      responses:
+        '201':
+          description: Room type created successfully
+
+  /hotels/{hotelId}/rooms/{roomId}:
+    put:
+      summary: Update a room type
+      tags: [Room Management]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/RoomTypeUpdate' }
+      responses:
+        '200':
+          description: Room type updated successfully
+    delete:
+      summary: Delete a room type
+      tags: [Room Management]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Room type deleted
+
+  /hotels/{hotelId}/rooms/{roomId}/reviews:
+    get:
+      summary: Get all reviews for a room type
+      tags: [Room Management]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items: { $ref: './schemas.yaml#/components/schemas/RoomReview' }
+                  total: { type: integer }
+                  page: { type: integer }
+                  totalPages: { type: integer }
+    post:
+      summary: Submit a review for a room type
+      tags: [Room Management]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/RoomReviewCreate' }
+      responses:
+        '201':
+          description: Review submitted successfully

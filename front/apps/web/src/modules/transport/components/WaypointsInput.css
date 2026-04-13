@@ -1,0 +1,77 @@
+.waypoints-container {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius);
+    padding: 16px;
+    border: 1px solid var(--border);
+}
+
+.waypoint-empty-state {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.waypoints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.waypoint-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-primary);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.waypoint-item:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+}
+
+.waypoint-icon {
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.waypoint-input-wrapper {
+    flex: 1;
+}
+
+.waypoint-input {
+    width: 100%;
+    border: none !important;
+    background: transparent !important;
+    padding: 4px 0 !important;
+    font-size: 0.95rem;
+}
+
+.waypoint-input:focus {
+    box-shadow: none !important;
+}
+
+.icon-btn-danger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.icon-btn-danger:hover {
+    color: var(--danger);
+    background: rgba(var(--danger-rgb), 0.1);
+}

@@ -15,13 +15,14 @@
 box-sizing:border-box;
 }
 
-body{
+/* REMOVED GLOBAL BODY OVERRIDE TO PREVENT POLLUTION */
+/* body{
 margin:0;
 font-family:'Inter',-apple-system,sans-serif;
 background:var(--bg-gradient);
 color:var(--text-active);
 min-height:100vh;
-}
+} */
 
 /* FULL SCREEN CONTAINER */
 
@@ -147,12 +148,13 @@ gap:1.5rem;
 
 /* INPUTS */
 
-.input-group{
+/* SCOPED INPUT GROUPS */
+.auth-form-wrapper .input-group{
 position:relative;
 }
 
-.input-group input,
-.input-group select{
+.auth-form-wrapper .input-group input,
+.auth-form-wrapper .input-group select{
 width:100%;
 padding:1.2rem 1rem;
 background:var(--input-bg);
@@ -169,20 +171,20 @@ appearance:none;
 cursor:pointer;
 }
 
-.input-group select option{
+.auth-form-wrapper .input-group select option{
 background:var(--secondary);
 color:#fff;
 }
 
-.input-group input:focus,
-.input-group select:focus{
+.auth-form-wrapper .input-group input:focus,
+.auth-form-wrapper .input-group select:focus{
 border-color:var(--primary);
 box-shadow:0 0 0 4px rgba(92,63,240,0.1);
 }
 
 /* FLOAT LABEL */
 
-.input-group label{
+.auth-form-wrapper .input-group label{
 position:absolute;
 left:1rem;
 top:50%;
@@ -193,15 +195,15 @@ transition:.3s ease;
 font-size:1rem;
 }
 
-.input-group input:focus~label,
-.input-group input:valid~label,
-.input-group select:focus~label,
-.input-group select:valid~label{
-top:0;
-transform:translateY(-50%) scale(.85);
-background:var(--secondary);
-padding:0 .4rem;
-color:var(--primary);
+.auth-form-wrapper .input-group input:focus~label,
+.auth-form-wrapper .input-group input:valid~label,
+.auth-form-wrapper .input-group select:focus~label,
+.auth-form-wrapper .input-group select:valid~label{
+    top:0;
+    transform:translateY(-50%) scale(.85);
+    background: #252331; /* Specific case for login as it remains dark-themed/gradient for wow effect but needs contrast */
+    padding:0 .4rem;
+    color:var(--primary);
 }
 
 /* BUTTON */

@@ -9,7 +9,8 @@ class TourRepository {
 
     async findAll(query = {}) {
         const where = {};
-        // Add filters logic if needed
+        if (query.city) where.city = query.city;
+        if (query.ownerId) where.ownerId = query.ownerId;
 
         return prisma.tour.findMany({
             where,

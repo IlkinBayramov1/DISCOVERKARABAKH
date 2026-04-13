@@ -1,0 +1,42 @@
+x-system-events:
+  description: Domain events triggered within the Hotel module for real-time synchronization and background processing.
+  events:
+    hotel:created:
+      description: Triggered when a new hotel is successfully registered.
+      payload: { hotelId: string, name: string }
+    hotel:deleted:
+      description: Triggered when a hotel is removed from the system.
+      payload: { hotelId: string }
+    
+    pricing:updated:
+      description: Triggered when base pricing for a room type is updated for any date range.
+      payload: { hotelId: string, roomTypeId: string }
+    availability:updated:
+      description: Triggered when room inventory or status (Stop Sales) changes.
+      payload: { hotelId: string }
+
+    roomType:created:
+      description: Triggered when a new room category (e.g., Deluxe) is added to a hotel.
+      payload: { hotelId: string, roomType: object }
+    roomType:updated:
+      description: Triggered when room type details (inventory, amenities) are modified.
+      payload: { hotelId: string, roomId: string }
+    roomType:deleted:
+      description: Triggered when a room category is deleted.
+      payload: { hotelId: string, roomId: string }
+    
+    room:inventory:depleted:
+      description: Critical event triggered when a room type's total inventory drops to 0.
+      payload: { hotelId: string, roomId: string }
+
+    reservation:created:
+      description: Triggered when a new booking is confirmed. Triggers snapshot occupancy update.
+      payload: { hotelId: string, bookingId: string }
+
+    reservation:cancelled:
+      description: Triggered when a booking is cancelled. Frees up inventory in snapshots.
+      payload: { hotelId: string, bookingId: string }
+
+    review:created:
+      description: Triggered when a guest review is approved. Recalculates hotel average score.
+      payload: { hotelId: string, reviewId: string }

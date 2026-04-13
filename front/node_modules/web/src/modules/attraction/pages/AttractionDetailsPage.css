@@ -1,0 +1,218 @@
+.attraction-details-page {
+    min-height: 100vh;
+    background: #0B0F19;
+    padding-bottom: 4rem;
+}
+
+.details-hero {
+    height: 60vh;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 4rem 2rem;
+}
+
+.hero-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    color: white;
+    margin: 0.5rem 0;
+    font-weight: 800;
+}
+
+.hero-content .location {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.details-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+    align-items: start;
+}
+
+.about-section, .gallery-section, .reviews-section {
+    margin-bottom: 4rem;
+}
+
+.about-section h2, .gallery-section h2, .reviews-section h2 {
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.125rem;
+    line-height: 1.8;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.gallery-grid img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.details-sidebar {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.price-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-block {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.value {
+    color: white;
+    font-weight: 600;
+}
+
+.value.free {
+    color: #10B981;
+}
+
+.value.rating {
+    color: #FCD34D;
+}
+
+.value.crowd.low { color: #10B981; }
+.value.crowd.medium { color: #F59E0B; }
+.value.crowd.high { color: #EF4444; }
+
+.favorite-btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.favorite-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.schedule-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.schedule-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.schedule-list li:last-child {
+    border: none;
+}
+
+.schedule-list li.closed {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.login-prompt {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.login-prompt p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 1rem 0;
+}
+
+.login-prompt button {
+    background: var(--primary, #5C3FF0);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Loading & Error Screens */
+.loading-screen, .error-screen {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: #0B0F19;
+}
+
+.error-screen h2 {
+    color: #ef4444;
+    font-size: 3rem;
+    margin: 0;
+}
+
+.error-screen p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 1rem 0 2rem;
+}
+
+@media (max-width: 900px) {
+    .details-container {
+        grid-template-columns: 1fr;
+    }
+}

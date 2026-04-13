@@ -13,8 +13,10 @@ export const attractionValidation = {
         crowdLevel: Joi.string().valid('low', 'medium', 'high').default('low'),
         isFeatured: Joi.boolean().default(false),
         status: Joi.string().valid('active', 'closed', 'maintenance').default('active'),
+        city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam').required(),
         categoryId: Joi.string().uuid().required(),
-        vendorId: Joi.string().uuid().optional()
+        vendorId: Joi.string().uuid().optional(),
+        images: Joi.array().items(Joi.string()).optional()
     }),
 
     updateAttraction: Joi.object({
@@ -29,8 +31,10 @@ export const attractionValidation = {
         crowdLevel: Joi.string().valid('low', 'medium', 'high').optional(),
         isFeatured: Joi.boolean().optional(),
         status: Joi.string().valid('active', 'closed', 'maintenance').optional(),
+        city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam').optional(),
         categoryId: Joi.string().uuid().optional(),
-        vendorId: Joi.string().uuid().optional().allow(null)
+        vendorId: Joi.string().uuid().optional().allow(null),
+        images: Joi.array().items(Joi.string()).optional()
     }),
 
     queryAttractions: Joi.object({
@@ -38,6 +42,7 @@ export const attractionValidation = {
         limit: Joi.number().integer().min(1).max(100).default(20),
         categoryId: Joi.string().uuid().optional(),
         status: Joi.string().valid('active', 'closed', 'maintenance').optional(),
+        city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam').optional(),
         isFeatured: Joi.boolean().optional(),
         entryType: Joi.string().valid('free', 'paid', 'donation').optional()
     })

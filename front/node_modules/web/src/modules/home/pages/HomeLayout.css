@@ -1,0 +1,59 @@
+/* src/modules/home/pages/HomeLayout.css */
+
+/* ── LAYOUT MAIN ───────────────────────────────────────────── */
+.layout__main {
+  min-height: 60vh;
+}
+
+/* ── GLOBAL PAGE BASE ──────────────────────────────────────── */
+:root {
+  --accent:   #5a2e91;
+  --accent2:  #7b43c4;
+  --accent3:  #2fd1ff;
+
+  --bg:       #f6f3fb;
+  --surface:  rgba(255, 255, 255, .92);
+  --surface2: rgba(255, 255, 255, .78);
+  --stroke:   rgba(17, 12, 26, .10);
+
+  --text:     #0f0b1c;
+  --muted:    rgba(15, 11, 28, .68);
+
+  --shadow:   0 14px 44px rgba(24, 12, 40, .12);
+  --shadow2:  0 10px 24px rgba(24, 12, 40, .10);
+
+  --r:        18px;
+  --r2:       22px;
+  --max:      1180px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color:      var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img { max-width: 100%; display: block; }
+a   { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+
+.container {
+  width:  min(var(--max), calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.sr-only {
+  position:   absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip:    rect(0, 0, 0, 0);
+  border:  0;
+}

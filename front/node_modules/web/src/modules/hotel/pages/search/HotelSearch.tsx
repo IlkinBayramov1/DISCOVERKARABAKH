@@ -3,30 +3,38 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Star, MapPin, Filter, Search } from 'lucide-react';
 import './HotelSearch.css';
 
-// Mock Data for Phase 1 UI structure. Will be replaced by API calls.
-const MOCK_HOTELS = [
-    { id: '1', name: 'Shusha Grand Hotel', rating: 5, price: 150, location: 'Shusha, Karabakh', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', amenities: ['Spa', 'Pool', 'Free WiFi'] },
-    { id: '2', name: 'Aghdam Heritage Lodge', rating: 4, price: 90, location: 'Aghdam, Karabakh', image: 'https://images.unsplash.com/photo-1551882547-ff40c0d5b5df?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', amenities: ['Restaurant', 'Parking'] },
-    { id: '3', name: 'Lachin Riverside Resort', rating: 4, price: 120, location: 'Lachin, Karabakh', image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', amenities: ['Nature Trails', 'Breakfast Included'] }
-];
+import { useHotelSearch } from '../../hooks/useHotelSearch';
+import type { IHotel } from '../../types';
 
 export default function HotelSearch() {
     const [searchParams] = useSearchParams();
+    const initialCity = searchParams.get('city') || '';
     const initialQuery = searchParams.get('q') || '';
 
+    const [city, setCity] = useState(initialCity);
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [priceRange, setPriceRange] = useState(500);
 
-    // Mock API Fetch effect
+    const { hotels, loading, error } = useHotelSearch({
+        city: city || undefined,
+        q: searchQuery || undefined,
+        priceRange: priceRange
+    });
+
+    useEffect(() => {
+        setCity(searchParams.get('city') || '');
+        setSearchQuery(searchParams.get('q') || '');
+    }, [searchParams]);
+
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, [initialQuery]);
+    }, [initialQuery, initialCity]);
 
     return (
         <div className="hotel-search-container max-w-7xl mx-auto px-4 py-8">
             <div className="search-header mb-8">
                 <h1 className="text-xl font-bold">Search Results in Karabakh</h1>
-                <p className="text-muted">{MOCK_HOTELS.length} properties found matching your criteria.</p>
+                <p className="text-muted">{!loading ? `${hotels.length} properties found matching your criteria.` : 'Searching properties...'}</p>
             </div>
 
             <div className="search-layout">
@@ -37,6 +45,22 @@ export default function HotelSearch() {
                     </div>
 
                     <div className="filter-group">
+                        <label className="filter-label">City</label>
+                        <select
+                            className="search-input-wrapper"
+                            style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '10px', borderRadius: '8px', color: 'inherit' }}
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                        >
+                            <option value="" style={{ color: '#333' }}>All Karabakh</option>
+                            <option value="Shusha" style={{ color: '#333' }}>Shusha (Şuşa)</option>
+                            <option value="Lachin" style={{ color: '#333' }}>Lachin (Laçın)</option>
+                            <option value="Khankendi" style={{ color: '#333' }}>Khankendi (Xankəndi)</option>
+                            <option value="Aghdam" style={{ color: '#333' }}>Aghdam (Ağdam)</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group border-t pt-4">
                         <label className="filter-label">Search Location/Name</label>
                         <div className="search-input-wrapper">
                             <Search size={16} className="search-icon" />
@@ -84,30 +108,43 @@ export default function HotelSearch() {
 
                 {/* Right Results Grid */}
                 <main className="search-results">
-                    {MOCK_HOTELS.map(hotel => (
+                    {loading && <div className="loading-state p-8 text-center"><div className="spinner mx-auto mb-4"></div><p>Loading hotels...</p></div>}
+                    {error && <div className="alert error">{error}</div>}
+
+                    {!loading && hotels.length === 0 && !error && (
+                        <div className="empty-state p-8 text-center glassmorphism">
+                            <h3 className="text-xl font-bold mb-2">No Properties Found</h3>
+                            <p className="text-muted">Try adjusting your filters or selecting a different city.</p>
+                        </div>
+                    )}
+
+                    {!loading && hotels.map((hotel: IHotel) => (
                         <div key={hotel.id} className="hotel-card glassmorphism">
                             <div className="hotel-card-image">
-                                <img src={hotel.image} alt={hotel.name} />
+                                <img src={typeof hotel.images?.[0] === 'string' ? hotel.images[0] : (hotel.images?.[0] as any)?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'} alt={hotel.name} />
                             </div>
                             <div className="hotel-card-details">
                                 <div className="card-header flex-between mb-2">
                                     <h3 className="font-bold">{hotel.name}</h3>
                                     <div className="rating flex-align-center gap-1">
                                         <Star size={16} fill="#f59e0b" color="#f59e0b" />
-                                        <span>{hotel.rating}.0</span>
+                                        <span>{hotel.rating ? hotel.rating.toFixed(1) : 'New'}</span>
+                                        <span className="text-xs text-muted">({hotel.reviewCount || 0})</span>
                                     </div>
                                 </div>
                                 <p className="location text-muted flex-align-center gap-1 mb-3">
-                                    <MapPin size={14} /> {hotel.location}
+                                    <MapPin size={14} /> {hotel.city ? `${hotel.city}, ` : ''}{hotel.address}
                                 </p>
                                 <div className="amenities mb-4">
-                                    {hotel.amenities.map((amenity, idx) => (
+                                    {hotel.policies?.amenities ? (hotel.policies.amenities as any[]).slice(0, 3).map((amenity: string, idx: number) => (
                                         <span key={idx} className="badge">{amenity}</span>
-                                    ))}
+                                    )) : (
+                                        <span className="badge">{hotel.propertyType}</span>
+                                    )}
                                 </div>
                                 <div className="card-footer flex-between mt-auto border-t pt-4">
                                     <div className="price-info">
-                                        <span className="price-val font-bold text-xl">${hotel.price}</span>
+                                        <span className="price-val font-bold text-xl">From $50</span>
                                         <span className="text-muted text-sm"> / night</span>
                                     </div>
                                     <Link to={`/hotels/${hotel.id}`} className="btn-primary">View Details</Link>

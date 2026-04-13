@@ -1,0 +1,12 @@
+# Shared Constants for Hotel Module
+amenities:
+  'Free WiFi': { icon: 'fa-wifi', category: 'Connectivity' }
+  'Swimming Pool': { icon: 'fa-person-swimming', category: 'Wellness' }
+  'Free Parking': { icon: 'fa-square-p', category: 'Logistics' }
+  'Spa & Wellness': { icon: 'fa-spa', category: 'Wellness' }
+  'Restaurant': { icon: 'fa-utensils', category: 'Dining' }
+  'Gym': { icon: 'fa-dumbbell', category: 'Wellness' }
+  'Bar': { icon: 'fa-martini-glass-citrus', category: 'Dining' }
+  'Conference Room': { icon: 'fa-users-rectangle', category: 'Business' }
+  'Room Service': { icon: 'fa-bell-concierge', category: 'Service' }
+  'Airport Shuttle': { icon: 'fa-van-shuttle', category: 'Logistics' }

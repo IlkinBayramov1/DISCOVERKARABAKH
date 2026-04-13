@@ -1,64 +1,343 @@
-.reviews-list {
+/* FEEDBACK CENTER (REVIEWS MODERNIZATION) */
+.reviews-container {
+    padding: 3rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* SENTIMENT HERO */
+.sentiment-hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.analytics-card-premium {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 2.5rem;
+    border-radius: 32px;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.analytics-card-premium.highlight {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+}
+
+.analytics-card-premium .label-premium {
+    font-size: 0.725rem;
+    font-weight: 950;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.analytics-card-premium.highlight .label-premium { color: rgba(255, 255, 255, 0.7); }
+
+.avg-rating-xl {
+    font-size: 4rem;
+    font-weight: 950;
+    color: #0f172a;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.avg-rating-xl span { font-size: 1.5rem; color: #94a3b8; font-weight: 700; }
+.analytics-card-premium.highlight .avg-rating-xl { color: white; }
+.analytics-card-premium.highlight .avg-rating-xl span { color: rgba(255, 255, 255, 0.6); }
+
+/* DISTRIBUTION BARS */
+.distribution-blueprint {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.dist-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: #475569;
+}
+
+.dist-bar-track {
+    flex: 1;
+    height: 10px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.dist-bar-fill {
+    height: 100%;
+    background: #fbbf24;
+    border-radius: 6px;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* INTELLIGENCE BAR */
+.intelligence-bar {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 24px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    gap: 2rem;
+}
+
+.search-hub {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 0.75rem 1.5rem;
+    border-radius: 18px;
+    flex: 1;
+    border: 1.5px solid #f1f5f9;
+    transition: all 0.2s;
+}
+
+.search-hub:focus-within {
+    background: white;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.05);
+}
+
+.search-hub input {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: #1e293b;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.filter-pill {
+    padding: 0.75rem 1.25rem;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1.5px solid #f1f5f9;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.filter-pill:hover { border-color: #cbd5e1; transform: translateY(-1px); }
+.filter-pill.active {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: white;
+}
+
+/* REVIEW MATRIX */
+.review-matrix {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-.review-card {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    border-radius: 12px;
+.review-card-premium {
+    background: white;
+    border-radius: 32px;
+    border: 1px solid #f1f5f9;
+    padding: 2.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.review-header {
+.review-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.06);
+}
+
+.review-card-premium::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: #e2e8f0;
+}
+
+.review-card-premium.sentiment-positive::before { background: #10b981; }
+.review-card-premium.sentiment-critical::before { background: #ef4444; }
+.review-card-premium.sentiment-neutral::before { background: #f59e0b; }
+
+.guest-profile-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    margin-bottom: 2rem;
 }
 
-.reviewer-info h4 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #1e293b;
-    font-weight: 600;
-}
-
-.review-meta {
-    margin-top: 0.3rem;
-    font-size: 0.85rem;
+.guest-identity {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1.25rem;
 }
 
-.review-meta strong {
-    color: #3b82f6;
-}
-
-.bullet-separator {
-    color: #cbd5e1;
-}
-
-.review-rating {
+.avatar-blueprint {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: #f1f5f9;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    background: #fffbeb;
-    padding: 0.4rem 0.8rem;
-    border-radius: 99px;
-    font-weight: 600;
-    color: #b45309;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 950;
+    color: #0f172a;
 }
 
-.review-comment {
-    margin: 0;
-    line-height: 1.6;
+.guest-info h4 { font-size: 1.125rem; font-weight: 950; color: #0f172a; margin-bottom: 0.25rem; }
+.guest-context {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+}
+
+.property-badge {
+    background: #f1f5f9;
     color: #475569;
-    font-size: 0.95rem;
-    background: #f8fafc;
-    padding: 1rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 8px;
-    border-left: 3px solid #e2e8f0;
+    font-weight: 900;
+}
+
+.rating-display-box {
+    text-align: right;
+}
+
+.score-xl { font-size: 2rem; font-weight: 950; color: #0f172a; }
+
+/* REPLY HUB */
+.reply-hub-container {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f8fafc;
+}
+
+.reply-bubble {
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 2rem;
+    position: relative;
+}
+
+.reply-bubble::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 2rem;
+    width: 20px;
+    height: 20px;
+    background: #f8fafc;
+    transform: rotate(45deg);
+}
+
+.official-seal {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 950;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+
+.reply-text-premium { font-size: 1rem; font-weight: 600; color: #475569; line-height: 1.6; }
+
+.reply-trigger-btn {
+    background: #f1f5f9;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 0.8125rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reply-trigger-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+.reply-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.reply-textarea-premium {
+    width: 100%;
+    min-height: 120px;
+    background: #f8fafc;
+    border: 2px solid #f1f5f9;
+    border-radius: 20px;
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: #1e293b;
+    outline: none;
+    resize: vertical;
+}
+
+.reply-textarea-premium:focus { border-color: #6366f1; background: white; }
+
+.btn-send-reply {
+    background: #0f172a;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    align-self: flex-end;
+}
+
+@media (max-width: 1024px) {
+    .sentiment-hero { grid-template-columns: 1fr; }
+    .intelligence-bar { flex-direction: column; align-items: stretch; }
+    .guest-profile-header { flex-direction: column; gap: 1.5rem; }
+    .rating-display-box { text-align: left; }
 }

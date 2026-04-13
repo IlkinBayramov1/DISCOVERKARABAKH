@@ -36,9 +36,13 @@ export function useHotels(autoFetch = true) {
         setLoading(true);
         setError(null);
         try {
-            await hotelApi.submitHotelApplication(payload);
-            await fetchHotels(); // Refetch automatically
+            const res = await hotelApi.submitHotelApplication(payload);
+            console.log('Hotel created successfully:', res);
+            // We skip fetchHotels here because the caller usually redirects
+            // or we'll fetch on the next page load anyway.
+            return res;
         } catch (err: unknown) {
+            console.error('CreateHotel Hook Error:', err);
             if (err instanceof Error) {
                 setError(err.message);
             } else {

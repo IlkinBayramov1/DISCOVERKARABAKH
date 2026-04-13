@@ -1,5 +1,6 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
+import { hotelEvents, PRICING_UPDATED, AVAILABILITY_UPDATED } from '../hotel.events.js';
 
 class CalendarService {
 
@@ -48,6 +49,17 @@ class CalendarService {
             }
         });
 
+        // 4. Fetch Calendar Notes
+        const notes = await prisma.hotelCalendarNote.findMany({
+            where: {
+                hotelId,
+                date: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            }
+        });
+
         // Combine logic (for frontend consumption)
         // Group by roomType
         const result = roomTypes.map(rt => {
@@ -61,10 +73,15 @@ class CalendarService {
             let current = new Date(startDate);
             while (current <= endDate) {
                 const dateKey = current.toISOString().split('T')[0];
+                const dayNote = notes.find(n => n.date.toISOString().split('T')[0] === dateKey);
+
                 daysMap[dateKey] = {
                     date: dateKey,
+                    note: dayNote ? { text: dayNote.note, type: dayNote.type } : null,
                     basePrice: null, // Signals no explicit override
                     minStay: 1,
+                    maxStay: null,
+                    isStopped: false,
                     closedToArrival: false,
                     closedToDeparture: false,
                     availableRooms: rt.totalInventory,
@@ -79,8 +96,20 @@ class CalendarService {
                 if (daysMap[dateKey]) {
                     daysMap[dateKey].basePrice = p.basePrice;
                     daysMap[dateKey].minStay = p.minStay;
+                    daysMap[dateKey].maxStay = p.maxStay;
+                    daysMap[dateKey].isStopped = p.isStopped;
                     daysMap[dateKey].closedToArrival = p.closedToArrival;
                     daysMap[dateKey].closedToDeparture = p.closedToDeparture;
+
+                    // Calculate active restrictions
+                    const restrictions = [];
+                    if (p.isStopped) restrictions.push('SS');
+                    if (p.closedToArrival) restrictions.push('CTA');
+                    if (p.closedToDeparture) restrictions.push('CTD');
+                    if (p.minStay > 1) restrictions.push('MLOS');
+                    
+                    daysMap[dateKey].hasRestrictions = restrictions.length > 0;
+                    daysMap[dateKey].activeRestrictions = restrictions;
                 }
             });
 
@@ -89,6 +118,14 @@ class CalendarService {
                 if (daysMap[dateKey]) {
                     daysMap[dateKey].availableRooms = a.availableRooms;
                     daysMap[dateKey].reservedRooms = a.reservedRooms;
+                    
+                    // Professional Analytics: Occupancy Rate and Thresholds
+                    const occupancyRate = rt.totalInventory > 0 
+                        ? Math.round((a.reservedRooms / rt.totalInventory) * 100) 
+                        : 0;
+                    
+                    daysMap[dateKey].occupancyRate = occupancyRate;
+                    daysMap[dateKey].isLowInventory = a.availableRooms <= 1;
                 }
             });
 
@@ -119,7 +156,7 @@ class CalendarService {
      * }
      */
     async bulkUpdateCalendar(hotelId, payload) {
-        const { roomTypeId, startDate, endDate, days, basePrice, availableRooms, minStay, closedToArrival, closedToDeparture } = payload;
+        const { roomTypeId, startDate, endDate, days, basePrice, priceAdjustment, availableRooms, minStay, maxStay, isStopped, closedToArrival, closedToDeparture } = payload;
 
         if (!roomTypeId || !startDate || !endDate) {
             throw ApiError.badRequest('roomTypeId, startDate, and endDate are required');
@@ -141,6 +178,17 @@ class CalendarService {
             throw ApiError.badRequest('Invalid date range');
         }
 
+        // If priceAdjustment is used, fetch current prices first
+        let currentPrices = [];
+        if (priceAdjustment) {
+            currentPrices = await prisma.dailyPricing.findMany({
+                where: {
+                    roomTypeId,
+                    date: { gte: start, lte: end }
+                }
+            });
+        }
+
         const dateArray = [];
         let current = new Date(start);
 
@@ -159,11 +207,27 @@ class CalendarService {
         const transactionOps = [];
 
         dateArray.forEach(dateObj => {
+            let finalPrice = basePrice;
+
+            // Apply Price Adjustment if specified
+            if (priceAdjustment) {
+                const existing = currentPrices.find(p => p.date.getTime() === dateObj.getTime());
+                const sourcePrice = existing ? existing.basePrice : (basePrice || 0);
+
+                if (priceAdjustment.type === 'percentage') {
+                    finalPrice = sourcePrice + (sourcePrice * (priceAdjustment.value / 100));
+                } else if (priceAdjustment.type === 'fixed') {
+                    finalPrice = sourcePrice + priceAdjustment.value;
+                }
+            }
+
             // Pricing Upsert
-            if (basePrice !== undefined || minStay !== undefined || closedToArrival !== undefined || closedToDeparture !== undefined) {
+            if (finalPrice !== undefined || minStay !== undefined || maxStay !== undefined || isStopped !== undefined || closedToArrival !== undefined || closedToDeparture !== undefined) {
                 const pricingUpdate = {};
-                if (basePrice !== undefined) pricingUpdate.basePrice = basePrice;
+                if (finalPrice !== undefined) pricingUpdate.basePrice = finalPrice;
                 if (minStay !== undefined) pricingUpdate.minStay = minStay;
+                if (maxStay !== undefined) pricingUpdate.maxStay = maxStay;
+                if (isStopped !== undefined) pricingUpdate.isStopped = isStopped;
                 if (closedToArrival !== undefined) pricingUpdate.closedToArrival = closedToArrival;
                 if (closedToDeparture !== undefined) pricingUpdate.closedToDeparture = closedToDeparture;
 
@@ -179,8 +243,10 @@ class CalendarService {
                         create: {
                             roomTypeId,
                             date: dateObj,
-                            basePrice: basePrice !== undefined ? basePrice : 0, // Should have a fallback if creating
+                            basePrice: finalPrice !== undefined ? finalPrice : 0,
                             minStay: minStay !== undefined ? minStay : 1,
+                            maxStay: maxStay !== undefined ? maxStay : null,
+                            isStopped: isStopped || false,
                             closedToArrival: closedToArrival || false,
                             closedToDeparture: closedToDeparture || false
                         }
@@ -216,6 +282,12 @@ class CalendarService {
 
         if (transactionOps.length > 0) {
             await prisma.$transaction(transactionOps);
+            
+            // Trigger snapshot update
+            hotelEvents.emit(PRICING_UPDATED, { hotelId, roomTypeId });
+            if (availableRooms !== undefined) {
+                hotelEvents.emit(AVAILABILITY_UPDATED, { hotelId });
+            }
         }
 
         return true;

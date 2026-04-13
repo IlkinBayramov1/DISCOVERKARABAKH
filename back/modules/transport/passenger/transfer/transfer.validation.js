@@ -11,6 +11,11 @@ export const createTransferSchema = Joi.object({
         lng: Joi.number().required(),
         address: Joi.string().required()
     }).required(),
+    waypoints: Joi.array().items(Joi.object({
+        lat: Joi.number().required(),
+        lng: Joi.number().required(),
+        address: Joi.string().required()
+    })).optional(),
     distanceKm: Joi.number().optional(),
     durationMin: Joi.number().optional(),
     vehicleCategory: Joi.string().valid('Economy', 'Business', 'Premium', 'Minivan', 'Bus').optional()

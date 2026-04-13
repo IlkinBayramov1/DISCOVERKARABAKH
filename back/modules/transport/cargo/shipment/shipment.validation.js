@@ -4,6 +4,7 @@ export const createShipmentSchema = Joi.object({
     idempotencyKey: Joi.string().optional(),
     pickupLocation: Joi.object().required(),
     dropoffLocation: Joi.object().required(),
+    waypoints: Joi.array().items(Joi.object()).optional(),
     weightKg: Joi.number().positive().required(),
     volumeM3: Joi.number().positive().optional(),
     dimensions: Joi.object({

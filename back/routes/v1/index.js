@@ -13,6 +13,7 @@ import attractionRoutes from '../../modules/businesses/attraction/index.js';
 import bookingRoutes from '../../modules/booking/booking.routes.js';
 import reviewRoutes from '../../modules/interactions/review/review.routes.js';
 import uploadRoutes from '../../modules/shared/upload/upload.routes.js';
+import paymentRoutes from '../../modules/payments/payment.routes.js';
 
 const router = Router();
 
@@ -33,6 +34,7 @@ router.use('/vendors', vendorRoutes);
 // Interaction Routes
 router.use('/bookings', bookingRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/payments', paymentRoutes);
 
 // Transport Routes
 import transportRoutes from '../../modules/transport/transport.routes.js';

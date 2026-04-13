@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: Payment API
+  version: 1.0.0
+  description: Unified payment system with support for multiple bank providers.
+
+paths:
+  /payments/initiate:
+    post:
+      summary: Initialize a new payment for a booking
+      tags: [Payments]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingId]
+              properties:
+                bookingId: { type: string }
+                provider: { type: string, enum: [local], default: local }
+      responses:
+        '200':
+          description: Payment transaction created
+          content:
+            application/json:
+                schema: { $ref: '../components/schemas.yaml#/components/schemas/PaymentTransaction' }
+
+  /payments/callback/{provider}:
+    all:
+      summary: Handle bank provider callback
+      tags: [Payments]
+      description: This endpoint is called by the bank after payment completion/cancellation.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Payment processed
+        '302':
+          description: Redirect back to the frontend

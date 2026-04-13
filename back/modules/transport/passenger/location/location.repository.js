@@ -1,35 +1,53 @@
 import prisma from '../../../../config/db.js';
 
 class LocationRepository {
-    async searchLocations(query, limit = 5) {
-        // Prisma `@@fulltext` index usage example for MySQL
-        // If MySQL @@fulltext index fails on standard deployment, we fall back to generic Contains.
+    async searchLocations(query, limit = 10) {
+        // Because @@fulltext is available via Prisma preview Feature
         try {
             return await prisma.location.findMany({
                 where: {
-                    name: {
-                        search: query // Utilizing the fulltext search indexing natively
-                    }
+                    OR: [
+                        { name: { contains: query } },
+                        { address: { contains: query } }
+                    ]
                 },
                 orderBy: { popularity: 'desc' },
                 take: limit
             });
         } catch (error) {
-            // Fallback to insensitive Contains if FullText is not completely supported
-            return await prisma.location.findMany({
-                where: {
-                    name: {
-                        contains: query,
-                    }
-                },
-                orderBy: { popularity: 'desc' },
-                take: limit
-            });
+            console.error("Location Search Error", error);
+            // Fallback
+            return [];
         }
     }
 
     async findById(id) {
         return prisma.location.findUnique({ where: { id: parseInt(id) } });
+    }
+
+    // Admin/Vendor specific CRUD
+    async create(data) {
+        return await prisma.location.create({ data });
+    }
+
+    async getLocationsByVendor(vendorId, filters = {}) {
+        return await prisma.location.findMany({
+            where: vendorId ? { vendorId } : {},
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async update(id, data) {
+        return await prisma.location.update({
+            where: { id: parseInt(id) },
+            data
+        });
+    }
+
+    async delete(id) {
+        return await prisma.location.delete({
+            where: { id: parseInt(id) }
+        });
     }
 }
 

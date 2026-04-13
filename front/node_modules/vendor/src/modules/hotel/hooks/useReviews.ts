@@ -34,10 +34,28 @@ export function useReviews(autoFetch = true) {
         }
     }, [autoFetch, fetchReviews]);
 
+    const replyToReview = async (reviewId: string, reply: string) => {
+        setLoading(true);
+        try {
+            await hotelApi.replyToReview(reviewId, reply);
+            // Optimistic update
+            setReviews(prev => prev.map(r => 
+                r.id === reviewId ? { ...r, vendorReply: reply } : r
+            ));
+            return true;
+        } catch (err: any) {
+            setError(err.message || 'Failed to send reply');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         reviews,
         loading,
         error,
-        refetch: fetchReviews
+        refetch: fetchReviews,
+        replyToReview
     };
 }

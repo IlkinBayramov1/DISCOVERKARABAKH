@@ -1,0 +1,105 @@
+components:
+  schemas:
+    Booking:
+      type: object
+      properties:
+        id: { type: string }
+        bookingNumber: { type: string, example: "BKG-A1B2C3" }
+        bookingType: { type: string, enum: [hotel, tour, event] }
+        status: { type: string, enum: [pending, confirmed, cancelled, completed] }
+        paymentStatus: { type: string, enum: [pending, captured, refunded, failed] }
+        paymentMethod: { type: string }
+        totalPrice: { type: number }
+        currency: { type: string, default: "AZN" }
+        paymentUrl: { type: string, description: "Direct redirect link for payment (if pending_payment)", nullable: true }
+        specialRequests: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        userId: { type: string }
+        vendorId: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/BookingItem' }
+        guests:
+          type: array
+          items: { $ref: '#/components/schemas/BookingGuest' }
+
+    BookingItem:
+      type: object
+      properties:
+        id: { type: string }
+        roomTypeId: { type: string, nullable: true }
+        checkIn: { type: string, format: date, nullable: true }
+        checkOut: { type: string, format: date, nullable: true }
+        adults: { type: integer }
+        children: { type: integer }
+        price: { type: number }
+        details: { type: object, description: "Type-specific item details (e.g. tourDate)" }
+
+    BookingGuest:
+      type: object
+      properties:
+        id: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        nationality: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+
+    BookingCreateRequest:
+      type: object
+      required: [type, entityId]
+      properties:
+        type: { type: string, enum: [hotel, tour, event] }
+        entityId: { type: string }
+        paymentMethod: { type: string }
+        specialRequests: { type: string }
+        # Hotel specific
+        items: { type: array, items: { $ref: '#/components/schemas/BookingItemRequest' } }
+        guests: { type: array, items: { $ref: '#/components/schemas/BookingGuestRequest' } }
+        # Tour specific
+        tourDetails:
+          type: object
+          properties:
+            tourDate: { type: string, format: date }
+            participants: { type: integer }
+        # Event specific
+        eventDetails:
+          type: object
+          properties:
+            ticketCount: { type: integer }
+
+    BookingItemRequest:
+      type: object
+      required: [roomTypeId, checkIn, checkOut]
+      properties:
+        roomTypeId: { type: string }
+        checkIn: { type: string, format: date }
+        checkOut: { type: string, format: date }
+        adults: { type: integer, default: 2 }
+        children: { type: integer, default: 0 }
+
+    BookingGuestRequest:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        nationality: { type: string }
+        phone: { type: string }
+        email: { type: string }
+
+    PaymentTransaction:
+      type: object
+      properties:
+        id: { type: string }
+        bookingId: { type: string }
+        provider: { type: string, enum: [local, pasha, kapital] }
+        providerTransId: { type: string, nullable: true }
+        amount: { type: number }
+        currency: { type: string }
+        status: { type: string, enum: [pending, success, failed, reversed] }
+        paymentUrl: { type: string, nullable: true }
+        callbackUrl: { type: string, nullable: true }
+        errorMessage: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
