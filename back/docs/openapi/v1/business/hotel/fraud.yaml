@@ -9,6 +9,7 @@ paths:
     get:
       summary: Get all blacklisted entries
       tags: [Fraud]
+      security: [{ bearerAuth: [] }]
       responses:
         '200':
           description: List of blacklisted entries
@@ -20,6 +21,7 @@ paths:
     post:
       summary: Add a value to the blacklist
       tags: [Fraud]
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -33,6 +35,7 @@ paths:
     get:
       summary: Get history of fraud risk evaluations
       tags: [Fraud]
+      security: [{ bearerAuth: [] }]
       description: |
         Returns the 100 most recent risk assessments performed by the system.
         Risk levels are based on:
@@ -54,6 +57,7 @@ paths:
     delete:
       summary: Remove an entry from the blacklist
       tags: [Fraud]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: id
           in: path

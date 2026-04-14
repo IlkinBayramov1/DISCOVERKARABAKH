@@ -1,36 +1,32 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import Header  from '../components/Header/Header';
 import Footer  from '../components/Footer/Footer';
-import FAQ     from '../components/FAQ/FAQ';
 import Scripts from '../components/SEO/Scripts';
 import { nav, mega } from '../services/homeNav';
 import type { SeoMeta } from '../types/home.types';
 import './HomeLayout.css';
 
 interface HomeLayoutProps {
-  seo:       SeoMeta;
-  children:  React.ReactNode;
-  showFaq?:  boolean;
+  seo?:      SeoMeta;
+  children?: React.ReactNode;
 }
 
-export default function HomeLayout({
-  
-  children,
-  showFaq  = false,
-  
-}: HomeLayoutProps) {
+const HomeLayout: React.FC<HomeLayoutProps> = ({ 
+  children 
+}) => {
   return (
     <>
       <Header nav={nav} mega={mega} />
 
       <main className="layout__main" id="main-content">
-        {children}
+        {children || <Outlet />}
       </main>
-
-     
 
       <Footer />
       <Scripts mega={mega} />
     </>
   );
-}
+};
+
+export default HomeLayout;

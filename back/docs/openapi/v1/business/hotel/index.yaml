@@ -42,12 +42,18 @@ paths:
     $ref: './analytics.yaml#/paths/~1hotels~1analytics'
   /hotels/{hotelId}/pricing-rules:
     $ref: './revenue.yaml#/paths/~1hotels~1{hotelId}~1pricing-rules'
+  /hotels/{hotelId}/pricing-rules/{ruleId}:
+    $ref: './revenue.yaml#/paths/~1hotels~1{hotelId}~1pricing-rules~1{ruleId}'
   /hotels/{hotelId}/rooms:
     $ref: './room.yaml#/paths/~1hotels~1{hotelId}~1rooms'
   /hotels/{hotelId}/rooms/{roomId}:
     $ref: './room.yaml#/paths/~1hotels~1{hotelId}~1rooms~1{roomId}'
+  /hotels/{hotelId}/rooms/{roomId}/reviews:
+    $ref: './room.yaml#/paths/~1hotels~1{hotelId}~1rooms~1{roomId}~1reviews'
   /hotels/{hotelId}/rooms/physical-rooms:
     $ref: './room_management.yaml#/paths/~1hotels~1{hotelId}~1rooms~1physical-rooms'
+  /hotels/{hotelId}/rooms/physical-rooms/bulk:
+    $ref: './room_management.yaml#/paths/~1hotels~1{hotelId}~1rooms~1physical-rooms~1bulk'
   /hotels/{hotelId}/rooms/physical-rooms/{roomId}:
     $ref: './room_management.yaml#/paths/~1hotels~1{hotelId}~1rooms~1physical-rooms~1{roomId}'
   /hotels/{hotelId}/booking/calculate-price:
@@ -76,3 +82,9 @@ components:
       $ref: './revenue.yaml#/components/schemas/PricingRuleCreate'
     PricingRuleUpdate:
       $ref: './revenue.yaml#/components/schemas/PricingRuleUpdate'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

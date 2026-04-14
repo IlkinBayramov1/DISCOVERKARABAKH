@@ -2,27 +2,29 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
 
 // ─── Home Module ─────────────────────────────────────────────────────────────
-// import {
-//     HomeLayout,
-//     HomePage as Home,
-//     AccommodationPage,
-//     ArticlesPage,
-//     ContactPage,
-//     CorporatePage,
-//     ExploreAboutPage,
-//     ExploreCulturePage,
-//     ExploreNaturePage,
-// } from '../modules/home';
-// import CityPage from '../modules/home/pages/City/City';
+import {
+    HomeLayout,
+    HomePage as Home,
+    AccommodationPage,
+    ArticlesPage,
+    ContactPage,
+    CorporatePage,
+    ExploreAboutPage,
+    ExploreCulturePage,
+    ExploreNaturePage,
+} from '../modules/home';
+import CityPage from '../modules/home/pages/City/City';
+import ErrorBoundary from '../shared/components/Error/ErrorBoundary';
+import ErrorPage from '../shared/components/Error/ErrorPage';
 
 // ─── Service Layouts ─────────────────────────────────────────────────────────
 import WebLayout from '../modules/layout/WebLayout/WebLayout';
 import WebLogin from '../modules/auth/pages/WebLogin';
 import WebRegister from '../modules/auth/pages/WebRegister';
-import { HotelSearchPage } from '../modules/hotel/pages/HotelSearchPage';
-import { HotelDetailPage } from '../modules/hotel/pages/HotelDetailPage';
-import { ReservationPage } from '../modules/hotel/pages/ReservationPage';
-import { BookingConfirmationPage } from '../modules/hotel/pages/BookingConfirmationPage';
+import { HotelSearchPage } from '../modules/hotel/pages/HotelSearch';
+import { HotelDetailPage } from '../modules/hotel/pages/HotelDetail';
+import { ReservationPage } from '../modules/hotel/pages/Reservation';
+import { BookingConfirmationPage } from '../modules/hotel/pages/BookingConfirmation';
 import { PassengerTransportPage } from '../modules/transport/pages/passenger/PassengerTransportPage';
 import { CargoTransportPage } from '../modules/transport/pages/cargo/CargoTransportPage';
 import { DriverTransportPage } from '../modules/transport/pages/driver/DriverTransportPage';
@@ -45,92 +47,95 @@ import DriverOrders from '../modules/driver/pages/DriverOrders';
  * Bu, iki `path: '/'` konflikitini tam aradan qaldırır.
  */
 const router = createBrowserRouter([
-    // {
-    //     // ─── HomeLayout — Landing & Content Pages ─────────────────────────────
-    //     // path YOXdur — pathless layout route (React Router v6 tövsiyəsi)
-    //     element: <HomeLayout />,
-    //     children: [
-    //         {
-    //             index: true,          // localhost:PORT/  →  Home
-    //             element: <Home />,
-    //         },
-    //         {
-    //             path: 'about',
-    //             element: <ExploreAboutPage about={{}} />,
-    //         },
-    //         {
-    //             path: 'explore/about',
-    //             element: <ExploreAboutPage about={{}} />,
-    //         },
-    //         {
-    //             path: 'explore/culture',
-    //             element: <ExploreCulturePage />,
-    //         },
-    //         {
-    //             path: 'explore/nature',
-    //             element: <ExploreNaturePage />,
-    //         },
-    //         {
-    //             path: 'explore/articles',
-    //             element: <ArticlesPage />,
-    //         },
-    //         {
-    //             path: 'explore/articles/:slug',
-    //             element: <div className="p-20 text-center">Article detail coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'things-to-do',
-    //             element: <div className="p-20 text-center">Things To Do coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'corporate',
-    //             element: <CorporatePage />,
-    //         },
-    //         {
-    //             path: 'corporate/investments',
-    //             element: <div className="p-20 text-center">Investments coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'corporate/partnerships',
-    //             element: <div className="p-20 text-center">Partnerships coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'corporate/international',
-    //             element: <div className="p-20 text-center">International Corner coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'corporate/careers',
-    //             element: <div className="p-20 text-center">Jobs Hub coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'contact',
-    //             element: <ContactPage />,
-    //         },
-    //         {
-    //             path: 'plan/accommodation',
-    //             element: <AccommodationPage />,
-    //         },
-    //         {
-    //             path: 'plan/visa-permissions',
-    //             element: <div className="p-20 text-center">Visa & Permissions coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'plan/transportation',
-    //             element: <div className="p-20 text-center">Transportation coming soon…</div>,
-    //         },
-    //         {
-    //             path: 'card-and-passes',
-    //             element: <div className="p-20 text-center">Discover Card & Passes coming soon…</div>,
-    //         },
-    //         {
-    //             // City detail — CityPage city prop-u optional etdiyi üçün placeholder göstərəcək
-    //             path: 'where/:slug',
-    //             element: <CityPage />,
-    //         },
-    //     ],
-    // },
-
     {
+        path: '/',
+        errorElement: <ErrorBoundary />,
+        children: [
+        {
+            // ─── HomeLayout — Landing & Content Pages ─────────────────────────────
+            // path YOXdur — pathless layout route (React Router v6 tövsiyəsi)
+            element: <HomeLayout />,
+            children: [
+                {
+                    index: true,          // localhost:PORT/  →  Home
+                    element: <Home />,
+                },
+                {
+                    path: 'about',
+                    element: <ExploreAboutPage about={{}} />,
+                },
+                {
+                    path: 'explore/about',
+                    element: <ExploreAboutPage about={{}} />,
+                },
+                {
+                    path: 'explore/culture',
+                    element: <ExploreCulturePage />,
+                },
+                {
+                    path: 'explore/nature',
+                    element: <ExploreNaturePage />,
+                },
+                {
+                    path: 'explore/articles',
+                    element: <ArticlesPage />,
+                },
+                {
+                    path: 'explore/articles/:slug',
+                    element: <div className="p-20 text-center">Article detail coming soon…</div>,
+                },
+                {
+                    path: 'things-to-do',
+                    element: <div className="p-20 text-center">Things To Do coming soon…</div>,
+                },
+                {
+                    path: 'corporate',
+                    element: <CorporatePage />,
+                },
+                {
+                    path: 'corporate/investments',
+                    element: <div className="p-20 text-center">Investments coming soon…</div>,
+                },
+                {
+                    path: 'corporate/partnerships',
+                    element: <div className="p-20 text-center">Partnerships coming soon…</div>,
+                },
+                {
+                    path: 'corporate/international',
+                    element: <div className="p-20 text-center">International Corner coming soon…</div>,
+                },
+                {
+                    path: 'corporate/careers',
+                    element: <div className="p-20 text-center">Jobs Hub coming soon…</div>,
+                },
+                {
+                    path: 'contact',
+                    element: <ContactPage />,
+                },
+                {
+                    path: 'plan/accommodation',
+                    element: <AccommodationPage />,
+                },
+                {
+                    path: 'plan/visa-permissions',
+                    element: <div className="p-20 text-center">Visa & Permissions coming soon…</div>,
+                },
+                {
+                    path: 'plan/transportation',
+                    element: <div className="p-20 text-center">Transportation coming soon…</div>,
+                },
+                {
+                    path: 'card-and-passes',
+                    element: <div className="p-20 text-center">Discover Card & Passes coming soon…</div>,
+                },
+                {
+                    // City detail — CityPage city prop-u optional etdiyi üçün placeholder göstərəcək
+                    path: 'where/:slug',
+                    element: <CityPage />,
+                },
+            ],
+        },
+        {
         // ─── WebLayout — Travel Services (Search & Booking) ───────────────────
         // path YOXdur — pathless layout route
         element: <WebLayout />,
@@ -223,6 +228,12 @@ const router = createBrowserRouter([
                     { path: 'orders', element: <DriverOrders /> },
                     { path: 'profile', element: <DriverProfile /> },
                 ],
+            },
+        ],
+    },
+            {
+                path: '*',
+                element: <ErrorPage status={404} />,
             },
         ],
     },

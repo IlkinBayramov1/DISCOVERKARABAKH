@@ -11,5 +11,9 @@ export default defineConfig({
       '@dk/ui': path.resolve(__dirname, '../../packages/ui/src'),
       '@': path.resolve(__dirname, './src')
     }
+  },
+  server: {
+    port: 5175,
+    strictPort: true
   }
 })

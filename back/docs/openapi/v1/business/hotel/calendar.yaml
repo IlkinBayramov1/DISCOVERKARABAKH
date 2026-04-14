@@ -3,6 +3,7 @@ paths:
     get:
       summary: Get calendar data (pricing and availability)
       tags: [Calendar]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -37,6 +38,7 @@ paths:
     post:
       summary: Bulk update pricing and availability
       tags: [Calendar]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -56,6 +58,7 @@ paths:
     get:
       summary: Get calendar notes for a date range
       tags: [Calendar]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -80,6 +83,7 @@ paths:
     post:
       summary: Create or update a calendar note
       tags: [Calendar]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -96,6 +100,7 @@ paths:
     delete:
       summary: Delete a calendar note by date
       tags: [Calendar]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path

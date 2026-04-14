@@ -3,7 +3,17 @@ import { httpClient } from '../../../shared/api/httpClient';
 export interface HotelSearchParams {
     city?: string;
     q?: string;
+    
+    // Dates & Occupancy
+    checkIn?: string;
+    checkOut?: string;
+    adults?: number;
+    children?: number;
+    rooms?: number;
+    
+    // Temporary legacy format
     guests?: string;
+
     starRating?: number;
     priceRange?: number;
 
@@ -24,7 +34,13 @@ export const hotelWebApi = {
     searchHotels: async (params: HotelSearchParams) => {
         const queryParams = new URLSearchParams();
         if (params.city) queryParams.append('city', params.city);
-        if (params.q) queryParams.append('search', params.q); // backend uses 'search'
+        if (params.q) queryParams.append('q', params.q);
+        if (params.guests) queryParams.append('guests', params.guests);
+        if (params.checkIn) queryParams.append('checkIn', params.checkIn);
+        if (params.checkOut) queryParams.append('checkOut', params.checkOut);
+        if (params.adults) queryParams.append('adults', params.adults.toString());
+        if (params.children) queryParams.append('children', params.children.toString());
+        if (params.rooms) queryParams.append('rooms', params.rooms.toString());
         if (params.starRating) queryParams.append('starRating', params.starRating.toString());
 
         // Geography filters
@@ -74,6 +90,28 @@ export const hotelWebApi = {
 
     createRoomReview: async (hotelId: string, roomId: string, data: any) => {
         const response = await httpClient.post(`/hotels/${hotelId}/rooms/${roomId}/reviews`, data);
+        return response.data;
+    },
+
+    validateCoupon: async (code: string, total: number, hotelId?: string) => {
+        const payload: any = { code, total };
+        if (hotelId) payload.hotelId = hotelId;
+        const response = await httpClient.post('/hotels/validate-coupon', payload);
+        return response.data;
+    },
+
+    calculateBookingPrice: async (hotelId: string, payload: import('../types').IPricingCalculationRequest) => {
+        const response = await httpClient.post(`/hotels/${hotelId}/booking/calculate-price`, payload);
+        return response.data;
+    },
+
+    lockRoomInventory: async (hotelId: string, roomId: string, payload: import('../types').IInventoryLockRequest) => {
+        const response = await httpClient.post(`/hotels/${hotelId}/rooms/${roomId}/lock`, payload);
+        return response.data;
+    },
+
+    releaseRoomLock: async (hotelId: string, lockId: string) => {
+        const response = await httpClient.delete(`/hotels/${hotelId}/rooms/locks/${lockId}`);
         return response.data;
     }
 };

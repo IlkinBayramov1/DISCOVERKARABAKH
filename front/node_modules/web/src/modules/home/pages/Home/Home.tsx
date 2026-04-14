@@ -1,16 +1,7 @@
-import React, { useRef, useState } from 'react';
-import HomeLayout from '../HomeLayout';
-import type { SeoMeta } from '../../types/home.types';
+import { useState } from 'react';
 import './Home.css';
 
 // ─── Static data (backend-dən gəlsə props olacaq) ────────────────────────
-const SEO: SeoMeta = {
-  title:       'Discover Karabakh — Travel, Culture & City Services',
-  description: 'Plan your trip to Karabakh. Explore cities, culture, nature, accommodation, transport and get the Discover Card.',
-  canonical:   'https://discoverkarabakh.com',
-  ogImage:     '/images/og-home.jpg',
-};
-
 const SERVICES = [
   {
     href: '/plan/visa-permissions',
@@ -119,7 +110,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('All');
 
   return (
-    <HomeLayout seo={SEO} showFaq>
+    <>
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="hero" id="home">
         <div className="container">
@@ -348,6 +339,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </HomeLayout>
+    </>
   );
 }

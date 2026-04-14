@@ -1,17 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { hotelWebApi } from '../api/hotel.web.api';
-
-export interface IRoomReview {
-    id: string;
-    userId: string;
-    roomTypeId: string;
-    rating: number;
-    comment?: string;
-    createdAt: string;
-    user?: {
-        email: string;
-    };
-}
+import type { IRoomReview, IRoomReviewCreate } from '../types';
 
 export function useRoomReviews(hotelId: string, roomId: string) {
     const [reviews, setReviews] = useState<IRoomReview[]>([]);
@@ -47,7 +36,7 @@ export function useRoomReviews(hotelId: string, roomId: string) {
         }
     }, [hotelId, roomId]);
 
-    const submitReview = async (reviewData: any) => {
+    const submitReview = async (reviewData: IRoomReviewCreate) => {
         try {
             const result = await hotelWebApi.createRoomReview(hotelId, roomId, reviewData);
             fetchReviews(1);

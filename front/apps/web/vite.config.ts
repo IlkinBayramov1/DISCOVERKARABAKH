@@ -9,5 +9,20 @@ export default defineConfig({
     alias: {
       '@dk/ui': path.resolve(__dirname, '../../packages/ui/src')
     }
+  },
+  server: {
+    port: 5174,
+    proxy: {
+      '/vendor': {
+        target: 'http://localhost:5175',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/admin': {
+        target: 'http://localhost:5176',
+        changeOrigin: true,
+        ws: true,
+      }
+    }
   }
 })

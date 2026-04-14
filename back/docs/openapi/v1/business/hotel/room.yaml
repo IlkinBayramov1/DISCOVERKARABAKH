@@ -19,7 +19,7 @@ paths:
     post:
       summary: Create a new room type
       tags: [Room Management]
-      security: [{ BearerAuth: [] }]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -38,7 +38,7 @@ paths:
     put:
       summary: Update a room type
       tags: [Room Management]
-      security: [{ BearerAuth: [] }]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -59,7 +59,7 @@ paths:
     delete:
       summary: Delete a room type
       tags: [Room Management]
-      security: [{ BearerAuth: [] }]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path
@@ -109,7 +109,7 @@ paths:
     post:
       summary: Submit a review for a room type
       tags: [Room Management]
-      security: [{ BearerAuth: [] }]
+      security: [{ bearerAuth: [] }]
       parameters:
         - name: hotelId
           in: path

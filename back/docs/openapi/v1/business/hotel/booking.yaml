@@ -38,7 +38,7 @@ paths:
         Locks a room for a specific period (usually 10 minutes) to prevent overbooking during checkout.
         Required for processing payments.
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       parameters:
         - name: hotelId
           in: path

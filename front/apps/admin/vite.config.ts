@@ -10,5 +10,9 @@ export default defineConfig({
     alias: {
       '@dk/ui': path.resolve(__dirname, '../../packages/ui/src')
     }
+  },
+  server: {
+    port: 5176,
+    strictPort: true
   }
 })
