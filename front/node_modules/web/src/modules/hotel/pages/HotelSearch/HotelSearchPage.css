@@ -1,947 +1,780 @@
-/* ============================================
-   HOTEL SEARCH - CITY STYLE PREMIUM DARK
-   ============================================ */
-
+/* ROOT VARIABLES */
 :root {
-    /* City.css-dən uyğunlaşdırılmış palitra */
-    --bg-main: #0b1220;
-    --bg-secondary: #111827;
-    --bg-card: rgba(17, 24, 39, 0.6);
-    --bg-input: rgba(255, 255, 255, 0.03);
-    
-    --accent-purple: #7b43c4;
-    --accent-purple-dark: #5a2e91;
-    --accent-cyan: #2fd1ff;
-    --accent-blue: #3b82f6;
-    
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.86);
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --text-dark: rgba(15, 23, 42, 0.9);
-    
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(123, 67, 196, 0.3);
-    
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    --shadow-purple: 0 18px 46px rgba(90, 46, 145, 0.15);
-    
-    --radius-sm: 12px;
-    --radius-md: 16px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
-    
-    --transition-fast: 150ms ease;
-    --transition-normal: 250ms ease;
-    --transition-slow: 350ms ease;
+    --primary-blue: #1d4ed8;
+    --primary-blue-hover: #1e3a8a;
+    --bg-color: #f6f8fb;
+    --text-dark: #111827;
+    --text-muted: #6b7280;
+    --border-light: #e5e7eb;
+    --white: #ffffff;
 }
 
-/* ============================================
-   BASE LAYOUT (City Hero kimi)
-   ============================================ */
+body {
+    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
 
 .hotel-search-page {
-    min-height: 100vh;
-    background: var(--bg-main);
-    background-image: 
-        radial-gradient(ellipse at top, rgba(123, 67, 196, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at bottom right, rgba(47, 209, 255, 0.05) 0%, transparent 40%);
-    color: var(--text-primary);
-    padding: 40px 0 80px;
-}
-
-.hotel-search-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
-
-/* ============================================
-   SEARCH HEADER - City Hero Card Style
-   ============================================ */
-
-.search-hero {
-    position: relative;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-    border: 1px solid var(--border-color);
-    box-shadow: 
-        0 34px 96px rgba(24, 12, 40, 0.2),
-        0 0 0 1px rgba(90, 46, 145, 0.1);
-    margin-bottom: 40px;
-    transform: translateZ(0);
-}
-
-.search-hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: 
-        radial-gradient(900px 500px at 20% 30%, rgba(123, 67, 196, 0.15), transparent 60%),
-        radial-gradient(700px 400px at 80% 20%, rgba(47, 209, 255, 0.08), transparent 55%);
-    pointer-events: none;
-}
-
-.search-hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(1200px 600px at 50% 50%, rgba(255, 255, 255, 0.03), transparent 55%);
-    pointer-events: none;
-    mix-blend-mode: soft-light;
-    opacity: 0.4;
-}
-
-.search-hero-content {
-    position: relative;
-    z-index: 1;
-    padding: 48px 40px 40px;
-}
-
-.search-hero-title {
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 950;
-    letter-spacing: -0.03em;
-    margin-bottom: 8px;
-    background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 18px 46px rgba(0, 0, 0, 0.3);
-}
-
-.search-hero-subtitle {
-    color: var(--text-muted);
-    font-size: 16px;
-    margin-bottom: 32px;
-    max-width: 600px;
-}
-
-/* ============================================
-   SEARCH FORM - Glassmorphism Inputs
-   ============================================ */
-
-.search-form-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-@media (min-width: 768px) {
-    .search-form-wrapper {
-        flex-direction: row;
-        align-items: flex-end;
-        gap: 16px;
-    }
-}
-
-.form-field {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.form-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.form-input-hotel {
     width: 100%;
-    padding: 16px 20px;
-    font-size: 15px;
-    color: var(--text-primary);
-    background: var(--bg-input);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    backdrop-filter: blur(10px);
-    transition: all var(--transition-normal);
-    outline: none;
 }
 
-.form-input-hotel:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
+.container {
+    max-width: 1320px;
+    margin: auto;
+    padding: 10px;
 }
 
-.form-input-hotel:focus {
-    border-color: var(--accent-purple);
-    box-shadow: 0 0 0 4px rgba(123, 67, 196, 0.15);
-    background: rgba(123, 67, 196, 0.05);
-}
-
-.form-input-hotel::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-}
-
-/* Select styling */
-select.form-input-hotel {
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394A3B8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 16px center;
-    background-repeat: no-repeat;
-    background-size: 20px 20px;
-    padding-right: 48px;
-}
-
-/* Star rating field narrower */
-.star-field {
-    flex: 0 0 auto;
-    min-width: 140px;
-}
-
-@media (max-width: 767px) {
-    .star-field {
-        width: 100%;
-    }
-}
-
-/* ============================================
-   SEARCH BUTTON - Premium Gradient
-   ============================================ */
-
-.search-btn-premium {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 32px;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple-dark) 100%);
-    border: none;
-    border-radius: 16px;
-    cursor: pointer;
-    box-shadow: 
-        0 10px 30px rgba(90, 46, 145, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all var(--transition-normal);
+/* HERO SECTION */
+.hero {
     position: relative;
+    height: 260px;
+    border-radius: 26px;
+    background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
     overflow: hidden;
-    white-space: nowrap;
 }
 
-.search-btn-premium::before {
+.hero::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    /* Image brightness filter */
+}
+
+.hero-overlay {
+    position: absolute;
+    bottom: 32px;
+    left: 36px;
+    color: #fff;
+    z-index: 2;
+}
+
+.hero-overlay h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.hero-overlay p {
+    font-size: 16px;
+    margin: 0;
+}
+
+
+/* SEARCH SECTION */
+/* Əsas axtarış paneli */
+.search-bar {
+    position: relative;
+    display: flex;
+    flex-direction: row !important;
+    /* Qəti olaraq yan-yana düzmək üçün */
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 999px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+    margin-top: 28px;
+    gap: 10px;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.6s;
+    box-sizing: border-box;
+    flex-wrap: nowrap !important;
+    /* Elementlərin alt-alta düşməsinin qarşısını alır */
 }
 
-.search-btn-premium:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 
-        0 14px 40px rgba(90, 46, 145, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+/* Daxilindəki hər bir blok (Location, Check-in, Guests) */
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.search-btn-premium:hover:not(:disabled)::before {
-    left: 100%;
+.search-item:hover {
+    background: rgba(106, 40, 199, 0.03);
+    border-radius: 16px;
 }
 
-.search-btn-premium:active:not(:disabled) {
-    transform: translateY(0);
+/* 0. HOTEL NAME */
+.hotel-name-item {
+    flex: 1.2;
+    min-width: 200px;
 }
 
-.search-btn-premium:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    filter: grayscale(0.5);
+/* 1. LOCATION */
+.location-item {
+    flex: 0.8;
+    min-width: 150px;
+    border-left: 1px solid #f1f5f9;
 }
 
-/* Search icon inside button */
-.search-btn-icon {
-    width: 18px;
-    height: 18px;
+/* 2. DATE SECTION */
+.date-item {
+    flex: 1;
+    border-left: 1px solid #f1f5f9;
 }
 
-/* ============================================
-   MAIN CONTENT GRID
-   ============================================ */
-
-.content-grid-hotel {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 32px;
-    align-items: start;
+/* 3. GUESTS SECTION */
+.guest-item {
+    flex: 1;
+    min-width: 180px;
+    border-left: 1px solid #f1f5f9;
 }
 
-@media (max-width: 1024px) {
-    .content-grid-hotel {
-        grid-template-columns: 240px 1fr;
-        gap: 24px;
-    }
+.search-item svg {
+    color: var(--dk-primary, #6a28c7);
+    /* Sidebar rəngi */
+    width: 22px;
+    height: 22px;
+    opacity: 0.8;
 }
 
-@media (max-width: 768px) {
-    .content-grid-hotel {
-        grid-template-columns: 1fr;
-    }
+.search-item label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+    display: block;
 }
 
-/* ============================================
-   SIDEBAR - Glass Card Style
-   ============================================ */
-
-.hotel-sidebar {
-    position: sticky;
-    top: 24px;
+.search-value {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
-.sidebar-glass {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.3) 0%, rgba(15, 23, 42, 0.5) 100%);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 28px 24px;
-    backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-purple);
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.sidebar-title {
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 24px;
-    color: var(--text-primary);
+.search-input-naked {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    /* Bir az böyüdüldü */
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    width: 140px;
+    /* 125px-dən 140px-ə qaldırıldı ki, YYYY tam yerləşsin */
+    padding: 0;
+    letter-spacing: -0.02em;
+    /* Simvollar arası məsafə sıxlaşdırıldı */
+}
+
+/* Tarix seçicinin daxili boşluqlarını sıfırlayırıq */
+.search-input-naked::-webkit-datetime-edit {
+    padding: 0;
+}
+
+/* Chrome, Safari və Edge üçün xüsusi tarix mətnini hədəfləmək */
+.search-input-naked::-webkit-datetime-edit,
+.search-input-naked::-webkit-datetime-edit-fields-wrapper,
+.search-input-naked::-webkit-datetime-edit-text,
+.search-input-naked::-webkit-datetime-edit-month-field,
+.search-input-naked::-webkit-datetime-edit-day-field,
+.search-input-naked::-webkit-datetime-edit-year-field {
+    color: #111827 !important;
+}
+
+/* Axtarış düyməsi */
+.search-btn {
+    background: linear-gradient(135deg, var(--dk-primary, #6a28c7) 0%, var(--dk-accent, #9d65eb) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 15px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 20px rgba(106, 40, 199, 0.2);
+    flex-shrink: 0;
+    margin-left: 10px;
 }
 
-.sidebar-title::after {
+.search-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 25px rgba(106, 40, 199, 0.3);
+}
+
+.search-btn-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 3px;
+}
+
+/* ============================================
+   ULTRA-PREMIUM GUEST DROPDOWN
+   ============================================ */
+.guest-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    /* Paneldən bir az aralı durması üçün */
+    right: 0;
+    /* Sağ tərəfə hizalanması daha nizamlı görünür */
+    background: #ffffff;
+    border-radius: 24px;
+    /* Daha yuvarlaq künclər */
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(106, 40, 199, 0.05);
+    /* Çox incə bənövşəyi border effekti */
+    padding: 24px;
+    width: 320px;
+    z-index: 1000;
+    animation: dropdownFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Üst hissədəki kiçik üçbucaq (Arrow) */
+.guest-dropdown::before {
     content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--accent-purple), transparent);
-    margin-left: 12px;
+    position: absolute;
+    top: -8px;
+    right: 40px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    border-left: 1px solid rgba(106, 40, 199, 0.05);
+    border-top: 1px solid rgba(106, 40, 199, 0.05);
 }
 
-.filter-block {
-    margin-bottom: 28px;
-}
-
-.filter-block:last-child {
-    margin-bottom: 0;
-}
-
-.filter-heading {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--accent-cyan);
-    margin-bottom: 16px;
+.guest-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
 }
 
-.filter-list {
+.guest-row:last-of-type {
+    border-bottom: none;
+}
+
+.guest-info {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+}
+
+.guest-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.guest-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Kontrol Düymələri Sistemi */
+.guest-controls {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    /* Düymələrin arxa fonu */
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+}
+
+.guest-controls button {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.guest-controls button:hover {
+    background: var(--dk-primary, #6a28c7);
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(106, 40, 199, 0.2);
+}
+
+.guest-controls button:active {
+    transform: scale(0.95);
+}
+
+/* Düymə deaktiv olduqda (Məsələn: 0 uşaq) */
+.guest-controls button:disabled {
+    background: #f1f5f9;
+    color: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.guest-controls span {
+    width: 40px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+    /* Rəqəmlərin titrəməməsi üçün */
+}
+
+/* Dropdown-un aşağısına təmizləmə və ya tətbiq etmə düyməsi (Opsional amma Premium görünür) */
+.guest-dropdown-footer {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.guest-apply-btn {
+    background: transparent;
+    color: var(--dk-primary, #6a28c7);
+    border: none;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.guest-apply-btn:hover {
+    background: rgba(106, 40, 199, 0.05);
+    text-decoration: underline;
+}
+
+/* RESULTS SECTION */
+.results-bar {
+    margin: 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.actions {
+    display: flex;
     gap: 12px;
 }
 
+.ghost-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.inline-sort-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-dark);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+/* HOTEL LIST SECTION */
+.hotel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.skeleton-hotel {
+    height: 380px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    border-radius: 24px;
+    animation: loadingPulse 1.5s infinite;
+}
+
+@keyframes loadingPulse {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.empty-state-premium {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.empty-text {
+    color: var(--text-muted);
+}
+
+/* ============================================
+   ULTRA-PREMIUM OFF-CANVAS SIDEBAR (FILTERS)
+   ============================================ */
+
+/* Arxa fonu bulandırmaq üçün Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 80px;
+    /* Overlay da header-dən aşağıda başlasın */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 80;
+    /* Sidebar-dan bir az aşağıda */
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Əsas Sidebar Konteyneri */
+.hotel-offcanvas-sidebar {
+    position: fixed;
+    /* Header 80px olduğu üçün tam onun altından başlayır */
+    top: 80px;
+    right: -380px;
+    width: 360px;
+    /* Hündürlük: Ekran hündürlüyü - Header hündürlüyü */
+    height: calc(100vh - 80px);
+    background: #ffffff;
+    /* Header-in z-index-i adətən 90-100 olur, bunu ona uyğun nizamlayın */
+    z-index: 85;
+    box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.05);
+    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f1f5f9;
+}
+
+.hotel-offcanvas-sidebar.active {
+    right: 0;
+}
+
+/* Sidebar Başlığı */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #f1f5f9;
+
+    /* VACİB HİSSƏ: Başlığı dondurur və checkboxların üzərinə çıxmasını maneə törədir */
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    /* Şəffaf olmamalıdır */
+    z-index: 10;
+    /* Məzmundan daha yuxarıda dayanması üçün */
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.sidebar-close {
+    background: #f8fafc;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.sidebar-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* Məzmun Hissəsi */
+.sidebar-content {
+    padding: 30px 24px;
+}
+
+.filter-block {
+    margin-bottom: 35px;
+}
+
+.filter-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* Input Stilimiz (Məsələn: Location select) */
+.form-input-hotel {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid #f1f5f9;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #1e293b;
+    outline: none;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.form-input-hotel:focus {
+    border-color: var(--dk-primary, #6a28c7);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(106, 40, 199, 0.1);
+}
+
+/* Checkbox və Radio siyahıları */
+.filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Xüsusi Checkbox/Radio Dizaynı */
 .filter-checkbox-item {
     display: flex;
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    padding: 8px 0;
-    transition: all var(--transition-fast);
+    font-size: 15px;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.2s ease;
+    padding: 4px 0;
 }
 
 .filter-checkbox-item:hover {
-    color: var(--text-primary);
+    color: var(--dk-primary, #6a28c7);
+    transform: translateX(4px);
 }
 
-.filter-checkbox-item input[type="checkbox"] {
+/* Native inputları gizlədib premium görünüş veririk */
+.filter-checkbox-item input[type="checkbox"],
+.filter-checkbox-item input[type="radio"] {
     appearance: none;
+    -webkit-appearance: none;
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid #e2e8f0;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
+    /* Checkbox üçün */
+    background: #ffffff;
     cursor: pointer;
     position: relative;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
+    transition: all 0.3s var(--dk-ease-bounce);
 }
 
-.filter-checkbox-item input[type="checkbox"]:checked {
-    background: var(--accent-purple);
-    border-color: var(--accent-purple);
+.filter-checkbox-item input[type="radio"] {
+    border-radius: 50%;
+    /* Radio üçün tam dairə */
 }
 
-.filter-checkbox-item input[type="checkbox"]:checked::after {
-    content: '';
+.filter-checkbox-item input:checked {
+    background: var(--dk-primary, #6a28c7);
+    border-color: var(--dk-primary, #6a28c7);
+}
+
+.filter-checkbox-item input:checked::after {
+    content: "✓";
     position: absolute;
+    color: #fff;
+    font-size: 12px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    background: #fff;
-    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    font-weight: 800;
 }
 
-.filter-checkbox-item input[type="checkbox"]:focus {
-    box-shadow: 0 0 0 3px rgba(123, 67, 196, 0.3);
+.filter-checkbox-item input[type="radio"]:checked::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
 }
 
-.filter-label-text {
-    font-size: 14px;
-    color: var(--text-secondary);
-    transition: color var(--transition-fast);
+/* Filteri təmizlə düyməsi */
+.clear-filter-btn {
+    background: rgba(106, 40, 199, 0.05);
+    border: none;
+    color: var(--dk-primary, #6a28c7);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.filter-checkbox-item:hover .filter-label-text {
-    color: var(--text-primary);
+.clear-filter-btn:hover {
+    background: var(--dk-primary, #6a28c7);
+    color: #ffffff;
+    text-decoration: none;
 }
 
-/* Mobile filter toggle */
-.mobile-filter-toggle {
-    display: none;
+/* Scrollbar-ı premium etmək */
+.hotel-offcanvas-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.hotel-offcanvas-sidebar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+/* Aşağıdakı "Nəticələri Göstər" düyməsi (Opsional amma tövsiyə olunur) */
+.sidebar-footer {
+    padding: 24px;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+    position: sticky;
+    bottom: 0;
+}
+
+.apply-filters-btn {
     width: 100%;
-    padding: 14px 20px;
-    background: rgba(123, 67, 196, 0.1);
-    border: 1px solid rgba(123, 67, 196, 0.2);
-    border-radius: 14px;
-    color: var(--accent-purple);
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    margin-bottom: 20px;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-@media (max-width: 768px) {
-    .mobile-filter-toggle {
-        display: flex;
-    }
-    
-    .hotel-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        background: rgba(11, 18, 32, 0.95);
-        backdrop-filter: blur(20px);
-        display: none;
-        padding: 80px 24px 24px;
-        overflow-y: auto;
-    }
-    
-    .hotel-sidebar.active {
-        display: block;
-    }
-    
-    .sidebar-close {
-        position: absolute;
-        top: 24px;
-        right: 24px;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 20px;
-    }
-}
-
-/* ============================================
-   RESULTS HEADER
-   ============================================ */
-
-.results-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.results-count {
-    font-size: 14px;
-    color: var(--text-muted);
-}
-
-.results-count strong {
-    color: var(--text-primary);
-    font-weight: 700;
-}
-
-.sort-dropdown {
-    padding: 10px 16px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--dk-primary, #6a28c7) 0%, var(--dk-accent, #9d65eb) 100%);
+    color: #fff;
+    border: none;
+    padding: 14px;
     border-radius: 12px;
-    color: var(--text-secondary);
-    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    box-shadow: 0 10px 20px rgba(106, 40, 199, 0.15);
+    transition: all 0.3s ease;
 }
 
-.sort-dropdown:hover {
-    border-color: var(--accent-purple);
+.apply-filters-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(106, 40, 199, 0.25);
 }
 
-/* ============================================
-   HOTELS GRID - City Attractions Style
-   ============================================ */
-
-.hotels-grid-premium {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-}
-
+/* RESPONSIVENESS */
 @media (max-width: 1200px) {
-    .hotels-grid-premium {
+    .hotel-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .hotel-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-}
 
-@media (max-width: 640px) {
-    .hotels-grid-premium {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-}
-
-/* ============================================
-   HOTEL CARD - Attractions Card Style
-   ============================================ */
-
-.hotel-card-premium {
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.1);
-    transition: all var(--transition-normal);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.hotel-card-premium:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 26px 70px rgba(15, 23, 42, 0.15);
-    border-color: rgba(123, 67, 196, 0.2);
-}
-
-.hotel-card-media {
-    height: 200px;
-    background: rgba(15, 23, 42, 0.06);
-    position: relative;
-    overflow: hidden;
-}
-
-.hotel-card-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transform: scale(1.02);
-    transition: transform 0.5s ease;
-}
-
-.hotel-card-premium:hover .hotel-card-media img {
-    transform: scale(1.08);
-}
-
-/* Badges on image */
-.hotel-badges {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.hotel-badge {
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    backdrop-filter: blur(10px);
-}
-
-.badge-featured {
-    background: rgba(123, 67, 196, 0.9);
-    color: #fff;
-    border: 1px solid rgba(123, 67, 196, 0.3);
-}
-
-.badge-deal {
-    background: rgba(47, 209, 255, 0.9);
-    color: #0b1220;
-    border: 1px solid rgba(47, 209, 255, 0.3);
-}
-
-/* Rating badge */
-.hotel-rating-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 14px;
-    color: var(--accent-purple-dark);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.rating-star {
-    color: #f59e0b;
-}
-
-/* Card Body - Purple Gradient like attractions */
-.hotel-card-body {
-    padding: 20px;
-    background: 
-        radial-gradient(520px 260px at 20% 0%, rgba(47, 209, 255, 0.14), transparent 55%),
-        linear-gradient(135deg, #5a2e91 0%, #7b43c4 55%, #2b1550 100%);
-    color: #fff;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.hotel-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.hotel-name {
-    font-size: 18px;
-    font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    margin: 0;
-}
-
-.hotel-stars {
-    display: flex;
-    gap: 2px;
-    color: #fbbf24;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-
-.hotel-location {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 16px;
-}
-
-.location-icon {
-    width: 14px;
-    height: 14px;
-    opacity: 0.8;
-}
-
-.hotel-amenities {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.amenity-tag {
-    padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.hotel-price-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.price-label {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.price-value {
-    font-size: 24px;
-    font-weight: 950;
-    color: #fff;
-}
-
-.price-unit {
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-/* ============================================
-   LOADING SKELETON
-   ============================================ */
-
-.skeleton-hotel {
-    background: rgba(30, 41, 59, 0.4);
-    border-radius: var(--radius-md);
-    height: 380px;
-    border: 1px solid var(--border-color);
-    position: relative;
-    overflow: hidden;
-}
-
-.skeleton-hotel::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(123, 67, 196, 0.1) 50%, transparent 100%);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* ============================================
-   EMPTY STATE
-   ============================================ */
-
-.empty-state-premium {
-    text-align: center;
-    padding: 80px 40px;
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.3) 0%, rgba(15, 23, 42, 0.5) 100%);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-}
-
-.empty-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 24px;
-    background: rgba(123, 67, 196, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-    border: 1px solid rgba(123, 67, 196, 0.2);
-}
-
-.empty-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-}
-
-.empty-text {
-    color: var(--text-muted);
-    font-size: 15px;
-    max-width: 400px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
-
-/* ============================================
-   ERROR STATE
-   ============================================ */
-
-.error-premium {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: var(--radius-md);
-    color: #fca5a5;
-    margin-bottom: 24px;
-}
-
-.error-icon {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    color: #ef4444;
-}
-
-/* ============================================
-   PAGINATION
-   ============================================ */
-
-.pagination-premium {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 40px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border-color);
-}
-
-.page-btn {
-    min-width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-    border-color: var(--accent-purple);
-    color: var(--text-primary);
-    background: rgba(123, 67, 196, 0.1);
-}
-
-.page-btn.active {
-    background: var(--accent-purple);
-    border-color: var(--accent-purple);
-    color: #fff;
-}
-
-.page-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* ============================================
-   RESPONSIVE UTILITIES
-   ============================================ */
-
-@media (max-width: 768px) {
-    .hotel-search-page {
-        padding: 20px 0 60px;
-    }
-    
-    .hotel-search-container {
-        padding: 0 16px;
-    }
-    
-    .search-hero-content {
-        padding: 32px 24px 28px;
-    }
-    
-    .search-hero-title {
-        font-size: 28px;
-    }
-    
-    .search-btn-premium {
-        width: 100%;
-    }
-    
-    .results-header {
+    .search-bar {
         flex-direction: column;
-        gap: 16px;
+        align-items: stretch;
+        border-radius: 20px;
+        padding: 15px;
+    }
+
+    .search-item {
+        flex: 100%;
+        border-radius: 12px;
+    }
+
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .hotel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-overlay h1 {
+        font-size: 32px;
+    }
+
+    .results-bar {
+        flex-direction: column;
         align-items: flex-start;
-    }
-}
-
-@media (max-width: 480px) {
-    .search-hero-content {
-        padding: 28px 20px 24px;
-    }
-    
-    .search-hero-title {
-        font-size: 24px;
-    }
-    
-    .form-input-hotel {
-        padding: 14px 16px;
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
-    
-    .hotel-card-media {
-        height: 180px;
-    }
-    
-    .hotel-card-body {
-        padding: 16px;
-    }
-    
-    .hotel-name {
-        font-size: 16px;
-    }
-    
-    .price-value {
-        font-size: 22px;
-    }
-}
-
-/* Touch device optimizations */
-@media (hover: none) and (pointer: coarse) {
-    .hotel-card-premium:hover {
-        transform: none;
-    }
-    
-    .hotel-card-premium:active {
-        transform: scale(0.98);
-    }
-    
-    .search-btn-premium:hover:not(:disabled) {
-        transform: none;
-    }
-    
-    .search-btn-premium:active:not(:disabled) {
-        transform: scale(0.96);
+        gap: 15px;
     }
 }

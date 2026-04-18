@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+    import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHotels } from '../../hooks/useHotels';
 import { useUpload } from '../../hooks/useUpload';
@@ -58,7 +58,15 @@ const AMENITY_DEFS: AmenityDef[] = [
 export default function CreateHotel() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
-    const { createHotel, error: hookError } = useHotels(false);
+    const { createHotel, data: hotels, loading: hotelsLoading, error: hookError } = useHotels(true);
+
+    useEffect(() => {
+        // Guard: If not editing and already has a property, redirect
+        const isEdit = id && id !== 'create';
+        if (!isEdit && !hotelsLoading && hotels.length > 0) {
+            navigate('/vendor/hotel/dashboard');
+        }
+    }, [hotels, hotelsLoading, id, navigate]);
     const { uploadImages, uploading, uploadError } = useUpload();
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -194,7 +202,7 @@ export default function CreateHotel() {
                 setSuccessMsg('Property blueprint updated successfully!');
             } else {
                 await createHotel(finalData);
-                setSuccessMsg('Property blueprint deployed! Redirecting to dashboard...');
+                setSuccessMsg('Success! Your property is now live and visible to travelers. Redirecting to dashboard...');
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });

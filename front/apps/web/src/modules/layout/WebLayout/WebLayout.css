@@ -1,11 +1,11 @@
 /* Premium Minimal WebLayout - Dark Theme */
 
 :root {
-  --app-bg: #0b1121;
-  --app-bg-secondary: #131b2f;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --app-bg: #ffffff;
+  --app-bg-secondary: #adadad;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #000000;
   --accent: #06b6d4;
   --border-color: rgba(255, 255, 255, 0.08);
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);

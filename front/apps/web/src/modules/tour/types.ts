@@ -15,6 +15,7 @@ export interface ITour {
     id: string;
     name: string;
     slug: string;
+    city?: string;
     description: string;
     address: string;
     phone?: string;
@@ -22,29 +23,59 @@ export interface ITour {
     images: string[];
     businessType: 'Tour';
     
-    duration: {
-        days: number;
-        nights: number;
-    };
+    durationDays: number;
+    durationNights: number;
     difficulty: 'Easy' | 'Medium' | 'Hard' | 'Extreme';
-    groupSize: {
-        min: number;
-        max: number;
-    };
-    startDates: string[];
+    groupSizeMin: number;
+    groupSizeMax: number;
+    pricePerPerson: number;
+    
+    startDate: string;
     itinerary: ITourItineraryDay[];
     inclusions: string[];
     exclusions: string[];
-    pricePerPerson: number;
     
+    ownerId: string;
+    isApproved: boolean;
+    isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
 }
 
+export interface ITourAvailabilityResponse {
+    tourId: string;
+    date: string;
+    maxSeats: number;
+    bookedCount: number;
+    remainingSeats: number;
+    isFull: boolean;
+}
+
 export interface ITourFilters {
+    page?: number;
+    limit?: number;
     city?: string;
-    difficulty?: string[];
     minPrice?: number;
     maxPrice?: number;
     duration?: number[];
+}
+
+export type TourEventType = 
+    | 'TOUR_CREATED'
+    | 'TOUR_UPDATED'
+    | 'TOUR_DELETED'
+    | 'TOUR_RESERVATION_CREATED'
+    | 'TOUR_RESERVATION_CANCELLED';
+
+export interface ITourReservationCreatedPayload {
+    bookingId: string;
+    tourId: string;
+    totalPrice: number;
+    timestamp: string;
+}
+
+export interface ITourReservationCancelledPayload {
+    bookingId: string;
+    tourId: string;
+    timestamp: string;
 }

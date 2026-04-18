@@ -7,6 +7,12 @@ class HotelService {
      * Creates a new Hotel Entity mapped to a Vendor
      */
     async create(vendorId, data) {
+        // Check for existing property - Limit: 1 per vendor
+        const existing = await prisma.hotel.findFirst({ where: { ownerId: vendorId } });
+        if (existing) {
+            throw ApiError.badRequest('You already have a registered hotel. Each vendor is limited to one property.');
+        }
+
         // Map payload strictly to Prisma schema
         const { amenities, images, nearbyPOIs, ...rest } = data;
 
@@ -14,7 +20,7 @@ class HotelService {
             data: {
                 ...rest,
                 ownerId: vendorId,
-                status: 'pending',
+                status: 'active',
                 // Handle many-to-many relationship for amenities
                 amenities: amenities && amenities.length > 0 ? {
                     create: amenities.map(amenityName => ({

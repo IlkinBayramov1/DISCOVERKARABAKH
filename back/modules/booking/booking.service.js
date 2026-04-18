@@ -139,6 +139,7 @@ class BookingService {
             where: { id: bookingId, userId },
             include: {
                 hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true } },
+                tour: { select: { name: true, city: true, address: true, images: true } },
                 items: true,
                 guests: true
             }

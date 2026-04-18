@@ -15,7 +15,7 @@ export const authMiddleware = async (req, res, next) => {
       throw ApiError.unauthorized('Not authorized to access this route');
     }
 
-    const decoded = jwt.verify(token, env.jwtSecret || process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwtSecret);
 
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) {

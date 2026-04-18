@@ -1,367 +1,205 @@
-/* HotelCard.css */
-/* Modern, Clean & Responsive Hotel Card Styles */
+/* HotelCard.css - Ultra Premium Style */
 
-/* ============================================
-   CSS VARIABLES (Design Tokens)
-   ============================================ */
-:root {
-  /* Colors */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #dbeafe;
-  
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-  
-  --color-white: #ffffff;
-  --color-yellow-400: #facc15;
-  --color-yellow-500: #eab308;
-  --color-green-500: #10b981;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
-  /* Spacing */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  
-  /* Transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 250ms ease-in-out;
-  --transition-slow: 350ms ease-in-out;
+.premium-hotel-card {
+    background: #ffffff;
+    border-radius: 20px; /* Daha yumşaq künclər */
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
 }
 
-/* ============================================
-   HOTEL CARD CONTAINER
-   ============================================ */
-.hotel-card {
-  background: var(--color-white);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-gray-100);
-  transition: all var(--transition-normal);
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.premium-hotel-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(106, 40, 199, 0.08);
+    border-color: rgba(106, 40, 199, 0.1);
 }
 
-.hotel-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary) 0%, #3b82f6 50%, #60a5fa 100%);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-  z-index: 2;
+/* Image Section */
+.card-image-section {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
 }
 
-.hotel-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-xl);
+.card-image-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
 }
 
-.hotel-card:hover::before {
-  opacity: 1;
+.premium-hotel-card:hover .card-image-section img {
+    transform: scale(1.1);
 }
 
-.hotel-card:active {
-  transform: translateY(-4px);
+.card-rating-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    padding: 6px 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* ============================================
-   IMAGE SECTION
-   ============================================ */
-.hotel-card-image {
-  position: relative;
-  width: 100%;
-  height: 12rem;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%);
+.card-rating-badge i {
+    color: #f59e0b; /* Gold star */
 }
 
-.hotel-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform var(--transition-slow);
+.wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.3s ease;
 }
 
-.hotel-card:hover .hotel-card-image img {
-  transform: scale(1.08);
+.wishlist-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    transform: scale(1.1);
 }
 
-/* Image overlay gradient */
-.hotel-card-image::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
+/* Info Section */
+.card-info-section {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.hotel-card:hover .hotel-card-image::after {
-  opacity: 1;
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
 }
 
-/* ============================================
-   DETAILS SECTION
-   ============================================ */
-.hotel-card-details {
-  padding: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: var(--space-3);
+.card-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 16px;
 }
 
-/* ============================================
-   HEADER (Title + Rating)
-   ============================================ */
-.hotel-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-3);
+.card-location i {
+    color: var(--dk-primary, #6a28c7);
 }
 
-.hotel-card-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-  line-height: 1.4;
-  margin: 0;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  transition: color var(--transition-fast);
+/* Amenities */
+.card-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
 }
 
-.hotel-card:hover .hotel-card-title {
-  color: var(--color-primary);
+.amenity-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
 }
 
-/* Star Rating Badge */
-.hotel-card-rating {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  background: linear-gradient(135deg, var(--color-yellow-400) 0%, var(--color-yellow-500) 100%);
-  color: var(--color-gray-900);
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
+.amenity-tag i {
+    font-size: 13px;
+    color: var(--dk-primary, #6a28c7);
 }
 
-.hotel-card-rating span {
-  font-size: 0.8125rem;
+/* Footer & Price */
+.card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 16px;
+    border-top: 1px dashed #e2e8f0;
 }
 
-/* ============================================
-   ADDRESS
-   ============================================ */
-.hotel-card-address {
-  font-size: 0.875rem;
-  color: var(--color-gray-500);
-  line-height: 1.5;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-decoration: none;
-  transition: all var(--transition-fast);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  margin-left: calc(-1 * var(--space-2)); /* Align visual padding with text */
-  margin-right: calc(-1 * var(--space-2));
+.price-wrapper {
+    display: flex;
+    flex-direction: column;
 }
 
-.hotel-card-address:hover {
-  color: var(--color-primary);
-  background-color: var(--color-primary-light);
-  text-decoration: underline;
+.price-meta {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-bottom: 2px;
 }
 
-/* ============================================
-   FOOTER (Review + Price)
-   ============================================ */
-.hotel-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-gray-100);
+.price-main {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
 }
 
-/* Review Score */
-.hotel-review-score {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--color-green-500) 0%, #059669 100%);
-  color: var(--color-white);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  min-width: 2.5rem;
+.price-symbol {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dk-primary, #6a28c7);
 }
 
-.hotel-no-review {
-  font-size: 0.8125rem;
-  color: var(--color-gray-400);
-  font-style: italic;
+.price-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dk-primary, #6a28c7);
+    line-height: 1;
 }
 
-/* Price Info */
-.hotel-price-info {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.price-unit {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    margin-left: 4px;
 }
 
-.hotel-price-label {
-  font-size: 0.75rem;
-  color: var(--color-gray-400);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
+.card-action-btn {
+    background: linear-gradient(135deg, var(--dk-primary, #6a28c7) 0%, var(--dk-accent, #9d65eb) 100%);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(106, 40, 199, 0.2);
 }
 
-.hotel-price-val {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--color-primary);
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-.cursor-pointer {
-  cursor: pointer;
-}
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.hotel-card {
-  animation: fadeInUp 0.5s ease-out;
-}
-
-/* Stagger animation for grid */
-.hotel-card:nth-child(1) { animation-delay: 0ms; }
-.hotel-card:nth-child(2) { animation-delay: 100ms; }
-.hotel-card:nth-child(3) { animation-delay: 200ms; }
-.hotel-card:nth-child(4) { animation-delay: 300ms; }
-.hotel-card:nth-child(5) { animation-delay: 400ms; }
-.hotel-card:nth-child(6) { animation-delay: 500ms; }
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-@media (max-width: 640px) {
-  .hotel-card-image {
-    height: 10rem;
-  }
-  
-  .hotel-card-details {
-    padding: var(--space-4);
-  }
-  
-  .hotel-card-title {
-    font-size: 1rem;
-  }
-  
-  .hotel-price-val {
-    font-size: 1.125rem;
-  }
-}
-
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-.hotel-card:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .hotel-card,
-  .hotel-card-image img,
-  .hotel-card::before,
-  .hotel-card-image::after {
-    transition: none;
-    animation: none;
-  }
-  
-  .hotel-card:hover {
-    transform: none;
-  }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-  .hotel-card {
-    border: 2px solid var(--color-gray-900);
-  }
-  
-  .hotel-card-rating {
-    border: 1px solid var(--color-gray-900);
-  }
+.card-action-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(106, 40, 199, 0.3);
 }

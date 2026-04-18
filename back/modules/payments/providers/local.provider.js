@@ -7,7 +7,7 @@ import crypto from 'crypto';
 export class LocalBankProvider extends PaymentProvider {
     constructor(config) {
         super(config);
-        this.baseUrl = config.baseUrl || 'http://localhost:5000'; // Fallback to dev port
+        this.baseUrl = config.baseUrl || 'http://localhost:4004'; // Updated to 4004
     }
 
     /**
@@ -21,7 +21,7 @@ export class LocalBankProvider extends PaymentProvider {
 
         // The URL the user should be redirected to
         // We pass the transactionId and providerId so the mock page knows what it's paying for
-        const paymentUrl = `${this.baseUrl}/payments/mock-bank?transId=${transactionId}&amount=${amount}&currency=${currency}`;
+        const paymentUrl = `${this.baseUrl}/api/v1/payments/mock-bank?transId=${transactionId}&amount=${amount}&currency=${currency}`;
 
         return {
             paymentUrl,

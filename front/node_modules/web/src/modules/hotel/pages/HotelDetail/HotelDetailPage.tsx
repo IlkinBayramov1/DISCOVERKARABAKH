@@ -23,7 +23,6 @@ export const HotelDetailPage: React.FC = () => {
             setLoading(true);
             try {
                 const response = await hotelWebApi.getHotelById(hotelId);
-                // Unwrap the data from the standardized backend response { success: true, data: { ... } }
                 const hotelData = response?.data || response; 
                 if (isMounted) setHotel(hotelData);
             } catch (err: any) {
@@ -42,18 +41,18 @@ export const HotelDetailPage: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-12 text-gray-500">Loading details...</div>;
-    if (error) return <div className="text-center py-12 text-red-500">{error}</div>;
-    if (!hotel) return <div className="text-center py-12 text-gray-500">Hotel not found</div>;
+    if (loading) return <div className="loading-state">Loading details...</div>;
+    if (error) return <div className="error-state">{error}</div>;
+    if (!hotel) return <div className="empty-state">Hotel not found</div>;
 
     // Helper to format image URLs
     const getImageUrl = (url: string) => {
-        if (!url) return 'https://placehold.co/400x300?text=No+Image';
+        if (!url) return 'https://placehold.co/800x600?text=No+Image';
         if (url.startsWith('http') || url.startsWith('/images/')) return url;
         return `http://localhost:4004${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
-    // Helper for gallery images: if fewer than 5 images, cycle through available ones so there are no placeholders
+    // Helper for gallery images
     const images = hotel.images && hotel.images.length > 0 ? hotel.images : [{ id: '1', url: '/images/shusha-hotel.png', order: 0 }];
     const mainImg = getImageUrl(images[0].url);
     const sideImgs = [
@@ -63,297 +62,326 @@ export const HotelDetailPage: React.FC = () => {
         getImageUrl(images[4 % images.length].url),
     ];
 
+    // Premium Amenity Icon Mapper
+    const getAmenityConfig = (name: string) => {
+        const lower = name.toLowerCase();
+        if (lower.includes('wifi')) return 'fa-solid fa-wifi';
+        if (lower.includes('water')) return 'fa-solid fa-bottle-water';
+        if (lower.includes('charging') || lower.includes('usb')) return 'fa-brands fa-usb';
+        if (lower.includes('climate') || lower.includes('ac')) return 'fa-solid fa-snowflake';
+        if (lower.includes('massage') || lower.includes('spa')) return 'fa-solid fa-spa';
+        if (lower.includes('concierge')) return 'fa-solid fa-bell-concierge';
+        if (lower.includes('pool')) return 'fa-solid fa-person-swimming';
+        if (lower.includes('parking')) return 'fa-solid fa-square-parking';
+        if (lower.includes('gym')) return 'fa-solid fa-dumbbell';
+        if (lower.includes('restaurant')) return 'fa-solid fa-utensils';
+        return 'fa-solid fa-circle-check';
+    };
+
     return (
-        <>
-            <main className="hotel-container">
-                {/* BREADCRUMB SECTION */}
-                <section className="breadcrumb">
-                    Hotels & Stays › {hotel.city || 'Shusha'} › <strong>{hotel.name}</strong>
-                </section>
+        <div className="hotel-detail-page">
+            <main className="container">
+                
+                {/* BREADCRUMB */}
+                <div className="premium-breadcrumb">
+                    <span>Hotels & Stays</span>
+                    <i className="fa-solid fa-chevron-right"></i>
+                    <span>{hotel.city || 'Shusha'}</span>
+                    <i className="fa-solid fa-chevron-right"></i>
+                    <span className="current">{hotel.name}</span>
+                </div>
 
                 {/* HEADER SECTION */}
-                <header className="hotel-header">
-                    <div>
+                <header className="premium-hotel-header">
+                    <div className="header-info">
                         <h1>{hotel.name}</h1>
-                        <div className="hotel-meta">
-                            <span className="stars">
+                        <div className="meta-row">
+                            <div className="stars">
                                 {Array.from({ length: hotel.starRating || 5 }).map((_, i) => (
                                     <i key={i} className="fa-solid fa-star"></i>
                                 ))}
-                            </span>
-                            <strong className="rating">{hotel.rating ? hotel.rating.toFixed(1) : '5.0'}</strong>
-                            <span className="reviews">({hotel.reviewCount || '0'} Reviews)</span>
-                            <span className="dot"></span>
-                            <i className="fa-solid fa-location-dot"></i>
-                            <a
-                                href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline"
-                            >
-                                {hotel.city ? `${hotel.city}, ` : ''}{hotel.address}
-                            </a>
+                            </div>
+                            <div className="rating-badge">
+                                <strong>{hotel.rating ? hotel.rating.toFixed(1) : '5.0'}</strong>
+                                <span>({hotel.reviewCount || '0'} Reviews)</span>
+                            </div>
+                            <span className="dot">•</span>
+                            <div className="location">
+                                <i className="fa-solid fa-location-dot"></i>
+                                <a href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=$${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
+                                    {hotel.address}{hotel.city ? `, ${hotel.city}` : ''}
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div className="header-actions">
-                        <button><i className="fa-regular fa-heart"></i></button>
-                        <button><i className="fa-solid fa-share-nodes"></i></button>
+                        <button className="icon-btn-premium"><i className="fa-regular fa-heart"></i></button>
+                        <button className="icon-btn-premium"><i className="fa-solid fa-share-nodes"></i></button>
                     </div>
                 </header>
 
-                {/* IMAGES SECTION */}
-                <section className="gallery-grid">
-                    <div className="main-img">
+                {/* GALLERY SECTION (1 Main + 4 Small Grid) */}
+                <section className="premium-gallery">
+                    <div className="gallery-main">
                         <img src={mainImg} alt="Main view" />
-                        <span className="img-badge">Exterior / Main</span>
+                        <div className="gallery-badge">Exterior</div>
                     </div>
-                    <div><img src={sideImgs[0]} alt="Gallery 1" /></div>
-                    <div><img src={sideImgs[1]} alt="Gallery 2" /></div>
-                    <div><img src={sideImgs[2]} alt="Gallery 3" /></div>
-                    <div><img src={sideImgs[3]} alt="Gallery 4" /></div>
+                    <div className="gallery-grid-4">
+                        <div className="gallery-item"><img src={sideImgs[0]} alt="Gallery 1" /></div>
+                        <div className="gallery-item"><img src={sideImgs[1]} alt="Gallery 2" /></div>
+                        <div className="gallery-item"><img src={sideImgs[2]} alt="Gallery 3" /></div>
+                        <div className="gallery-item"><img src={sideImgs[3]} alt="Gallery 4" /></div>
+                    </div>
                 </section>
 
-                {/* DETAILS SECTION */}
-                <section className="detail-grid">
-
-                    <div className="flex flex-col gap-6 w-full">
+                {/* CONTENT SPLIT (Left: About/Amenities, Right: Map/Rating) */}
+                <div className="premium-content-split">
+                    
+                    {/* LEFT COLUMN */}
+                    <div className="split-main">
                         {/* ABOUT CARD */}
-                        <div className="about-card">
-                            <h3>About the Hotel</h3>
-                            <p>{hotel.description || 'No description provided.'}</p>
+                        <div className="premium-card">
+                            <h2>About the Hotel</h2>
+                            <p className="about-text">{hotel.description || 'Experience luxury and traditional hospitality in the heart of Karabakh. Our hotel offers panoramic views and premium amenities.'}</p>
                         </div>
 
-                        {/* MAP CARD */}
-                        <div className="map-card">
-                            <div className="map-preview relative h-[250px] w-full rounded-2xl overflow-hidden mb-4 border border-gray-100">
-                                {hotel.latitude && hotel.longitude ? (
-                                    <iframe 
-                                        width="100%" 
-                                        height="100%" 
-                                        style={{ border: 0 }} 
-                                        loading="lazy" 
-                                        allowFullScreen 
-                                        src={`https://maps.google.com/maps?q=${hotel.latitude},${hotel.longitude}&z=15&output=embed`}>
-                                    </iframe>
-                                ) : (
-                                    <iframe 
-                                        width="100%" 
-                                        height="100%" 
-                                        style={{ border: 0 }} 
-                                        loading="lazy" 
-                                        allowFullScreen 
-                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}>
-                                    </iframe>
-                                )}
-                                <a
-                                    className="map-badge absolute bottom-3 right-3"
-                                    style={{ textDecoration: 'none' }}
-                                    href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <i className="fa-solid fa-location-crosshairs"></i> Open maps app
-                                </a>
-                            </div>
-                            <div className="map-content">
-                                <h4>Location</h4>
-                                <a
-                                    className="map-address hover:underline"
-                                    href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <i className="fa-solid fa-location-dot"></i>
-                                    {hotel.city ? `${hotel.city}, ` : ''}{hotel.address}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* RATING CARD & SEARCH/MAP CONTEXT (Right Column) */}
-                    <div className="flex flex-col gap-6 w-full">
-                        <div className="rating-card">
-                            <div className="rating-header">
-                                <div className="rating-circle">{hotel.rating ? hotel.rating.toFixed(1) : '–'}</div>
-                                <div className="rating-summary">
-                                    <strong>{hotel.rating && hotel.rating >= 8 ? 'Excellent' : 'Good'}</strong>
-                                    <span>Based on {hotel.reviewCount || 0} verified reviews</span>
-                                </div>
-                            </div>
-
-                            <div className="rating-bars">
-                                <div className="rating-row">
-                                    <span>Cleanliness</span>
-                                    <div className="bar"><div className="fill" style={{ width: '95%' }}></div></div>
-                                    <strong>{hotel.rating ? (hotel.rating * 0.98).toFixed(1) : '–'}</strong>
-                                </div>
-                                <div className="rating-row">
-                                    <span>Comfort</span>
-                                    <div className="bar"><div className="fill" style={{ width: '92%' }}></div></div>
-                                    <strong>{hotel.rating ? (hotel.rating * 0.95).toFixed(1) : '–'}</strong>
-                                </div>
-                                <div className="rating-row">
-                                    <span>Location</span>
-                                    <div className="bar"><div className="fill" style={{ width: '98%' }}></div></div>
-                                    <strong>{hotel.rating ? (hotel.rating * 0.99).toFixed(1) : '–'}</strong>
-                                </div>
-                            </div>
-                            <a href="#reviews" className="rating-link">Read all reviews <i className="fa-solid fa-arrow-right-long"></i></a>
-                        </div>
-
-                        {/* AMENITIES SECTION (Moved below Rating Card as requested implicitly by Layout flow, or just keep in left ?) 
-                            Wait, user said: "aboutun saginda Cleanliness - Comfort - Location bunun ustunde" -> Rating card above the Map.
-                        */}
+                        {/* AMENITIES CARD */}
                         {hotel.amenities && hotel.amenities.length > 0 && (
-                            <div className="amenities-card">
-                                <h3>Amenities</h3>
-                                <div className="amenities">
+                            <div className="premium-card">
+                                <h2>Amenities</h2>
+                                <div className="amenities-grid">
                                     {hotel.amenities.map((am: any) => {
                                         const name = am.amenity?.name || am.name;
-                                        // Simple icon mapping for better visuals
-                                        const iconMap: { [key: string]: string } = {
-                                            'Free WiFi': 'fa-wifi',
-                                            'Swimming Pool': 'fa-person-swimming',
-                                            'Free Parking': 'fa-square-p',
-                                            'Spa & Wellness': 'fa-spa',
-                                            'Restaurant': 'fa-utensils',
-                                            'Gym': 'fa-dumbbell',
-                                            'Bar': 'fa-martini-glass-citrus',
-                                            'Conference Room': 'fa-users-rectangle',
-                                            'Room Service': 'fa-bell-concierge',
-                                            'Airport Shuttle': 'fa-van-shuttle'
-                                        };
-                                        const iconClass = iconMap[name] || 'fa-check';
-                                        
                                         return (
-                                            <span key={am.id}>
-                                                <i className={`fa-solid ${iconClass}`}></i> {name}
-                                            </span>
+                                            <div key={am.id || Math.random()} className="amenity-list-item">
+                                                <div className="icon-box"><i className={getAmenityConfig(name)}></i></div>
+                                                <span>{name}</span>
+                                            </div>
                                         );
                                     })}
                                 </div>
                             </div>
                         )}
-
-                        {/* SEARCH SECTION (Contextual sidebar-like) */}
-                        <section className="search-context !m-0">
-                            <div className="ctx-item w-full">
-                                <i className="fa-solid fa-location-dot"></i>
-                                <div>
-                                    <small>Destination</small>
-                                    <strong>{hotel.city}, Karabakh</strong>
-                                </div>
-                            </div>
-                            <div className="ctx-item w-full">
-                                <i className="fa-regular fa-calendar"></i>
-                                <div>
-                                    <small>Dates</small>
-                                    <strong>Any Dates</strong>
-                                </div>
-                            </div>
-                            <div className="ctx-item w-full">
-                                <i className="fa-solid fa-user-group"></i>
-                                <div>
-                                    <small>Guests</small>
-                                    <strong>Standard Occupancy</strong>
-                                </div>
-                            </div>
-                            <span className="ctx-note w-full mt-2 text-center block">
-                                Showing all available rooms
-                            </span>
-                        </section>
                     </div>
-                </section>
 
-                {/* ROOMS HEADER SECTION */}
-                <div className="rooms-header" id="rooms">
-                    <h2>Available Rooms</h2>
-                    <div className="room-tabs">
-                        <button className="active">All Rooms</button>
+                    {/* RIGHT COLUMN */}
+                    <div className="split-sidebar">
+                        {/* MAP CARD */}
+                        <div className="premium-card map-wrapper-card">
+                            <div className="map-embed">
+                                {hotel.latitude && hotel.longitude ? (
+                                    /* Koordinatlarla xəritə */
+                                    <iframe 
+                                        title="Map" 
+                                        width="100%" 
+                                        height="100%" 
+                                        style={{ border: 0 }} 
+                                        loading="lazy" 
+                                        src={`https://maps.google.com/maps?q=${hotel.latitude},${hotel.longitude}&z=15&output=embed`}
+                                    ></iframe>
+                                ) : (
+                                    /* Əgər koordinat yoxdursa, ünvanla axtarış */
+                                    <iframe 
+                                        title="Map" 
+                                        width="100%" 
+                                        height="100%" 
+                                        style={{ border: 0 }} 
+                                        loading="lazy" 
+                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}
+                                    ></iframe>
+                                )}
+                                
+                                {/* "View on map" düyməsi üçün linki düzəldirik */}
+                                <a 
+                                    className="map-overlay-btn" 
+                                    href={hotel.latitude && hotel.longitude 
+                                        ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` 
+                                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`
+                                    } 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                >
+                                    <i className="fa-solid fa-location-crosshairs"></i> View on map
+                                </a>
+                            </div>
+                            <div className="map-text-info">
+                                <strong>Location</strong>
+                                <span>{hotel.address}{hotel.city ? `, ${hotel.city}` : ''}</span>
+                            </div>
+                        </div>
+
+                        {/* RATING CARD */}
+                        <div className="premium-card rating-breakdown-card">
+                            <div className="rating-score-head">
+                                <div className="score-circle">{hotel.rating ? hotel.rating.toFixed(1) : '5.0'}</div>
+                                <div className="score-text">
+                                    <strong>{hotel.rating && hotel.rating >= 8 ? 'Excellent' : 'Outstanding'}</strong>
+                                    <span>Based on {hotel.reviewCount || '320'} verified reviews</span>
+                                </div>
+                            </div>
+                            <div className="rating-bars">
+                                <div className="bar-row">
+                                    <span>Cleanliness</span>
+                                    <div className="bar-track"><div className="bar-fill" style={{ width: '98%' }}></div></div>
+                                    <strong>4.9</strong>
+                                </div>
+                                <div className="bar-row">
+                                    <span>Comfort</span>
+                                    <div className="bar-track"><div className="bar-fill" style={{ width: '94%' }}></div></div>
+                                    <strong>4.7</strong>
+                                </div>
+                                <div className="bar-row">
+                                    <span>Location</span>
+                                    <div className="bar-track"><div className="bar-fill" style={{ width: '100%' }}></div></div>
+                                    <strong>5.0</strong>
+                                </div>
+                            </div>
+                            <a href="#reviews" className="read-reviews-link">Read all reviews <i className="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* HORIZONTAL CONTEXT SEARCH BAR */}
+                <div className="contextual-search-bar">
+                    <div className="cs-item">
+                        <div className="cs-icon"><i className="fa-solid fa-location-dot"></i></div>
+                        <div className="cs-info">
+                            <label>DESTINATION</label>
+                            <strong>{hotel.city || 'Shusha'}, Karabakh</strong>
+                        </div>
+                    </div>
+                    <div className="cs-divider"></div>
+                    <div className="cs-item">
+                        <div className="cs-icon"><i className="fa-regular fa-calendar"></i></div>
+                        <div className="cs-info">
+                            <label>DATES</label>
+                            <strong>Oct 24 – Oct 28</strong>
+                        </div>
+                    </div>
+                    <div className="cs-divider"></div>
+                    <div className="cs-item">
+                        <div className="cs-icon"><i className="fa-solid fa-user-group"></i></div>
+                        <div className="cs-info">
+                            <label>GUESTS</label>
+                            <strong>2 Adults, 0 Children</strong>
+                        </div>
+                    </div>
+                    <div className="cs-message">
+                        Showing available rooms
                     </div>
                 </div>
 
-                {/* ROOMS LIST SECTION */}
-                <section className="room-list">
-                    {roomsLoading && <div className="p-8 text-center bg-white rounded-2xl shadow-sm">Loading rooms...</div>}
+                {/* ROOMS HEADER */}
+                <div className="rooms-section-header" id="rooms">
+                    <h2>Available Rooms</h2>
+                    <div className="rooms-filters">
+                        <button className="active">All Rooms</button>
+                        <button>Suites</button>
+                        <button>Family</button>
+                    </div>
+                </div>
+
+                {/* ROOMS LIST */}
+                <section className="premium-room-list">
+                    {roomsLoading && <div className="loading-state">Loading rooms...</div>}
                     {!roomsLoading && rooms.length === 0 && (
-                        <div className="p-8 text-center bg-white rounded-2xl shadow-sm text-gray-500">
-                            No rooms are currently available for this property.
-                        </div>
+                        <div className="empty-state">No rooms are currently available for this property.</div>
                     )}
                     {rooms.map(room => (
-                        <article key={room.id} className="room-booking-card">
-                            <div className="room-photo">
+                        <article key={room.id} className={`room-premium-card ${selectedRoom?.id === room.id ? 'selected-ring' : ''}`}>
+                            
+                            {/* SOL TƏRƏF: Şəkil */}
+                            <div className="room-image-col">
                                 <img src={room.images && room.images.length > 0 ? getImageUrl(room.images[0].url) : 'https://placehold.co/400x300?text=Room'} alt={room.name} />
-                                {room.totalInventory > 0 && <span className="room-tag hover:text-blue-600 cursor-pointer">BEST SELLER</span>}
+                                {room.totalInventory > 0 && <span className="best-seller-badge">BEST SELLER</span>}
                             </div>
-                            <div className="room-details">
-                                <div className="room-head">
-                                    <div>
-                                        <h4>{room.name}</h4>
-                                        <p className="room-subtitle">{hotel.name}</p>
+                            
+                            {/* SAĞ TƏRƏF: Məzmun */}
+                            <div className="room-content-col">
+                                
+                                {/* Header: Başlıq və Details Düyməsi */}
+                                <div className="room-header-row">
+                                    <div className="room-title-area">
+                                        <h3>{room.name}</h3>
+                                        <span className="hotel-sub">{hotel.name}</span>
                                     </div>
-                                    <button className="room-header-link" style={{ border: 'none', cursor: 'pointer' }}>
+                                    <button className="details-pill-btn">
                                         <i className="fa-solid fa-circle-info"></i> Details
                                     </button>
                                 </div>
-
-                                <div className="room-features">
-                                    {room.roomSizeM2 && <span><i className="fa-solid fa-ruler-combined"></i> {room.roomSizeM2}m²</span>}
-                                    <span><i className="fa-solid fa-user-group"></i> Max {room.maxAdults} Guests</span>
-                                    <span><i className="fa-solid fa-bed"></i> {room.bedType || 'Various'}</span>
-                                    <span><i className="fa-solid fa-mountain-sun"></i> Mountain View</span>
+                                
+                                {/* Specs: Pill (kapsul) formalı özəlliklər */}
+                                <div className="room-specs-pills">
+                                    {room.roomSizeM2 && (
+                                        <span className="spec-pill">
+                                            <i className="fa-solid fa-ruler-combined"></i> {room.roomSizeM2}m²
+                                        </span>
+                                    )}
+                                    <span className="spec-pill">
+                                        <i className="fa-solid fa-user-group"></i> Max {room.maxAdults} Guests
+                                    </span>
+                                    <span className="spec-pill">
+                                        <i className="fa-solid fa-bed"></i> {room.bedType || '1 King Bed'}
+                                    </span>
+                                    <span className="spec-pill">
+                                        <i className="fa-solid fa-mountain-sun"></i> Mountain View
+                                    </span>
                                 </div>
-
-                                <p className="room-desc">
-                                    {room.description || 'Experience luxury and comfort in this well-appointed room.'}
+                                
+                                {/* Açıqlama */}
+                                <p className="room-desc-text">
+                                    {room.description || 'Experience luxury with a panoramic view of the Karabakh mountains. Includes a minibar, working desk, and premium toiletries.'}
                                 </p>
-
-                                <div className="room-booking-footer">
-                                    <div className="room-price">
-                                        <small>Starting from</small>
-                                        <strong>₼{room.basePrice || '---'}</strong>
-                                        <span>includes taxes & fees</span>
+                                
+                                {/* Footer: Qiymət və Seçim Düyməsi */}
+                                <div className="room-footer-row">
+                                    <div className="price-info-area">
+                                        <span className="starting-label">Starting from</span>
+                                        <div className="price-amount-wrap">
+                                            <span className="currency">₼</span>
+                                            <span className="amount">{room.basePrice || '---'}</span>
+                                        </div>
+                                        <span className="tax-label">includes taxes & fees</span>
                                     </div>
-                                    <div className="room-actions">
-                                        <button
-                                            className={`room-select-btn ${selectedRoom?.id === room.id ? 'selected' : ''}`}
-                                            onClick={() => setSelectedRoom(room)}
-                                        >
-                                            {selectedRoom?.id === room.id ? (
-                                                <>Selected <i className="fa-solid fa-check"></i></>
-                                            ) : (
-                                                'Select Room'
-                                            )}
-                                        </button>
-                                    </div>
+                                    
+                                    <button 
+                                        className={`select-room-btn ${selectedRoom?.id === room.id ? 'active' : ''}`}
+                                        onClick={() => setSelectedRoom(room)}
+                                    >
+                                        {selectedRoom?.id === room.id ? 'Selected ✓' : 'Select Room'}
+                                    </button>
                                 </div>
+
                             </div>
                         </article>
                     ))}
                 </section>
+
             </main>
 
-            {/* SUMMARY SECTION */}
-            <footer className={`sticky-summary ${selectedRoom ? 'show' : ''}`}>
-                <div className="summary-room">
-                    <img src={selectedRoom?.images?.[0]?.url ? getImageUrl(selectedRoom.images[0].url) : 'https://placehold.co/100x100'} alt="Selected Room" />
-                    <div>
-                        <small>Your selection at {hotel.name}</small>
-                        <strong>{selectedRoom?.name}</strong>
+            {/* STICKY SUMMARY FOOTER */}
+            <footer className={`premium-sticky-footer ${selectedRoom ? 'show' : ''}`}>
+                <div className="footer-content container">
+                    <div className="summary-left">
+                        <img src={selectedRoom?.images?.[0]?.url ? getImageUrl(selectedRoom.images[0].url) : 'https://placehold.co/100x100'} alt="Selected Room" />
+                        <div className="summary-info">
+                            <small>Your selection at {hotel.name}</small>
+                            <strong>{selectedRoom?.name}</strong>
+                        </div>
+                    </div>
+
+                    <div className="summary-right">
+                        <div className="summary-price-box">
+                            <small>Total Price</small>
+                            <strong>₼{selectedRoom?.basePrice || '---'}</strong>
+                        </div>
+                        <button onClick={handleCheckout} className="checkout-btn">
+                            Continue to Checkout <i className="fa-solid fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
-
-                <div className="summary-price">
-                    <small>Standard Price</small>
-                    <strong>₼{selectedRoom?.basePrice || '---'}</strong>
-                </div>
-
-                <button onClick={handleCheckout} className="summary-btn">
-                    Continue to Checkout
-                    <i className="fa-solid fa-arrow-right-long"></i>
-                </button>
             </footer>
-        </>
+        </div>
     );
 };

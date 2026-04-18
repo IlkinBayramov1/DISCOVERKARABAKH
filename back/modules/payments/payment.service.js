@@ -1,14 +1,16 @@
 import prisma from '../../config/db.js';
 import { ApiError } from '../../core/api.error.js';
 import { LocalBankProvider } from './providers/local.provider.js';
+import { AzericardProvider } from './providers/azericard.provider.js';
 import { bookingStrategyRegistry } from '../booking/booking.strategy.js';
 
 class PaymentService {
     constructor() {
         this.providers = {
             local: new LocalBankProvider({ 
-                baseUrl: process.env.BASE_URL || 'http://localhost:5000' 
-            })
+                baseUrl: process.env.BASE_URL || 'http://localhost:4004' 
+            }),
+            azericard: new AzericardProvider()
         };
     }
 
@@ -16,7 +18,7 @@ class PaymentService {
      * @param {string} bookingId 
      * @param {string} providerName 
      */
-    async initiatePayment(bookingId, userId, providerName = 'local') {
+    async initiatePayment(bookingId, userId, providerName = 'azericard') {
         const provider = this.providers[providerName];
         if (!provider) throw ApiError.badRequest(`Unsupported payment provider: ${providerName}`);
 
@@ -72,7 +74,7 @@ class PaymentService {
     /**
      * Handle Bank Callback (Webhook or Redirect Response)
      */
-    async handleCallback(params, providerName = 'local') {
+    async handleCallback(params, providerName = 'azericard') {
         const provider = this.providers[providerName];
         if (!provider) throw ApiError.badRequest(`Unsupported payment provider: ${providerName}`);
 

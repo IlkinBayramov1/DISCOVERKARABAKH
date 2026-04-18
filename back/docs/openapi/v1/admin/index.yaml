@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  title: "DiscoverKarabakh Admin API"
+  description: "Platformanın administrativ idarəetməsi üçün nəzərdə tutulmuş rəsmi API sənədləri."
+  version: "1.0.0"
+
+servers:
+  - url: "/api/v1"
+    description: "V1 Base Path"
+
+tags:
+  - name: Admin Users
+    description: "İstifadəçilərin siyahılanması, bloklanması və vendor təsdiqi."
+  - name: Admin Businesses
+    description: "Mülklərin (Otel, Restoran, Tur) təsdiqi və siyahılanması."
+  - name: Admin Bookings
+    description: "Platforma üzrə bütün bronların monitorinqi."
+  - name: Admin Reviews
+    description: "Rəylərin moderasiyası və idarə olunması."
+  - name: Admin Finance
+    description: "Maliyyə tranzaksiyaları üzrə hesabatlar."
+  - name: Admin Promotions
+    description: "Kuponların və promosiyaların idarə olunması."
+  - name: Admin Analytics
+    description: "Qlobal performans göstəriciləri."
+  - name: Admin Fraud
+    description: "Təhlükəsizlik, Qara siyahı və Risk monitorinqi."
+
+paths:
+  # ==========================================
+  # 1. İstifadəçi İdarəetməsi
+  # ==========================================
+  /admins/users:
+    $ref: 'users.yaml#/paths/~1admins~1users'
+  /admins/users/{id}:
+    $ref: 'users.yaml#/paths/~1admins~1users~1{id}'
+  /admins/users/{id}/ban:
+    $ref: 'users.yaml#/paths/~1admins~1users~1{id}~1ban'
+  /admins/users/{id}/unban:
+    $ref: 'users.yaml#/paths/~1admins~1users~1{id}~1unban'
+  /admins/users/{id}/approve:
+    $ref: 'users.yaml#/paths/~1admins~1users~1{id}~1approve'
+  /admins/users/{id}/reject:
+    $ref: 'users.yaml#/paths/~1admins~1users~1{id}~1reject'
+
+  # ==========================================
+  # 2. Biznes İdarəetməsi
+  # ==========================================
+  /admins/businesses:
+    $ref: 'businesses.yaml#/paths/~1admins~1businesses'
+  /admins/businesses/pending:
+    $ref: 'businesses.yaml#/paths/~1admins~1businesses~1pending'
+  /admins/businesses/{type}/{id}/approve:
+    $ref: 'businesses.yaml#/paths/~1admins~1businesses~1{type}~1{id}~1approve'
+  /admins/businesses/{type}/{id}/reject:
+    $ref: 'businesses.yaml#/paths/~1admins~1businesses~1{type}~1{id}~1reject'
+
+  # ==========================================
+  # 3. Bron İdarəetməsi
+  # ==========================================
+  /admins/bookings:
+    $ref: 'bookings.yaml#/paths/~1admins~1bookings'
+  /admins/bookings/{id}:
+    $ref: 'bookings.yaml#/paths/~1admins~1bookings~1{id}'
+  /admins/bookings/{id}/status:
+    $ref: 'bookings.yaml#/paths/~1admins~1bookings~1{id}~1status'
+
+  # ==========================================
+  # 4. Rəy Moderasiyası
+  # ==========================================
+  /admins/reviews:
+    $ref: 'reviews.yaml#/paths/~1admins~1reviews'
+  /admins/reviews/{id}/status:
+    $ref: 'reviews.yaml#/paths/~1admins~1reviews~1{id}~1status'
+  /admins/reviews/{id}:
+    $ref: 'reviews.yaml#/paths/~1admins~1reviews~1{id}'
+
+  # ==========================================
+  # 5. Maliyyə Nəzarəti
+  # ==========================================
+  /admins/finance/transactions:
+    $ref: 'finance.yaml#/paths/~1admins~1finance~1transactions'
+  /admins/finance/transactions/{id}:
+    $ref: 'finance.yaml#/paths/~1admins~1finance~1transactions~1{id}'
+
+  # ==========================================
+  # 6. Promosiyalar
+  # ==========================================
+  /admins/promotions:
+    $ref: 'promotions.yaml#/paths/~1admins~1promotions'
+  /admins/promotions/{id}:
+    $ref: 'promotions.yaml#/paths/~1admins~1promotions~1{id}'
+
+  # ==========================================
+  # 7. Moderasiya (Fraud & Blacklist)
+  # ==========================================
+  /admins/fraud/blacklist:
+    $ref: 'fraud.yaml#/paths/~1admins~1fraud~1blacklist'
+  /admins/fraud/blacklist/{id}:
+    $ref: 'fraud.yaml#/paths/~1admins~1fraud~1blacklist~1{id}'
+  /admins/fraud/risk-logs:
+    $ref: 'fraud.yaml#/paths/~1admins~1fraud~1risk-logs'
+
+  # ==========================================
+  # 8. Analitika
+  # ==========================================
+  /admins/analytics:
+    $ref: 'analytics.yaml#/paths/~1admins~1analytics'
+
+  # ==========================================
+  # 9. Gəlir İdarəetməsi
+  # ==========================================
+  /admins/hotels/{hotelId}/pricing-rules:
+    $ref: 'revenue.yaml#/paths/~1admins~1hotels~1{hotelId}~1pricing-rules'
+  /admins/hotels/{hotelId}/pricing-rules/{ruleId}:
+    $ref: 'revenue.yaml#/paths/~1admins~1hotels~1{hotelId}~1pricing-rules~1{ruleId}'
+
+components:
+  securitySchemes:
+    AdminAuth:
+      $ref: 'schemas.yaml#/components/securitySchemes/AdminAuth'

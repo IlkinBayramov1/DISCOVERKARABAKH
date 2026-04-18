@@ -1,46 +1,45 @@
 /* Sidebar.css */
-/* Premium Dark Theme Sidebar */
+/* Ultra Premium Light Theme Sidebar */
 
 /* ============================================
-   CSS VARIABLES (Dark Theme)
+   CSS VARIABLES (Light Theme - Premium Colors)
    ============================================ */
 :root {
-  /* Primary Colors - Dark */
-  --primary: #0ea5e9;
-  --primary-light: #38bdf8;
-  --primary-rgb: 14, 165, 233;
+  /* Primary Colors */
+  --dk-primary: #6a28c7;
+  --dk-primary-light: #8b4ddb;
+  --dk-primary-rgb: 106, 40, 199;
 
-  /* Accent - Cyan/Gold */
-  --accent: #06b6d4;
-  --accent-light: #22d3ee;
-  --accent-rgb: 6, 182, 212;
+  /* Accent Colors */
+  --dk-accent: #9d65eb;
+  --dk-accent-light: #d6bdfa;
 
-  /* Backgrounds - DARK */
-  --bg-sidebar: #0b1121;
-  --bg-card: #131b2f;
-  --bg-hover: rgba(6, 182, 212, 0.08);
-  --bg-active: rgba(6, 182, 212, 0.12);
+  /* Backgrounds - LIGHT & CLEAN */
+  --dk-bg-sidebar: #ffffff;
+  /* Daha təmiz premium ağ */
+  --dk-bg-card: #f8fafc;
+  --dk-bg-hover: rgba(106, 40, 199, 0.04);
+  --dk-bg-active: rgba(106, 40, 199, 0.08);
 
-  /* Text - LIGHT for dark bg */
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dark: #0f172a;
+  /* Text Colors */
+  --dk-text-primary: #0f172a;
+  --dk-text-secondary: #475569;
+  --dk-text-muted: #94a3b8;
+  --dk-text-dark: #020617;
 
   /* Borders */
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --dk-border-light: #f1f5f9;
+  --dk-border-subtle: rgba(15, 23, 42, 0.03);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
-  --shadow-sidebar: 4px 0 24px rgba(0, 0, 0, 0.5);
+  /* Premium Shadows */
+  --dk-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --dk-shadow-md: 0 4px 12px rgba(106, 40, 199, 0.05);
+  --dk-shadow-sidebar: 4px 0 24px rgba(15, 23, 42, 0.04);
+  --dk-shadow-glow: 0 0 12px rgba(106, 40, 199, 0.3);
 
   /* Transitions */
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dk-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --dk-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ============================================
@@ -52,23 +51,22 @@
   left: -300px;
   width: 280px;
   height: 100vh;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sidebar);
-  transition: transform 0.4s var(--ease-smooth), width 0.4s var(--ease-smooth), box-shadow 0.3s ease;
+  background: var(--dk-bg-sidebar);
+  border-right: 1px solid var(--dk-border-light);
+  box-shadow: var(--dk-shadow-sidebar);
+  transition: transform 0.4s var(--dk-ease-smooth), width 0.4s var(--dk-ease-smooth), box-shadow 0.4s ease;
   z-index: 100;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
 
-  /* Custom scrollbar - dark */
   scrollbar-width: thin;
-  scrollbar-color: var(--border-light) transparent;
+  scrollbar-color: var(--dk-border-light) transparent;
 }
 
 .web-sidebar::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .web-sidebar::-webkit-scrollbar-track {
@@ -76,18 +74,17 @@
 }
 
 .web-sidebar::-webkit-scrollbar-thumb {
-  background: var(--border-light);
+  background: var(--dk-border-light);
   border-radius: 10px;
 }
 
 .web-sidebar::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--dk-text-muted);
 }
 
-/* Open State */
 .web-sidebar.open {
   transform: translateX(300px);
-  box-shadow: var(--shadow-xl), var(--shadow-sidebar);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
 }
 
 /* ============================================
@@ -96,13 +93,13 @@
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 99;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s var(--ease-smooth);
+  transition: all 0.4s var(--dk-ease-smooth);
 }
 
 .sidebar-overlay.active {
@@ -111,53 +108,70 @@
 }
 
 /* ============================================
-   SIDEBAR HEADER
+   SIDEBAR HEADER (Perfectly Centered & Compact)
    ============================================ */
 .sidebar-header {
-  padding: 24px 20px;
+  position: relative;
+  /* Logonu mütləq mərkəzə almaq üçün */
+  padding: 14px 16px;
+  /* Vertical padding azaldıldı */
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  /* Düyməni sağa atır */
   align-items: center;
-  border-bottom: 1px solid var(--border-light);
-  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--dk-border-light);
+  background: var(--dk-bg-sidebar);
+  min-height: 80px;
+  /* Sabit yığcam hündürlük */
 }
 
 .sidebar-header h2 {
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  font-weight: 700;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.35rem;
+  font-weight: 800;
   margin: 0;
+  letter-spacing: -0.5px;
+  /* Premium Text Gradient */
+  background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
-/* Close Button */
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: none;
-  background: var(--bg-card);
-  color: var(--text-secondary);
+  width: 32px;
+  /* Bir az yığcamlaşdırıldı */
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--dk-bg-card);
+  color: var(--dk-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  z-index: 2;
+  /* Yazının üstündə qalması üçün */
 }
 
 .icon-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: var(--dk-bg-hover);
+  color: var(--dk-primary);
+  border-color: var(--dk-border-light);
+  transform: scale(1.05);
 }
 
 /* ============================================
    NAVIGATION
    ============================================ */
 .sidebar-nav {
-  padding: 16px 12px;
+  padding: 5px 12px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 /* ============================================
@@ -166,73 +180,78 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 12px 14px;
-  margin: 2px 6px;
-  border-radius: 10px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  padding: 12px 16px;
+  margin: 2px 4px;
+  border-radius: 12px;
+  color: var(--dk-text-secondary);
+  font-weight: 600;
   font-size: 0.9375rem;
   text-decoration: none;
   position: relative;
-  transition: all 0.25s var(--ease-smooth);
+  transition: all 0.3s var(--dk-ease-smooth);
   overflow: hidden;
+  background: transparent;
 }
 
+/* Sol tərəfdəki indikator xətt */
 .nav-link::before {
   content: '';
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
+  width: 4px;
   height: 0;
-  background: var(--accent);
-  border-radius: 0 2px 2px 0;
-  transition: height 0.3s var(--ease-bounce);
+  background: var(--dk-primary);
+  border-radius: 0 4px 4px 0;
+  transition: height 0.3s var(--dk-ease-bounce), box-shadow 0.3s ease;
 }
 
+/* Hover effekti - Yüngül sağa sürüşmə */
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.08); /* Fixed: Explicit dark translucent background */
-  color: var(--accent); /* Turn text Cyan on hover */
+  background: var(--dk-bg-hover);
+  color: var(--dk-primary);
+  transform: translateX(4px);
 }
 
 .nav-link:hover::before {
-  height: 20px;
+  height: 18px;
+  box-shadow: var(--dk-shadow-glow);
 }
 
+/* Aktiv Link Effekti */
 .nav-link.active {
-  background: var(--bg-active);
-  color: var(--accent-light);
-  font-weight: 600;
+  background: linear-gradient(90deg, var(--dk-bg-active) 0%, transparent 100%);
+  color: var(--dk-primary);
+  font-weight: 700;
 }
 
 .nav-link.active::before {
   height: 24px;
+  box-shadow: var(--dk-shadow-glow);
 }
 
 .nav-link svg {
   width: 20px;
   height: 20px;
-  margin-right: 12px;
+  margin-right: 14px;
   flex-shrink: 0;
-  transition: all 0.3s ease;
-  color: var(--text-muted);
+  transition: all 0.3s var(--dk-ease-bounce);
+  color: var(--dk-text-muted);
 }
 
 .nav-link:hover svg {
-  color: var(--accent);
-  transform: scale(1.1);
+  color: var(--dk-primary);
+  transform: scale(1.15) rotate(-5deg);
 }
 
 .nav-link.active svg {
-  color: var(--accent);
+  color: var(--dk-primary);
 }
 
-/* Expandable Button */
 .nav-link.expandable {
-  width: calc(100% - 12px);
+  width: calc(100% - 8px);
   justify-content: space-between;
-  background: transparent;
   border: none;
   cursor: pointer;
   font-family: inherit;
@@ -249,49 +268,33 @@
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.35s var(--ease-smooth);
-  margin-left: 20px;
-  padding-left: 14px;
-  border-left: 2px solid var(--border-light);
+  transform: translateY(-5px);
+  transition: all 0.4s var(--dk-ease-smooth);
+  margin-left: 24px;
+  padding-left: 12px;
+  border-left: 2px solid var(--dk-border-light);
   position: relative;
-}
-
-.sub-nav::before {
-  content: '';
-  position: absolute;
-  left: -2px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .sub-nav.open {
   max-height: 400px;
   opacity: 1;
   transform: translateY(0);
-  margin-top: 6px;
-  margin-bottom: 6px;
-}
-
-.sub-nav.open::before {
-  opacity: 1;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .sub-nav-link {
   display: flex;
   align-items: center;
   padding: 10px 14px;
-  margin: 2px 0;
+  margin: 4px 0;
   border-radius: 8px;
-  color: var(--text-muted);
+  color: var(--dk-text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   position: relative;
   background: transparent;
   border: none;
@@ -301,112 +304,121 @@
   font-family: inherit;
 }
 
+/* Yumru nöqtə indikatoru */
 .sub-nav-link::before {
   content: '';
   position: absolute;
-  left: -16px;
+  left: -15px;
+  /* Sol xəttin üstünə düşməsi üçün */
   top: 50%;
   transform: translateY(-50%);
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--border-light);
-  transition: all 0.2s ease;
+  background: var(--dk-border-light);
+  transition: all 0.3s var(--dk-ease-bounce);
+  border: 2px solid var(--dk-bg-sidebar);
+  /* İçlik effekti */
 }
 
 .sub-nav-link:hover {
-  background: rgba(255, 255, 255, 0.05); /* Explicit dark translucent */
-  color: var(--accent);
+  background: var(--dk-bg-hover);
+  color: var(--dk-primary);
+  padding-left: 18px;
+  /* Hover zamanı yüngül sağa getmə */
 }
 
 .sub-nav-link:hover::before {
-  background: var(--accent);
-  transform: translateY(-50%) scale(1.3);
+  background: var(--dk-accent);
+  transform: translateY(-50%) scale(1.5);
+  box-shadow: 0 0 8px var(--dk-accent);
 }
 
 .sub-nav-link.active {
-  color: var(--accent-light);
-  font-weight: 600;
-  background: var(--bg-active);
+  color: var(--dk-primary);
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--dk-bg-active) 0%, transparent 100%);
 }
 
 .sub-nav-link.active::before {
-  background: var(--accent);
-  transform: translateY(-50%) scale(1.3);
-}
-
-.sub-nav-link svg {
-  width: 16px;
-  height: 16px;
-  margin-right: 10px;
-  color: var(--text-muted);
-}
-
-.sub-nav-link:hover svg,
-.sub-nav-link.active svg {
-  color: var(--accent);
+  background: var(--dk-primary);
+  transform: translateY(-50%) scale(1.5);
+  box-shadow: var(--dk-shadow-glow);
 }
 
 /* ============================================
-   CITY FILTER - Special Styling
+   CITY FILTER - Special Premium Styling
    ============================================ */
 .city-filter-group {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 12px;
-  margin: 6px;
-  border: 1px solid var(--border-light);
+  background: var(--dk-bg-sidebar);
+  border-radius: 16px;
+  padding: 6px;
+  margin: 5px 4px;
+  border: 1px solid var(--dk-border-light);
+  box-shadow: var(--dk-shadow-sm);
+  transition: box-shadow 0.3s ease;
+}
+
+.city-filter-group:hover {
+  box-shadow: var(--dk-shadow-md);
+  border-color: rgba(106, 40, 199, 0.1);
 }
 
 .city-filter-group .nav-link.expandable {
   margin: 0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  color: var(--text-primary);
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--dk-text-primary);
 }
 
 .city-filter-group .nav-link.expandable svg {
-  color: var(--accent);
+  color: var(--dk-primary);
 }
 
 .city-filter-group .sub-nav {
-  margin-left: 8px;
-  padding-left: 10px;
+  margin-left: 4px;
+  padding-left: 4px;
   border-left: none;
-}
-
-.city-filter-group .sub-nav::before {
-  display: none;
 }
 
 .city-filter-group .sub-nav-link {
   font-size: 0.875rem;
-  padding: 8px 12px;
-  margin: 2px 0;
-  border-radius: 6px;
-  color: var(--text-secondary);
+  padding: 10px 14px;
+  margin: 4px;
+  width: calc(100% - 8px);
+  border-radius: 8px;
+  color: var(--dk-text-secondary);
+  border: 1px solid transparent;
+}
+
+.city-filter-group .sub-nav-link::before {
+  display: none;
+  /* Pill dizayni ucun noqteni yigisdiririq */
 }
 
 .city-filter-group .sub-nav-link:hover {
-  background: rgba(255, 255, 255, 0.05); /* Explicit dark translucent */
-  color: var(--accent);
+  background: var(--dk-bg-hover);
+  color: var(--dk-primary);
+  border-color: rgba(106, 40, 199, 0.1);
+  padding-left: 14px;
+  /* Sola getməsini ləğv edirik */
+  transform: translateX(4px);
 }
 
 .city-filter-group .sub-nav-link.active {
-  background: var(--accent);
-  color: #0b1121;
-  font-weight: 700;
-}
-
-.city-filter-group .sub-nav-link.active::before {
-  display: none;
+  background: var(--dk-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(106, 40, 199, 0.25);
+  transform: scale(1.02);
 }
 
 /* Divider */
 .nav-divider {
   height: 1px;
-  background: var(--border-light);
-  margin: 12px 8px;
+  background: linear-gradient(90deg, transparent 0%, var(--dk-border-light) 50%, transparent 100%);
+  margin: 16px 12px;
+  border: none;
 }
 
 /* ============================================
@@ -428,11 +440,13 @@
   }
 
   .sidebar-header {
-    padding: 20px;
+    padding: 12px 16px;
   }
 }
 
-/* DESKTOP BEHAVIOR */
+/* ============================================
+   DESKTOP BEHAVIOR & COLLAPSED STATE
+   ============================================ */
 @media (min-width: 768px) {
   .web-sidebar {
     position: fixed;
@@ -440,8 +454,8 @@
     left: -300px;
     transform: none;
     height: 100vh;
-    box-shadow: var(--shadow-sidebar);
-    border-right: 1px solid var(--border-light);
+    box-shadow: var(--dk-shadow-sidebar);
+    border-right: 1px solid var(--dk-border-light);
   }
 
   .web-sidebar.open {
@@ -449,63 +463,65 @@
     left: -300px;
   }
 
-  .sidebar-overlay {
-    display: none !important;
-  }
-
+  .sidebar-overlay,
   .sidebar-overlay.active {
     display: none !important;
   }
 
-  /* Collapsible on desktop */
   .web-sidebar.collapsed {
-    width: 80px;
+    width: 88px;
   }
 
   .web-sidebar.collapsed .sidebar-header h2,
   .web-sidebar.collapsed .nav-link span,
   .web-sidebar.collapsed .sub-nav,
-  .web-sidebar.collapsed .nav-section-label {
+  .web-sidebar.collapsed .nav-section-label,
+  .web-sidebar.collapsed .nav-link::after {
     display: none;
   }
 
   .web-sidebar.collapsed .nav-link {
     justify-content: center;
-    padding: 16px;
-    margin: 4px auto;
-    width: 56px;
-    height: 56px;
+    padding: 14px;
+    margin: 8px auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+
+  .web-sidebar.collapsed .nav-link:hover {
+    transform: translateY(-2px);
   }
 
   .web-sidebar.collapsed .nav-link svg {
     margin: 0;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 
   .web-sidebar.collapsed .sidebar-header {
     justify-content: center;
-    padding: 20px 10px;
+    padding: 16px 10px;
   }
 }
 
 /* ============================================
    ANIMATIONS
    ============================================ */
-@keyframes slideIn {
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateY(10px);
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 .sidebar-nav>ul>li {
-  animation: slideIn 0.4s var(--ease-smooth) backwards;
+  animation: slideInUp 0.5s var(--dk-ease-bounce) backwards;
 }
 
 .sidebar-nav>ul>li:nth-child(1) {
@@ -528,21 +544,15 @@
   animation-delay: 0.25s;
 }
 
-.sidebar-nav>ul>li:nth-child(6) {
-  animation-delay: 0.3s;
-}
-
-/* ============================================
-   FOCUS STATES (Accessibility)
-   ============================================ */
+/* FOCUS STATES (Accessibility) */
 .nav-link:focus-visible,
 .sub-nav-link:focus-visible,
 .icon-btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--dk-primary);
   outline-offset: 2px;
+  border-radius: 8px;
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
 
   .web-sidebar,

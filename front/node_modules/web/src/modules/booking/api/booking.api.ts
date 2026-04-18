@@ -3,6 +3,8 @@ import { httpClient } from '../../../shared/api/httpClient';
 export interface BookingPreviewParams {
     type: string; // 'hotel', 'tour', 'event'
     entityId: string;
+    participants?: number;
+    tourDate?: string;
     items: Array<{
         roomTypeId?: string;
         ratePlanId?: string;

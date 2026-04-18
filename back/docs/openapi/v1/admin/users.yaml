@@ -1,0 +1,163 @@
+paths:
+  /admins/users:
+    get:
+      tags:
+        - Admin Users
+      summary: "Bütün istifadəçiləri və vendorları siyahılayır"
+      description: "Admin panelində istifadəçilərin siyahısını və vendor statistikalarını görmək üçün istifadə olunur."
+      security:
+        - AdminAuth: []
+      responses:
+        '200':
+          description: "Uğurlu cavab"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas.yaml#/components/schemas/AdminUser'
+        '401':
+          $ref: 'schemas.yaml#/components/responses/UnauthorizedError'
+
+  /admins/users/{id}:
+    delete:
+      tags:
+        - Admin Users
+      summary: "İstifadəçini silir"
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: 'schemas.yaml#/components/schemas/GenericResponse'
+        '404':
+          description: "İstifadəçi tapılmadı"
+
+  /admins/users/{id}/ban:
+    patch:
+      tags:
+        - Admin Users
+      summary: "İstifadəçini bloklayır"
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Bloklandı"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminUser'
+
+  /admins/users/{id}/unban:
+    patch:
+      tags:
+        - Admin Users
+      summary: "İstifadəçini blokdan çıxarır"
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Blokdan çıxarıldı"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminUser'
+
+  /admins/users/{id}/approve:
+    patch:
+      tags:
+        - Admin Users
+      summary: "Vendor müraciətini təsdiqləyir"
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Təsdiq edildi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminUser'
+
+  /admins/users/{id}/reject:
+    patch:
+      tags:
+        - Admin Users
+      summary: "Vendor müraciətini rədd edir"
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Rədd edildi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminUser'

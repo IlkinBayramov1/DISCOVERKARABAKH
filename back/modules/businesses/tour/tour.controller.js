@@ -1,12 +1,14 @@
-import { tourRepository } from './tour.repository.js';
+import { tourService } from './tour.service.js';
+import { tourSchemas } from './tour.validation.js';
 import { ApiError } from '../../../core/api.error.js';
 
 export const createTour = async (req, res, next) => {
     try {
-        req.body.ownerId = req.user.id;
-        delete req.body.owner;
+        const { error, value } = tourSchemas.create.validate(req.body);
+        if (error) throw ApiError.badRequest(error.details[0].message);
 
-        const tour = await tourRepository.create(req.body);
+        value.ownerId = req.user.id;
+        const tour = await tourService.createTour(value);
         res.status(201).json({ success: true, data: tour });
     } catch (error) {
         next(error);
@@ -15,7 +17,7 @@ export const createTour = async (req, res, next) => {
 
 export const getVendorTours = async (req, res, next) => {
     try {
-        const tours = await tourRepository.findAll({ ownerId: req.user.id });
+        const tours = await tourService.getVendorTours(req.user.id, req.query);
         res.status(200).json({ success: true, count: tours.length, data: tours });
     } catch (error) {
         next(error);
@@ -24,7 +26,7 @@ export const getVendorTours = async (req, res, next) => {
 
 export const getTours = async (req, res, next) => {
     try {
-        const tours = await tourRepository.findAll(req.query);
+        const tours = await tourService.getTours(req.query);
         res.status(200).json({ success: true, count: tours.length, data: tours });
     } catch (error) {
         next(error);
@@ -33,8 +35,16 @@ export const getTours = async (req, res, next) => {
 
 export const getTourById = async (req, res, next) => {
     try {
-        const tour = await tourRepository.findById(req.params.id);
-        if (!tour) throw ApiError.notFound('Tour not found');
+        const tour = await tourService.getTourById(req.params.id);
+        res.status(200).json({ success: true, data: tour });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTourBySlug = async (req, res, next) => {
+    try {
+        const tour = await tourService.getTourBySlug(req.params.slug);
         res.status(200).json({ success: true, data: tour });
     } catch (error) {
         next(error);
@@ -43,14 +53,10 @@ export const getTourById = async (req, res, next) => {
 
 export const updateTour = async (req, res, next) => {
     try {
-        let tour = await tourRepository.findById(req.params.id);
-        if (!tour) throw ApiError.notFound('Tour not found');
+        const { error, value } = tourSchemas.update.validate(req.body);
+        if (error) throw ApiError.badRequest(error.details[0].message);
 
-        if (tour.ownerId !== req.user.id && req.user.role !== 'admin') {
-            throw ApiError.forbidden('Not authorized');
-        }
-
-        const updatedTour = await tourRepository.update(req.params.id, req.body);
+        const updatedTour = await tourService.updateTour(req.params.id, value, req.user.id, req.user.role);
         res.status(200).json({ success: true, data: updatedTour });
     } catch (error) {
         next(error);
@@ -59,15 +65,22 @@ export const updateTour = async (req, res, next) => {
 
 export const deleteTour = async (req, res, next) => {
     try {
-        const tour = await tourRepository.findById(req.params.id);
-        if (!tour) throw ApiError.notFound('Tour not found');
-
-        if (tour.ownerId !== req.user.id && req.user.role !== 'admin') {
-            throw ApiError.forbidden('Not authorized');
-        }
-
-        await tourRepository.delete(req.params.id);
+        await tourService.deleteTour(req.params.id, req.user.id, req.user.role);
         res.status(200).json({ success: true, message: 'Tour deleted' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTourAvailability = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { date } = req.query;
+
+        if (!date) throw ApiError.badRequest('Date query parameter is required');
+
+        const availability = await tourService.getTourAvailability(id, date);
+        res.status(200).json({ success: true, data: availability });
     } catch (error) {
         next(error);
     }

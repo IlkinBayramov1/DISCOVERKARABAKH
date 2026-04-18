@@ -5,8 +5,35 @@ import { errorMiddleware } from './middlewares/error.middleware.js';
 
 const app = express();
 
-// Enable CORS for frontend fetching
-app.use(cors());
+// Enable CORS strictly for authorized frontend domains
+const allowedOrigins = [
+    process.env.FRONTEND_WEB_URL || 'http://localhost:5173',
+    process.env.FRONTEND_VENDOR_URL || 'http://localhost:5174',
+    process.env.FRONTEND_ADMIN_URL || 'http://localhost:5175'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check strict list first
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        }
+
+        // DEVELOPMENT MODE HELPER: 
+        // Bütün localhost və 127.0.0.1 portlarına avtomatik icazə veririk
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            return callback(null, true);
+        }
+
+        console.error(`[CORS Blocked] Xəta: Bu URL qeydiyyatda deyil ->`, origin);
+        var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+    },
+    credentials: true
+}));
 
 // Body parser
 app.use(express.json());

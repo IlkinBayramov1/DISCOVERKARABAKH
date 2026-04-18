@@ -14,6 +14,7 @@ import Availability from '../modules/hotel/pages/availability/Availability/Avail
 import Reviews from '../modules/hotel/pages/reviews/Reviews';
 import PhotosAndContent from '../modules/hotel/pages/content/PhotosAndContent';
 import PricingRules from '@/modules/hotel/pages/pricing/PricingRules';
+import MyHotel from '../modules/hotel/pages/my-hotel/MyHotel';
 
 // Transport Vendor Pages
 import VendorFleetPage from '../modules/transport/pages/VendorFleetPage';
@@ -24,10 +25,10 @@ import TransportDashboard from '../modules/transport/pages/dashboard/TransportDa
 import VendorLocationsPage from '../modules/transport/pages/VendorLocationsPage';
 
 // Tour Vendor Pages
-import VendorTourDashboard from '../modules/tour/pages/VendorTourDashboard';
-import ManageTourPage from '../modules/tour/pages/ManageTourPage';
-import TourBookings from '../modules/tour/pages/TourBookings';
-import TourReviews from '../modules/tour/pages/TourReviews';
+import VendorTourDashboard from '../modules/tour/pages/VendorTourDashboard/VendorTourDashboard';
+import ManageTourPage from '../modules/tour/pages/ManageTourPage/ManageTourPage';
+import TourBookings from '../modules/tour/pages/TourBookings/TourBookings';
+import TourReviews from '../modules/tour/pages/TourReviews/TourReviews';
 
 // Attraction Vendor Pages
 import VendorAttractionDashboard from '../modules/attraction/pages/dashboard/VendorAttractionDashboard';
@@ -106,6 +107,10 @@ export const router = createBrowserRouter([
             {
                 path: 'hotel/pricing',
                 element: <PricingRules />
+            },
+            {
+                path: 'hotel/my-property',
+                element: <MyHotel />
             },
             {
                 path: 'hotel/create',

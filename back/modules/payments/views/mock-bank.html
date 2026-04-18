@@ -46,7 +46,7 @@
             document.getElementById('statusInput').value = status;
             const form = document.getElementById('paymentForm');
             // Setting action to our callback endpoint
-            form.action = `/payments/callback/local?transId=${transId}&status=${status}`;
+            form.action = `/api/v1/payments/callback/local?transId=${transId}&status=${status}`;
             form.submit();
         }
     </script>

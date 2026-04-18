@@ -16,8 +16,10 @@ export const BookingConfirmationPage: React.FC = () => {
             if (!id) return;
             setLoading(true);
             try {
-                const data = await bookingApi.getBookingDetails(id);
-                setBooking(data);
+                const res = await bookingApi.getBookingDetails(id);
+                // Handle response envelope (checking for .data property)
+                const fetchedBooking = (res as any).data || res;
+                setBooking(fetchedBooking);
             } catch (err: any) {
                 setError(err.message || 'Failed to load booking confirmation');
             } finally {
@@ -41,8 +43,8 @@ export const BookingConfirmationPage: React.FC = () => {
                     <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">!</div>
                     <h2 className="text-2xl font-bold mb-2">Wait, something went wrong</h2>
                     <p className="text-gray-500 mb-6">{error || 'Booking could not be loaded.'}</p>
-                    <button onClick={() => navigate('/account/trips')} className="w-full bg-blue-600 text-white rounded-lg px-4 py-3 font-semibold hover:bg-blue-700 transition">
-                        View My Trips
+                    <button onClick={() => navigate('/')} className="w-full bg-blue-600 text-white rounded-lg px-4 py-3 font-semibold hover:bg-blue-700 transition">
+                        Go to Homepage
                     </button>
                 </div>
             </div>
@@ -50,25 +52,27 @@ export const BookingConfirmationPage: React.FC = () => {
     }
 
     const { 
-        bookingNumber, 
-        status, 
-        paymentStatus, 
-        paymentMethod,
-        totalPrice, 
-        currency,
+        bookingNumber = 'N/A', 
+        bookingType = 'hotel',
+        status = 'pending', 
+        paymentStatus = 'pending', 
+        paymentMethod = 'Card',
+        totalPrice = 0, 
+        currency = 'AZN',
         hotel, 
-        items, 
-        guests 
+        tour,
+        items = [], 
+        guests = [] 
     } = booking;
-
-    const primaryItem = items && items[0];
-    const primaryGuest = guests && guests[0];
+  
+    const isTour = bookingType === 'tour';
+    const primaryItem = items.length > 0 ? items[0] : null;
+    const primaryGuest = guests.length > 0 ? guests[0] : null;
+    const details = isTour ? tour : hotel;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
-                
-                {/* Header Success Banner */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
                     <div className="bg-green-600 p-8 text-center text-white">
                         <CheckCircle size={64} className="mx-auto mb-4 opacity-90" />
@@ -87,40 +91,45 @@ export const BookingConfirmationPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Property & Stay Details */}
                 <div className="bg-white rounded-2xl shadow-sm p-8 mb-6">
-                    <h2 className="text-xl font-bold mb-6 border-b border-gray-100 pb-4">Stay Overview</h2>
+                    <h2 className="text-xl font-bold mb-6 border-b border-gray-100 pb-4">
+                        {isTour ? 'Adventure Overview' : 'Stay Overview'}
+                    </h2>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{hotel?.name || 'Hotel'}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{details?.name || (isTour ? 'Your Tour' : 'Your Hotel')}</h3>
                             <p className="text-gray-500 flex items-start gap-2 mb-4">
                                 <MapPin size={18} className="shrink-0 mt-0.5" />
-                                {hotel?.address || 'Address not provided'}
+                                {details?.address || details?.city || 'Address not provided'}
                             </p>
-                            {primaryItem && primaryItem.roomType && (
+                            {!isTour && primaryItem?.roomType && (
                                 <p className="font-medium text-gray-800">Room: {primaryItem.roomType.name}</p>
                             )}
                         </div>
                         
                         <div className="bg-gray-50 p-4 rounded-xl flex gap-4">
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Check-in</p>
+                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">{isTour ? 'Date' : 'Check-in'}</p>
                                 <p className="font-bold text-gray-900">{primaryItem ? new Date(primaryItem.checkIn).toLocaleDateString() : 'N/A'}</p>
-                                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><Clock size={14}/> {hotel?.checkInTime || '14:00'}</p>
+                                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><Clock size={14}/> {details?.checkInTime || '09:00'}</p>
                             </div>
-                            <div className="w-px bg-gray-200"></div>
-                            <div className="flex-1">
-                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Check-out</p>
-                                <p className="font-bold text-gray-900">{primaryItem ? new Date(primaryItem.checkOut).toLocaleDateString() : 'N/A'}</p>
-                                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><Clock size={14}/> {hotel?.checkOutTime || '12:00'}</p>
-                            </div>
+                            {!isTour && primaryItem && (
+                                <>
+                                    <div className="w-px bg-gray-200"></div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Check-out</p>
+                                        <p className="font-bold text-gray-900">{new Date(primaryItem.checkOut).toLocaleDateString()}</p>
+                                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><Clock size={14}/> {details?.checkOutTime || '12:00'}</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 
                     {primaryGuest && (
                         <div className="border border-gray-100 rounded-xl p-4 flex gap-4 items-center">
-                            <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xl">
+                            <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xl uppercase">
                                 {primaryGuest.firstName.charAt(0)}{primaryGuest.lastName.charAt(0)}
                             </div>
                             <div>
@@ -136,31 +145,32 @@ export const BookingConfirmationPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Payment Summary */}
                 <div className="bg-white rounded-2xl shadow-sm p-8">
                     <h2 className="text-xl font-bold mb-6 border-b border-gray-100 pb-4">Payment Summary</h2>
                     
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-gray-600">Payment Status</span>
-                        <span className={`font-semibold capitalize ${paymentStatus === 'captured' ? 'text-green-600' : 'text-amber-600'}`}>
+                        <span className={`font-semibold capitalize ${paymentStatus === 'captured' || paymentStatus === 'success' ? 'text-green-600' : 'text-amber-600'}`}>
                             {paymentStatus}
                         </span>
                     </div>
                     
-                    <div className="flex justify-between items-center justify-between mb-4">
+                    <div className="flex justify-between items-center mb-4">
                         <span className="text-gray-600">Payment Method</span>
-                        <span className="font-medium">{paymentMethod || 'Credit Card'}</span>
+                        <span className="font-medium">{paymentMethod || 'Card'}</span>
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center text-lg">
-                        <strong className="text-gray-900">Total Charged</strong>
-                        <strong className="text-2xl font-bold text-gray-900">{totalPrice.toFixed(2)} {currency}</strong>
+                        <strong className="text-gray-900">Total Price</strong>
+                        <strong className="text-2xl font-bold text-gray-900">
+                            {typeof totalPrice === 'number' ? totalPrice.toFixed(2) : totalPrice} {currency}
+                        </strong>
                     </div>
                 </div>
 
                 <div className="mt-8 text-center flex justify-center gap-4">
-                    <button onClick={() => navigate('/hotels')} className="px-6 py-3 font-semibold text-gray-600 hover:text-gray-900 transition">
-                        Explore more hotels
+                    <button onClick={() => navigate(isTour ? '/tours' : '/hotels')} className="px-6 py-3 font-semibold text-gray-600 hover:text-gray-900 transition underline">
+                        Explore more {isTour ? 'tours' : 'hotels'}
                     </button>
                     <button onClick={() => navigate('/account/trips')} className="px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition">
                         View My Trips

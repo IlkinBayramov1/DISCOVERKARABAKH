@@ -13,7 +13,8 @@ import {
     Map,
     MapPin,
     Plus,
-    Compass
+    Compass,
+    Home
 } from 'lucide-react';
 import { getVendorCategory } from '@/shared/utils/token';
 import './Sidebar.css';
@@ -53,6 +54,7 @@ export default function Sidebar() {
     const moduleRoutes: Record<ModuleType, { path: string; name: string; icon: any }[]> = {
         hotel: [
             { path: '/hotel/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+            { path: '/hotel/my-property', name: 'My Hotel', icon: Home },
             { path: '/reservations', name: 'Reservations', icon: CalendarCheck },
             { path: '/rooms', name: 'Room Types', icon: BedDouble },
             { path: '/rooms/inventory', name: 'Room Inventory', icon: LayoutGrid },
@@ -72,6 +74,7 @@ export default function Sidebar() {
         tour: [
             { path: '/tours', name: 'Dashboard', icon: LayoutDashboard },
             { path: '/tours/bookings', name: 'Sifarişlər', icon: CalendarCheck },
+            { path: '/availability', name: 'Mövcudluq', icon: CalendarDays },
             { path: '/tours/reviews', name: 'Rəylər', icon: MessageSquare },
             { path: '/tours/create', name: 'Yeni Tur', icon: Plus },
         ],

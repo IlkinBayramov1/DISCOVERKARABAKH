@@ -1,0 +1,257 @@
+components:
+  schemas:
+    Activity:
+      type: object
+      properties:
+        time:
+          type: string
+          example: "09:00"
+        description:
+          type: string
+          example: "Meet at the city center"
+      required:
+        - time
+        - description
+
+    DayItinerary:
+      type: object
+      properties:
+        day:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Historic Baku Tour"
+        description:
+          type: string
+          example: "Exploring the Old City and Maiden Tower."
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+        meals:
+          type: array
+          items:
+            type: string
+          example: ["Breakfast", "Lunch"]
+      required:
+        - day
+        - title
+
+    Tour:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        images:
+          type: array
+          items:
+            type: string
+        durationDays:
+          type: integer
+        durationNights:
+          type: integer
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard, Extreme]
+        groupSizeMin:
+          type: integer
+        groupSizeMax:
+          type: integer
+        pricePerPerson:
+          type: number
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date-time
+        itinerary:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayItinerary'
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        ownerId:
+          type: string
+          format: uuid
+          readOnly: true
+        isApproved:
+          type: boolean
+          readOnly: true
+        isFeatured:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    TourCreate:
+      type: object
+      required:
+        - name
+        - description
+        - address
+        - durationDays
+        - durationNights
+        - groupSizeMax
+        - pricePerPerson
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 2000
+        city:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        images:
+          type: array
+          items:
+            type: string
+        durationDays:
+          type: integer
+          minimum: 1
+        durationNights:
+          type: integer
+          minimum: 0
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard, Extreme]
+          default: Medium
+        groupSizeMin:
+          type: integer
+          minimum: 1
+          default: 1
+        groupSizeMax:
+          type: integer
+          minimum: 1
+        pricePerPerson:
+          type: number
+          minimum: 0.01
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date-time
+        itinerary:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayItinerary'
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+
+    TourUpdate:
+      type: object
+      description: All fields are optional for update
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 2000
+        city:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        images:
+          type: array
+          items:
+            type: string
+        durationDays:
+          type: integer
+          minimum: 1
+        durationNights:
+          type: integer
+          minimum: 0
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard, Extreme]
+        groupSizeMin:
+          type: integer
+          minimum: 1
+        groupSizeMax:
+          type: integer
+          minimum: 1
+        pricePerPerson:
+          type: number
+          minimum: 0.01
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date-time
+        itinerary:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayItinerary'
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+
+    TourAvailabilityResponse:
+      type: object
+      properties:
+        tourId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        maxSeats:
+          type: integer
+        bookedCount:
+          type: integer
+        remainingSeats:
+          type: integer
+        isFull:
+          type: boolean

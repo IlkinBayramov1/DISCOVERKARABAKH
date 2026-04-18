@@ -1,0 +1,34 @@
+paths:
+  /tours/{id}/availability:
+    get:
+      tags: [Tours]
+      summary: Check tour availability for a specific date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Tour date (YYYY-MM-DD)
+      responses:
+        200:
+          description: Availability status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: './schemas.yaml#/components/schemas/TourAvailabilityResponse'
+        400:
+          description: Missing date or invalid input
+        404:
+          description: Tour not found

@@ -1,0 +1,81 @@
+paths:
+  /admins/finance/transactions:
+    get:
+      tags:
+        - Admin Finance
+      summary: "Bütün maliyyə tranzaksiyalarını siyahılayır"
+      description: "Platforma üzrə bütün ödənişləri status, bank provayderi və tarix üzrə süzgəcdən keçirərək görmək üçün istifadə olunur."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: 'schemas.yaml#/components/schemas/TransactionStatus'
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "pasha"
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: "Uğurlu cavab"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas.yaml#/components/schemas/AdminTransaction'
+        '401':
+          $ref: 'schemas.yaml#/components/responses/UnauthorizedError'
+
+  /admins/finance/transactions/{id}:
+    get:
+      tags:
+        - Admin Finance
+      summary: "Tranzaksiya detallarını gətirir"
+      description: "Ödənişin ətraflı məlumatı, o cümlədən bankdan gələn xammal cavab (raw response) və xəta mesajlarını qaytarır."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Tranzaksiya detalları"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminTransaction'
+        '404':
+          $ref: 'schemas.yaml#/components/responses/NotFoundError'

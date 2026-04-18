@@ -8,7 +8,7 @@ export const HotelSearchPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     
-    // UI Local State (What user is typing/selecting right now before confirm)
+    // UI Local State
     const [cityInput, setCityInput] = useState(searchParams.get('city') || '');
     const [searchInput, setSearchInput] = useState('');
     const [starRatingInput, setStarRatingInput] = useState<number | undefined>(undefined);
@@ -22,13 +22,13 @@ export const HotelSearchPage: React.FC = () => {
     const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Sidebar Filter States (Auto-apply or applied on close, but let's make them reactive to "activeFilters" on change)
+    // Sidebar Filter States
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
     const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null);
     const [selectedMinRating, setSelectedMinRating] = useState<number | undefined>(undefined);
     const [sortBy, setSortBy] = useState<string>('recommended');
 
-    // Active Filters State (What is actually sent to the backend)
+    // Active Filters State
     const [activeFilters, setActiveFilters] = useState({
         city: searchParams.get('city') || '',
         q: '',
@@ -47,20 +47,20 @@ export const HotelSearchPage: React.FC = () => {
 
     const { hotels, loading, error } = useHotelSearch(activeFilters);
 
-    // Listen for URL changes 
+    // Listen for URL changes
     React.useEffect(() => {
         const urlCity = searchParams.get('city') || '';
         setCityInput(urlCity);
         setActiveFilters(prev => ({ ...prev, city: urlCity }));
     }, [searchParams]);
 
-    // Handle Header Search (Explicit submit)
+    // Handle Header Search
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         applyFilters();
     };
 
-    // Construct backend filter payload from UI controls
+    // Construct backend filter payload
     const applyFilters = () => {
         let minPrice: number | undefined = undefined;
         let maxPrice: number | undefined = undefined;
@@ -87,9 +87,6 @@ export const HotelSearchPage: React.FC = () => {
         });
     };
 
-    // Sidebar Handlers (trigger refetch immediately when a sidebar filter changes for UX, or we can tie it to a button)
-    // Let's make them reactive: whenever a filter changes, we just call applyFilters, but wait state is async! 
-    // Best way: useEffect to watch the sidebar states and apply them automatically when they change.
     React.useEffect(() => {
         applyFilters();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,306 +107,283 @@ export const HotelSearchPage: React.FC = () => {
 
     return (
         <div className="hotel-search-page">
-            <div className="hotel-search-container">
-
-                {/* Search Hero - City Style */}
-                <section className="search-hero">
-                    <div className="search-hero-content">
-                        <h1 className="search-hero-title">Find your perfect stay</h1>
-                        <p className="search-hero-subtitle">
-                            Discover premium hotels across Karabakh with exclusive deals and instant booking.
-                        </p>
-                        
-                        <form onSubmit={handleSearch} className="premium-search-bar" onClick={(e) => e.stopPropagation()}>
-                            <div className="search-chunk">
-                                <label>Location</label>
-                                <div className="guest-display">
-                                    {cityInput ? `${cityInput}, Karabakh` : 'All Karabakh'}
-                                </div>
-                            </div>
-                            <div className="search-divider"></div>
-                            
-                            <div className="search-chunk">
-                                <label>Check in</label>
-                                <input
-                                    type="date"
-                                    value={checkInInput}
-                                    onChange={(e) => setCheckInInput(e.target.value)}
-                                    className="search-input-naked"
-                                />
-                            </div>
-                            <div className="search-divider"></div>
-                            
-                            <div className="search-chunk">
-                                <label>Check out</label>
-                                <input
-                                    type="date"
-                                    value={checkOutInput}
-                                    onChange={(e) => setCheckOutInput(e.target.value)}
-                                    className="search-input-naked"
-                                />
-                            </div>
-                            <div className="search-divider"></div>
-                            
-                            <div className="search-chunk guest-chunk" onClick={() => setGuestDropdownOpen(!guestDropdownOpen)}>
-                                <label>Guests</label>
-                                <div className="guest-display">
-                                    {adultsInput + childrenInput} Guests, {roomsInput} Room
-                                </div>
-                                
-                                {guestDropdownOpen && (
-                                    <div className="guest-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="guest-row">
-                                            <div className="guest-info">
-                                                <div className="guest-title">Adults</div>
-                                                <div className="guest-desc">Ages 13 or above</div>
-                                            </div>
-                                            <div className="guest-controls">
-                                                <button type="button" onClick={() => setAdultsInput(Math.max(1, adultsInput - 1))}>-</button>
-                                                <span>{adultsInput}</span>
-                                                <button type="button" onClick={() => setAdultsInput(adultsInput + 1)}>+</button>
-                                            </div>
-                                        </div>
-                                        <div className="guest-row">
-                                            <div className="guest-info">
-                                                <div className="guest-title">Children</div>
-                                                <div className="guest-desc">Ages 2-12</div>
-                                            </div>
-                                            <div className="guest-controls">
-                                                <button type="button" onClick={() => setChildrenInput(Math.max(0, childrenInput - 1))}>-</button>
-                                                <span>{childrenInput}</span>
-                                                <button type="button" onClick={() => setChildrenInput(childrenInput + 1)}>+</button>
-                                            </div>
-                                        </div>
-                                        <div className="guest-row">
-                                            <div className="guest-info">
-                                                <div className="guest-title">Rooms</div>
-                                            </div>
-                                            <div className="guest-controls">
-                                                <button type="button" onClick={() => setRoomsInput(Math.max(1, roomsInput - 1))}>-</button>
-                                                <span>{roomsInput}</span>
-                                                <button type="button" onClick={() => setRoomsInput(roomsInput + 1)}>+</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="premium-submit-btn"
-                            >
-                                {loading ? (
-                                    <span className="search-btn-icon loading-spin">⟳</span>
-                                ) : (
-                                    <>
-                                        <svg className="search-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                            <circle cx="11" cy="11" r="8"></circle>
-                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                        </svg>
-                                        <span>Search</span>
-                                    </>
-                                )}
-                            </button>
-                        </form>
+            <main className="container">
+                
+                {/* HERO SECTION */}
+                <section className="hero">
+                    <div className="hero-overlay">
+                        <h1>Hotels & Accommodations</h1>
+                        <p>Find the perfect place to stay in Karabakh.</p>
                     </div>
                 </section>
 
-                {/* Mobile Filter Toggle */}
-                <button 
-                    className="mobile-filter-toggle"
-                    onClick={() => setSidebarOpen(true)}
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="4" y1="6" x2="20" y2="6"></line>
-                        <line x1="4" y1="12" x2="20" y2="12"></line>
-                        <line x1="4" y1="18" x2="20" y2="18"></line>
-                    </svg>
-                    Filters & Amenities
-                </button>
+                {/* SEARCH BAR SECTION */}
+                <form onSubmit={handleSearch} className="search-bar" onClick={(e) => e.stopPropagation()}>
+                    
+                    {/* 0. KEYWORD SEARCH */}
+                    <div className="search-item hotel-name-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <div style={{ width: '100%' }}>
+                            <label>HOTEL NAME</label>
+                            <input 
+                                type="text" 
+                                placeholder="Search by hotel name..."
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                className="search-input-naked"
+                                style={{ width: '100%', fontSize: '15px' }}
+                            />
+                        </div>
+                    </div>
 
-                {/* Main Content */}
-                <div className="content-grid-hotel">
-
-                    {/* Sidebar Filters */}
-                    <aside className={`hotel-sidebar ${sidebarOpen ? 'active' : ''}`}>
-                        {sidebarOpen && (
-                            <button 
-                                className="sidebar-close"
-                                onClick={() => setSidebarOpen(false)}
-                            >×</button>
-                        )}
-                        
-                        <div className="sidebar-glass">
-                            <h2 className="sidebar-title">Filters</h2>
-                            
-                            <div className="filter-block">
-                                <h3 className="filter-heading">Location</h3>
-                                <select
-                                    value={cityInput}
-                                    onChange={(e) => setCityInput(e.target.value)}
-                                    className="form-input-hotel mb-2"
-                                    style={{ padding: '10px 14px', fontSize: '14px', width: '100%', cursor: 'pointer' }}
-                                >
-                                    <option value="">All Karabakh</option>
-                                    <option value="Shusha">Shusha, Karabakh</option>
-                                    <option value="Lachin">Lachin, Karabakh</option>
-                                    <option value="Khankendi">Khankendi, Karabakh</option>
-                                    <option value="Aghdam">Aghdam, Karabakh</option>
-                                    <option value="Fuzuli">Fuzuli, Karabakh</option>
-                                </select>
-                            </div>
-                            
-                            <div className="filter-block">
-                                <h3 className="filter-heading">Popular Amenities</h3>
-                                <div className="filter-list">
-                                    {[
-                                        'Free WiFi', 'Swimming Pool', 'Free Parking', 'Spa & Wellness', 'Restaurant', 
-                                        'Gym', 'Bar', 'Conference Room', 'Room Service', 'Airport Shuttle'
-                                    ].map((amenity) => (
-                                        <label key={amenity} className="filter-checkbox-item">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={selectedAmenities.includes(amenity)}
-                                                onChange={() => toggleAmenity(amenity)}
-                                            />
-                                            <span className="filter-label-text">{amenity}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="filter-block">
-                                <h3 className="filter-heading">Price Range</h3>
-                                <div className="filter-list">
-                                    {['Under $50', '$50 - $100', '$100 - $200', '$200+'].map((range) => (
-                                        <label key={range} className="filter-checkbox-item">
-                                            <input 
-                                                type="radio" 
-                                                name="priceRange" 
-                                                checked={selectedPriceRange === range}
-                                                onChange={() => setSelectedPriceRange(range)}
-                                            />
-                                            <span className="filter-label-text">{range}</span>
-                                        </label>
-                                    ))}
-                                    {selectedPriceRange && (
-                                        <button onClick={() => setSelectedPriceRange(null)} className="text-xs text-blue-500 mt-2 hover:underline">
-                                            Clear Price Filter
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            <div className="filter-block">
-                                <h3 className="filter-heading">Guest Rating</h3>
-                                <div className="filter-list">
-                                    {[
-                                        { label: 'Excellent 9+', val: 9 }, 
-                                        { label: 'Very Good 8+', val: 8 }, 
-                                        { label: 'Good 7+', val: 7 }
-                                    ].map((rating) => (
-                                        <label key={rating.label} className="filter-checkbox-item">
-                                            <input 
-                                                type="radio"
-                                                name="guestRating"
-                                                checked={selectedMinRating === rating.val}
-                                                onChange={() => setSelectedMinRating(rating.val)}
-                                            />
-                                            <span className="filter-label-text">{rating.label}</span>
-                                        </label>
-                                    ))}
-                                    {selectedMinRating && (
-                                        <button onClick={() => setSelectedMinRating(undefined)} className="text-xs text-blue-500 mt-2 hover:underline">
-                                            Clear Rating Filter
-                                        </button>
-                                    )}
-                                </div>
+                    {/* 1. LOCATION */}
+                    <div className="search-item location-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <div>
+                            <label>LOCATION</label>
+                            <div className="search-value">
+                                {cityInput ? `${cityInput}` : 'Karabakh'}
                             </div>
                         </div>
-                    </aside>
+                    </div>
+                    
+                    {/* 2. CHECK-IN / OUT */}
+                    <div className="search-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <div>
+                            <label>CHECK-IN / OUT</label>
+                            <div className="date-inputs search-value">
+                                <input type="date" value={checkInInput} onChange={(e) => setCheckInInput(e.target.value)} className="search-input-naked" />
+                                <span>-</span>
+                                <input type="date" value={checkOutInput} onChange={(e) => setCheckOutInput(e.target.value)} className="search-input-naked" />
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* Results Area */}
-                    <div className="results-area">
+                    {/* 3. GUESTS */}
+                    <div className="search-item guest-item" onClick={() => setGuestDropdownOpen(!guestDropdownOpen)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <div>
+                            <label>GUESTS</label>
+                            <div className="search-value">
+                                {adultsInput + childrenInput} Guests, {roomsInput} Room
+                            </div>
+                        </div>
                         
-                        {/* Results Header */}
-                        <div className="results-header">
-                            <span className="results-count">
-                                {loading ? 'Searching...' : (
-                                    <><strong>{hotels.length}</strong> properties found</>
-                                )}
-                            </span>
-                            <select 
-                                className="sort-dropdown"
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                            >
+                        {guestDropdownOpen && (
+                            <div className="guest-dropdown" onClick={(e) => e.stopPropagation()}>
+                                <div className="guest-row">
+                                    <div className="guest-info">
+                                        <div className="guest-title">Adults</div>
+                                        <div className="guest-desc">Ages 13 or above</div>
+                                    </div>
+                                    <div className="guest-controls">
+                                        <button type="button" onClick={() => setAdultsInput(Math.max(1, adultsInput - 1))}>-</button>
+                                        <span>{adultsInput}</span>
+                                        <button type="button" onClick={() => setAdultsInput(adultsInput + 1)}>+</button>
+                                    </div>
+                                </div>
+                                <div className="guest-row">
+                                    <div className="guest-info">
+                                        <div className="guest-title">Children</div>
+                                        <div className="guest-desc">Ages 2-12</div>
+                                    </div>
+                                    <div className="guest-controls">
+                                        <button type="button" onClick={() => setChildrenInput(Math.max(0, childrenInput - 1))}>-</button>
+                                        <span>{childrenInput}</span>
+                                        <button type="button" onClick={() => setChildrenInput(childrenInput + 1)}>+</button>
+                                    </div>
+                                </div>
+                                <div className="guest-row">
+                                    <div className="guest-info">
+                                        <div className="guest-title">Rooms</div>
+                                    </div>
+                                    <div className="guest-controls">
+                                        <button type="button" onClick={() => setRoomsInput(Math.max(1, roomsInput - 1))}>-</button>
+                                        <span>{roomsInput}</span>
+                                        <button type="button" onClick={() => setRoomsInput(roomsInput + 1)}>+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <button type="submit" disabled={loading} className="search-btn">
+                        {loading ? (
+                            <span className="search-btn-icon loading-spin">⟳</span>
+                        ) : (
+                            <>
+                                <svg className="search-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                Search
+                            </>
+                        )}
+                    </button>
+                </form>
+
+                {/* RESULTS SECTION */}
+                <section className="results-bar">
+                    <span>Showing <strong>{loading ? '...' : hotels.length}</strong> results</span>
+
+                    <div className="actions">
+                        <button className="ghost-btn" onClick={() => setSidebarOpen(true)}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+                            Filters
+                        </button>
+                        
+                        <div className="ghost-btn sort-wrapper">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                            Sort by:
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select">
                                 <option value="recommended">Recommended</option>
                                 <option value="price_asc">Price: Low to High</option>
                                 <option value="price_desc">Price: High to Low</option>
                                 <option value="rating_desc">Guest Rating</option>
                             </select>
                         </div>
-
-                        {/* Error State */}
-                        {error && (
-                            <div className="error-premium">
-                                <svg className="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                </svg>
-                                <span>{error}</span>
-                            </div>
-                        )}
-
-                        {/* Empty State */}
-                        {!loading && !error && hotels.length === 0 && (
-                            <div className="empty-state-premium">
-                                <div className="empty-icon">🏨</div>
-                                <h3 className="empty-title">No hotels found</h3>
-                                <p className="empty-text">
-                                    Try adjusting your search criteria or explore other destinations in Karabakh.
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Loading Skeleton */}
-                        {loading && hotels.length === 0 && (
-                            <div className="hotels-grid-premium">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="skeleton-hotel"></div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Hotels Grid */}
-                        {!error && (hotels.length > 0 || !loading) && (
-                            <div className="hotels-grid-premium">
-                                {hotels.map((hotel) => (
-                                    <HotelCard
-                                        key={hotel.id}
-                                        hotel={hotel}
-                                        onClick={(id) => navigate(`/hotels/${id}`)}
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Pagination */}
-                        {hotels.length > 0 && !loading && (
-                            <div className="pagination-premium">
-                                <button className="page-btn" disabled>← Prev</button>
-                                <button className="page-btn active">1</button>
-                                <button className="page-btn">2</button>
-                                <button className="page-btn">Next →</button>
-                            </div>
-                        )}
                     </div>
+                </section>
 
+                {/* ERROR / EMPTY STATES */}
+                {error && (
+                    <div className="error-premium">
+                        <span>{error}</span>
+                    </div>
+                )}
+                {!loading && !error && hotels.length === 0 && (
+                    <div className="empty-state-premium">
+                        <h3 className="empty-title">No hotels found</h3>
+                        <p className="empty-text">Try adjusting your search criteria or explore other destinations.</p>
+                    </div>
+                )}
+
+                {/* HOTEL LIST SECTION */}
+                <section className="hotel-grid">
+                    {loading && hotels.length === 0 ? (
+                        [1, 2, 3, 4, 5, 6, 7, 8].map((i) => <div key={i} className="skeleton-hotel"></div>)
+                    ) : (
+                        hotels.map((hotel) => (
+                            <HotelCard
+                                key={hotel.id}
+                                hotel={hotel}
+                                onClick={(id) => navigate(`/hotels/${id}`)}
+                            />
+                        ))
+                    )}
+                </section>
+
+            </main>
+
+            {/* OFF-CANVAS SIDEBAR FOR FILTERS */}
+            <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}></div>
+            <aside className={`hotel-offcanvas-sidebar ${sidebarOpen ? 'active' : ''}`}>
+                <div className="sidebar-header">
+                    <h2>Filters</h2>
+                    <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>✕</button>
                 </div>
-            </div>
+                
+                <div className="sidebar-content">
+
+                    <div className="filter-block">
+                        <h3 className="filter-heading">Hotel Class</h3>
+                        <div className="filter-list">
+                            {[5, 4, 3, 2, 1].map((star) => (
+                                <label key={star} className="filter-checkbox-item">
+                                    <input 
+                                        type="radio" 
+                                        name="starRating"
+                                        checked={starRatingInput === star}
+                                        onChange={() => setStarRatingInput(star)}
+                                    />
+                                    <span className="filter-label-text">
+                                        {star} Stars
+                                        <span style={{ color: '#ffb400', marginLeft: '8px' }}>
+                                            {'★'.repeat(star)}{'☆'.repeat(5 - star)}
+                                        </span>
+                                    </span>
+                                </label>
+                            ))}
+                            {starRatingInput && (
+                                <button onClick={() => setStarRatingInput(undefined)} className="clear-filter-btn">
+                                    Clear Stars
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <div className="filter-block">
+                        <h3 className="filter-heading">Popular Amenities</h3>
+                        <div className="filter-list">
+                            {[
+                                'Free WiFi', 'Swimming Pool', 'Free Parking', 'Spa & Wellness', 'Restaurant', 
+                                'Gym', 'Bar', 'Conference Room', 'Room Service', 'Airport Shuttle'
+                            ].map((amenity) => (
+                                <label key={amenity} className="filter-checkbox-item">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedAmenities.includes(amenity)}
+                                        onChange={() => toggleAmenity(amenity)}
+                                    />
+                                    <span className="filter-label-text">{amenity}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="filter-block">
+                        <h3 className="filter-heading">Price Range</h3>
+                        <div className="filter-list">
+                            {['Under $50', '$50 - $100', '$100 - $200', '$200+'].map((range) => (
+                                <label key={range} className="filter-checkbox-item">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={selectedPriceRange === range}
+                                        onChange={() => setSelectedPriceRange(range)}
+                                    />
+                                    <span className="filter-label-text">{range}</span>
+                                </label>
+                            ))}
+                            {selectedPriceRange && (
+                                <button onClick={() => setSelectedPriceRange(null)} className="clear-filter-btn">
+                                    Clear Price Filter
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <div className="filter-block">
+                        <h3 className="filter-heading">Guest Rating</h3>
+                        <div className="filter-list">
+                            {[
+                                { label: 'Excellent 9+', val: 9 }, 
+                                { label: 'Very Good 8+', val: 8 }, 
+                                { label: 'Good 7+', val: 7 }
+                            ].map((rating) => (
+                                <label key={rating.label} className="filter-checkbox-item">
+                                    <input 
+                                        type="radio"
+                                        name="guestRating"
+                                        checked={selectedMinRating === rating.val}
+                                        onChange={() => setSelectedMinRating(rating.val)}
+                                    />
+                                    <span className="filter-label-text">{rating.label}</span>
+                                </label>
+                            ))}
+                            {selectedMinRating && (
+                                <button onClick={() => setSelectedMinRating(undefined)} className="clear-filter-btn">
+                                    Clear Rating Filter
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
     );
 };

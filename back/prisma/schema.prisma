@@ -310,7 +310,7 @@ model Hotel {
   email    String?
   policies Json?
 
-  status String @default("pending") // pending, active, rejected, inactive
+  status String @default("active") // pending, active, rejected, inactive
 
   isFeatured       Boolean   @default(false)
   featuredUntil    DateTime?
@@ -805,8 +805,7 @@ model Tour {
   groupSizeMin   Int        @default(1)
   groupSizeMax   Int
   pricePerPerson Float
-
-  startDates Json?
+  startDate      DateTime?
   itinerary  Json?
   inclusions Json?
   exclusions Json?
@@ -899,7 +898,7 @@ model Restaurant {
   featuredUntil    DateTime?
   featuredPriority Int       @default(0)
 
-  status String @default("pending") // pending, active, rejected, inactive
+  status String @default("active") // pending, active, rejected, inactive
 
   rating      Float @default(0.0)
   reviewCount Int   @default(0)

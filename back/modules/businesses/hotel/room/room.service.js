@@ -14,9 +14,9 @@ class RoomService {
             throw ApiError.forbidden('You do not own this hotel.');
         }
 
-        const { images, amenities, ...roomData } = data;
+        const { images, amenities, basePrice, ...roomData } = data;
 
-        return prisma.roomType.create({
+        const result = await prisma.roomType.create({
             data: {
                 ...roomData,
                 hotelId,
@@ -32,6 +32,26 @@ class RoomService {
             },
             include: { images: true, roomAmenities: true }
         });
+
+        // 🟢 FIX: Handle basePrice by generating standard daily pricing for the next 30 days 
+        // so the frontend can read the price smoothly.
+        if (basePrice !== undefined && basePrice !== null) {
+            const pricingData = [];
+            const today = new Date();
+            for (let i = 0; i < 30; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                pricingData.push({
+                    date: d,
+                    basePrice: parseFloat(basePrice),
+                    roomTypeId: result.id
+                });
+            }
+            await prisma.dailyPricing.createMany({
+                data: pricingData,
+                skipDuplicates: true
+            });
+        }
 
         // Trigger snapshot update
         hotelEvents.emit(ROOM_TYPE_CREATED, { hotelId, roomType: result });
@@ -82,12 +102,25 @@ class RoomService {
         if (!room) throw ApiError.notFound('Room not found in this hotel');
         if (room.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
-        const { images, amenities, ...roomData } = data;
+        const { images, amenities, basePrice, ...roomData } = data;
 
         const updated = await prisma.roomType.update({
             where: { id: roomId },
             data: roomData
         });
+
+        // 🟢 FIX: Update pricing if basePrice was provided
+        if (basePrice !== undefined && basePrice !== null) {
+            // A simple approach: Update all future daily pricings for this room type
+            // or just the next 30 days if they were dynamically updated
+            await prisma.dailyPricing.updateMany({
+                where: { 
+                    roomTypeId: roomId,
+                    date: { gte: new Date() }
+                },
+                data: { basePrice: parseFloat(basePrice) }
+            });
+        }
 
         // Sync Images
         if (images !== undefined) {

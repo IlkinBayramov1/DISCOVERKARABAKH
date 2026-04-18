@@ -31,12 +31,14 @@ export interface ITour {
     groupSizeMax: number;
     pricePerPerson: number;
 
-    startDates?: string[];
+    startDate?: string;
     itinerary?: ITourItineraryDay[];
     inclusions?: string[];
     exclusions?: string[];
 
     ownerId: string;
+    isApproved: boolean;
+    isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -57,8 +59,17 @@ export interface ITourPayload {
     groupSizeMax: number;
     pricePerPerson: number;
 
-    startDates?: string[];
+    startDate?: string;
     itinerary?: ITourItineraryDay[];
     inclusions?: string[];
     exclusions?: string[];
+}
+
+export interface ITourAvailabilityResponse {
+    tourId: string;
+    date: string;
+    maxSeats: number;
+    bookedCount: number;
+    remainingSeats: number;
+    isFull: boolean;
 }

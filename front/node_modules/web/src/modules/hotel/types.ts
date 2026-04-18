@@ -40,8 +40,8 @@ export interface IHotel {
     city?: string;
     propertyType: string;
 
-    starRating?: number; // Replaces previous ambiguous `rating` for stars
-    rating?: number;     // Average review score
+    starRating?: number; 
+    rating?: number;     
     reviewCount?: number;
 
     latitude?: number;
@@ -53,12 +53,18 @@ export interface IHotel {
 
     images?: Array<{ id: string; url: string; order: number }>;
     amenities?: IHotelAmenity[];
+    
+    // --- BU HİSSƏNİ ƏLAVƏ ET VƏ YA YENİLƏ ---
+    roomTypes?: IRoomType[];   // Otaqların qiymətini hesablamaq üçün mütləq olmalıdır
+    startingPrice?: number;    // API-dan gələn alternativ qiymət sahəsi
+    lowestPrice?: number;      // Mövcud olan sahə
+    // ---------------------------------------
+
     policies?: {
         checkInTime?: string;
         checkOutTime?: string;
         [key: string]: any;
     };
-    lowestPrice?: number;
 }
 
 export interface ICouponValidation {

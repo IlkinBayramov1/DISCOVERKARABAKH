@@ -23,8 +23,9 @@ class PaymentController {
             const updatedTx = await paymentService.handleCallback(params, req.params.provider || 'local');
             
             // In a real bank redirect, we might want to redirect the user to a success page
-            if (req.method === 'GET') {
-                return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/booking/${updatedTx.bookingId}/confirmation`);
+            // Redirect back to frontend for browser-based callbacks
+            if (req.accepts('html') || req.method === 'POST' || req.method === 'GET') {
+                return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/booking-confirmation/${updatedTx.bookingId}`);
             }
             
             return successResponse(res, updatedTx, { message: 'Payment processed' });

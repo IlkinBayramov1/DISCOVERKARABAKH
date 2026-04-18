@@ -1,3 +1,9 @@
 {
-    "liveServer.settings.port": 5502
+  "css.lint.unknownAtRules": "ignore",
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "css",
+    "html": "html",
+    "javascript": "javascript",
+    "typescriptreact": "typescriptreact"
+  }
 }
