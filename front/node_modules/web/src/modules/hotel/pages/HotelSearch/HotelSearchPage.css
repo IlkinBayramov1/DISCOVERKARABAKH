@@ -27,17 +27,17 @@ body {
 }
 
 /* HERO SECTION */
-.hero {
+.hotel-hero {
     position: relative;
     height: 260px;
     border-radius: 26px;
-    background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+    background-image: url('https://www.maritim.com/fileadmin/_processed_/0/1/csm_Bpa_363_Superior_500a005b62.jpg');
     background-size: cover;
     background-position: center;
     overflow: hidden;
 }
 
-.hero::before {
+.hotel-hero::before {
     content: '';
     position: absolute;
     top: 0;
@@ -48,7 +48,7 @@ body {
     /* Image brightness filter */
 }
 
-.hero-overlay {
+.hotel-hero-overlay {
     position: absolute;
     bottom: 32px;
     left: 36px;
@@ -56,13 +56,13 @@ body {
     z-index: 2;
 }
 
-.hero-overlay h1 {
+.hotel-hero-overlay h1 {
     font-size: 40px;
     font-weight: 700;
     margin: 8px 0;
 }
 
-.hero-overlay p {
+.hotel-hero-overlay p {
     font-size: 16px;
     margin: 0;
 }

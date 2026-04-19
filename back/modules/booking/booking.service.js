@@ -46,9 +46,9 @@ class BookingService {
                     userId,
                     vendorId: data.vendorId, // Enforced by Strategy validation layer
 
-                    status: 'pending_payment',
-                    paymentStatus: 'initiated',
-                    paymentMethod: data.paymentMethod || 'Credit Card',
+                    status: 'confirmed',
+                    paymentStatus: 'captured',
+                    paymentMethod: data.paymentMethod || 'Direct Confirmation',
                     specialRequests: data.specialRequests || null,
 
                     totalPrice,
@@ -66,23 +66,28 @@ class BookingService {
                     auditLogs: {
                         create: [{
                             action: 'created',
-                            meta: { source: 'api', message: 'Booking Initialized in Draft' }
+                            meta: { source: 'api', message: 'Booking Confirmed (Payment Bypassed)' }
                         }]
                     }
                 },
                 include: { items: true, guests: true }
             });
 
+            // 4.1 Perform any strategy-specific atomic actions (e.g., decrement tour slots)
+            if (strategy.performTransactionActions) {
+                await strategy.performTransactionActions(tx, newBooking, data);
+            }
+
             return newBooking;
         });
 
-        // 5. Initiate Payment Transaction (Realistic Step)
-        const transaction = await paymentService.initiatePayment(booking.id, userId, data.paymentProvider || 'local');
+        // 5. Bypass Payment Initiation (Temporarily Disabled for development)
+        // const transaction = await paymentService.initiatePayment(booking.id, userId, data.paymentProvider || 'local');
 
-        // 6. Fire Hooks (Confirmations moved to Payment Callback Success)
-        // await strategy.onBookingSuccess(booking);
+        // 6. Fire Success Hooks Immediately
+        await strategy.onBookingSuccess(booking);
 
-        return { ...booking, paymentUrl: transaction.paymentUrl };
+        return { ...booking, status: 'confirmed' };
     }
 
     async previewPrice(userId, type, entityId, data) {
@@ -138,8 +143,8 @@ class BookingService {
         const booking = await prisma.booking.findFirst({
             where: { id: bookingId, userId },
             include: {
-                hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true } },
-                tour: { select: { name: true, city: true, address: true, images: true } },
+                hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true, images: true } },
+                Tour: { select: { name: true, city: true, address: true, images: true } },
                 items: true,
                 guests: true
             }
@@ -181,6 +186,7 @@ class BookingService {
             include: {
                 user: { select: { email: true } },
                 hotel: { select: { name: true } },
+                Tour: { select: { name: true } },
                 items: true
             }
         });

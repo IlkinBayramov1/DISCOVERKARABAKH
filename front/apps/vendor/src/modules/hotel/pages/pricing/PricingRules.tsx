@@ -12,14 +12,14 @@ import {
 import { useHotels } from '../../hooks/useHotels';
 import { useRooms } from '../../hooks/useRooms';
 import { useRevenue } from '../../hooks/useRevenue';
-import PricingRuleDrawer from './PricingRuleDrawer';
+import PricingRuleModal from './PricingRuleModal';
 import type { IPricingRule, IPricingRulePayload } from '../../types';
 import './PricingRules.css';
 
 export default function PricingRules() {
     const { data: hotels, loading: hotelsLoading } = useHotels(true);
     const [selectedHotelId, setSelectedHotelId] = useState<string>('');
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRule, setEditingRule] = useState<IPricingRule | null>(null);
 
     useEffect(() => {
@@ -104,7 +104,7 @@ export default function PricingRules() {
                     </div>
                     <button className="btn-primary shadow-lg shadow-blue-500/20" onClick={() => {
                         setEditingRule(null);
-                        setIsDrawerOpen(true);
+                        setIsModalOpen(true);
                     }}>
                         <Plus size={24} /> New Strategy
                     </button>
@@ -157,7 +157,7 @@ export default function PricingRules() {
                     <TrendingUp size={80} className="text-slate-100 mb-6" />
                     <h3>No Active Promotions</h3>
                     <p>Drive more bookings by setting up seasonal offers, weekend deals, or occupancy-based adjustments.</p>
-                    <button className="btn-primary" onClick={() => setIsDrawerOpen(true)}>
+                    <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
                         Launch First Strategy
                     </button>
                 </div>
@@ -221,7 +221,7 @@ export default function PricingRules() {
                                 <div className="rule-actions">
                                     <button className="btn-rule-action" onClick={() => {
                                         setEditingRule(rule);
-                                        setIsDrawerOpen(true);
+                                        setIsModalOpen(true);
                                     }}>
                                         <Edit2 size={18} />
                                     </button>
@@ -235,9 +235,9 @@ export default function PricingRules() {
                 </div>
             )}
 
-            <PricingRuleDrawer 
-                isOpen={isDrawerOpen}
-                onClose={() => setIsDrawerOpen(false)}
+            <PricingRuleModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
                 rooms={rooms || []}
                 onSave={handleSave}
                 editingRule={editingRule}

@@ -1,3 +1,4 @@
+import React from 'react';
 import { 
     X, 
     User, 
@@ -9,9 +10,9 @@ import {
     FileText, 
     CheckCircle, 
     AlertCircle,
-    MapPin
+    MapPin,
+    Users
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import type { IBooking } from '../../types';
 
 interface Props {
@@ -32,125 +33,151 @@ export const HotelReservationDetails: React.FC<Props> = ({ booking, onClose, onS
 
     const mainGuest = booking.guests && booking.guests.length > 0 ? booking.guests[0] : null;
 
-    const DataRow = ({ icon: Icon, label, value, colorClass = "" }: { icon: LucideIcon, label: string, value: string, colorClass?: string }) => (
-        <div className="info-item">
-            <span className="section-title !m-0 !mb-2 !border-0 !p-0">
-                <Icon size={12} /> {label}
-            </span>
-            <span className={`value ${colorClass}`}>{value}</span>
-        </div>
-    );
-
     return (
-        <div className="reservation-details-drawer" onClick={e => e.stopPropagation()}>
-            <div className="drawer-header">
-                <div className="flex justify-between items-start w-full">
-                    <div>
-                        <h3>Guest Intelligence</h3>
-                        <span className="booking-num">Protocol ID: #{booking.bookingNumber}</span>
+        <div className="dk-res-modal-container" onClick={e => e.stopPropagation()}>
+            
+            {/* HEADER */}
+            <div className="dk-res-modal-header">
+                <div className="dk-res-modal-title-group">
+                    <div className="dk-res-modal-icon-badge">
+                        <FileText size={20} />
                     </div>
-                    <button className="btn-close-drawer" onClick={onClose}>
-                        <X size={20} />
-                    </button>
+                    <div>
+                        <h2>Reservation Details</h2>
+                        <p>Protocol ID: <strong className="text-slate-700">#{booking.bookingNumber}</strong></p>
+                    </div>
+                </div>
+                <button className="dk-res-modal-close" onClick={onClose}>
+                    <X size={20} />
+                </button>
+            </div>
+
+            {/* STATUS BANNER */}
+            <div className={`dk-modal-status-banner ${booking.status}`}>
+                <div className="status-icon-wrap">
+                    {booking.status === 'confirmed' || booking.status === 'completed' ? <CheckCircle size={20} /> : 
+                     booking.status === 'cancelled' ? <X size={20} /> : <Clock size={20} />}
+                </div>
+                <div className="status-text-wrap">
+                    <span className="status-title">Current Status: {booking.status.replace('_', ' ').toUpperCase()}</span>
+                    <span className="status-subtitle">
+                        {booking.status === 'confirmed' ? 'System Confirmed & Locked' : 
+                         booking.status === 'cancelled' ? 'This reservation has been voided' : 'Action Required by Management'}
+                    </span>
                 </div>
             </div>
 
-            {/* STATUS HIGHLIGHT */}
-            <div className={`status-banner ${booking.status}`}>
-                {booking.status === 'confirmed' ? <CheckCircle size={18} /> : <Clock size={18} />}
-                <span>Current Status: {booking.status === 'confirmed' ? 'System Confirmed' : 'Action Required'}</span>
-            </div>
-
-            <div className="drawer-body">
-                {/* GUEST PROFILE CARD */}
-                <section className="detail-section">
-                    <h4 className="section-title"><User size={14} /> Guest Identity</h4>
-                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-6">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
-                                {mainGuest?.firstName?.[0] || 'G'}
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-black text-slate-800">
-                                    {mainGuest ? `${mainGuest.firstName} ${mainGuest.lastName}` : 'Guest User'}
-                                </h4>
-                                <span className="text-slate-400 font-bold text-sm">Primary Guest Portfolio</span>
-                            </div>
+            {/* SCROLLABLE BODY */}
+            <div className="dk-res-modal-body">
+                
+                {/* CARD 1: GUEST IDENTITY */}
+                <div className="dk-res-modal-card">
+                    <h4 className="dk-res-card-heading"><User size={16} /> Guest Identity</h4>
+                    <div className="dk-guest-profile-box">
+                        <div className="guest-avatar-large">
+                            {mainGuest?.firstName?.[0] || booking.user?.email?.[0]?.toUpperCase() || 'G'}
                         </div>
-                        <div className="grid grid-cols-2 gap-6">
-                            <DataRow icon={Mail} label="Email Protocol" value={mainGuest?.email || booking.user?.email || 'N/A'} colorClass="value-with-icon" />
-                            <DataRow icon={Phone} label="Verified Phone" value={mainGuest?.phone || 'N/A'} />
+                        <div className="guest-primary-info">
+                            <h3>{mainGuest ? `${mainGuest.firstName} ${mainGuest.lastName}` : 'Guest User'}</h3>
+                            <span>Primary Guest Portfolio</span>
                         </div>
                     </div>
-                </section>
-
-                {/* STAY TIMELINE VISUAL */}
-                <section className="detail-section">
-                    <h4 className="section-title"><Calendar size={14} /> Stay Timeline</h4>
-                    <div className="stay-banner">
-                        <div className="date-block text-left">
-                            <span className="label">Check In</span>
-                            <span className="date">{checkIn}</span>
+                    <div className="dk-guest-contact-grid">
+                        <div className="contact-item">
+                            <div className="contact-icon"><Mail size={14} /></div>
+                            <div className="contact-data">
+                                <label>Email Protocol</label>
+                                <span>{mainGuest?.email || booking.user?.email || 'N/A'}</span>
+                            </div>
                         </div>
-                        <div className="nights-count">{nights} {nights === 1 ? 'Night' : 'Nights'}</div>
-                        <div className="date-block text-right">
-                            <span className="label">Check Out</span>
-                            <span className="date">{checkOut}</span>
+                        <div className="contact-item">
+                            <div className="contact-icon"><Phone size={14} /></div>
+                            <div className="contact-data">
+                                <label>Verified Phone</label>
+                                <span>{mainGuest?.phone || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* CARD 2: STAY TIMELINE */}
+                <div className="dk-res-modal-card">
+                    <h4 className="dk-res-card-heading"><Calendar size={16} /> Stay Timeline & Details</h4>
+                    
+                    <div className="dk-timeline-visual">
+                        <div className="time-block">
+                            <span className="time-label">Check In</span>
+                            <span className="time-value">{checkIn}</span>
+                        </div>
+                        <div className="time-connector">
+                            <div className="line"></div>
+                            <span className="nights-pill">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                            <div className="line"></div>
+                        </div>
+                        <div className="time-block text-right">
+                            <span className="time-label">Check Out</span>
+                            <span className="time-value">{checkOut}</span>
+                        </div>
+                    </div>
+
+                    <div className="dk-stay-meta-grid">
+                        <div className="meta-box">
+                            <MapPin size={16} className="meta-icon" />
+                            <div className="meta-data">
+                                <label>Assigned Property</label>
+                                <span>{booking.hotel?.name || 'Standard Property'}</span>
+                            </div>
+                        </div>
+                        <div className="meta-box">
+                            <Users size={16} className="meta-icon" />
+                            <div className="meta-data">
+                                <label>Capacity</label>
+                                <span>{firstItem?.adults} Adults {firstItem?.children ? `, ${firstItem.children} Child` : ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* CARD 3: FINANCIAL ARCHITECTURE */}
+                <div className="dk-res-modal-card">
+                    <h4 className="dk-res-card-heading"><CreditCard size={16} /> Price Architecture</h4>
+                    <div className="dk-price-breakdown">
+                        <div className="price-row">
+                            <span className="price-label">Standard Nightly Base</span>
+                            <span className="price-val">{booking.totalPrice.toLocaleString()} {booking.currency || '₼'}</span>
+                        </div>
+                        <div className="price-row total">
+                            <span className="price-label">Total Yield</span>
+                            <span className="price-val">{booking.totalPrice.toLocaleString()} {booking.currency || '₼'}</span>
                         </div>
                     </div>
                     
-                    <div className="mt-6 flex items-center justify-between p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                        <div className="flex items-center gap-3">
-                            <MapPin size={18} className="text-blue-600" />
-                            <span className="text-sm font-bold text-slate-600">{booking.hotel?.name || 'Assigned Property'}</span>
-                        </div>
-                        <div className="text-[12px] font-black text-blue-600 uppercase tracking-widest">
-                            {firstItem?.adults} Adults {firstItem?.children ? `/ ${firstItem.children} CH` : ''}
-                        </div>
-                    </div>
-                </section>
-
-                {/* FINANCIAL PERSPECTIVE */}
-                <section className="detail-section">
-                    <h4 className="section-title"><CreditCard size={14} /> Price Architecture</h4>
-                    <div className="price-breakdown">
-                        <div className="price-row">
-                            <span className="text-slate-500 font-bold">Standard Nightly Base</span>
-                            <span className="font-bold text-slate-700">{booking.totalPrice.toLocaleString()} {booking.currency}</span>
-                        </div>
-                        <div className="price-row total">
-                            <span className="font-black text-slate-900">Total Yield</span>
-                            <span className="font-black text-emerald-600">{booking.totalPrice.toLocaleString()} {booking.currency}</span>
-                        </div>
-                    </div>
-                    <div className={`mt-4 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest ${booking.paymentStatus === 'captured' ? 'text-emerald-600' : 'text-amber-500'}`}>
+                    <div className={`dk-payment-status ${booking.paymentStatus === 'captured' ? 'success' : 'warning'}`}>
                         {booking.paymentStatus === 'captured' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
                         Payment Vector: {booking.paymentStatus.toUpperCase()}
                     </div>
-                </section>
+                </div>
 
-                {/* STRATEGIC NOTES */}
+                {/* CARD 4: STRATEGIC NOTES */}
                 {booking.specialRequests && (
-                    <section className="detail-section">
-                        <h4 className="section-title"><FileText size={14} /> Intelligence Notes</h4>
-                        <div className="bg-amber-50/50 border-l-4 border-amber-400 p-5 rounded-r-2xl text-sm font-medium text-amber-800 leading-relaxed italic">
-                            "{booking.specialRequests}"
-                        </div>
-                    </section>
+                    <div className="dk-res-modal-card mb-0 bg-amber-50/50 border-amber-100">
+                        <h4 className="dk-res-card-heading text-amber-700"><FileText size={16} /> Intelligence Notes</h4>
+                        <p className="dk-special-request-text">"{booking.specialRequests}"</p>
+                    </div>
                 )}
             </div>
 
-            {/* ACTION CENTER */}
+            {/* ACTION FOOTER */}
             {(booking.status === 'pending' || booking.status === 'draft' || booking.status === 'pending_payment') && (
-                <div className="drawer-actions">
+                <div className="dk-res-modal-footer">
                     <button 
-                        className="btn-reject-full" 
+                        className="dk-btn-reject" 
                         onClick={() => onStatusUpdate(booking.id, 'reject')}
                     >
-                        Decline
+                        Decline Reservation
                     </button>
                     <button 
-                        className="btn-approve-full" 
+                        className="dk-btn-approve" 
                         onClick={() => onStatusUpdate(booking.id, 'approve')}
                     >
                         Approve Protocol

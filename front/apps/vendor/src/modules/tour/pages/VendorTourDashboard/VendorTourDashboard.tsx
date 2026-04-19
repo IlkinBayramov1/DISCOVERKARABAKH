@@ -132,7 +132,7 @@ export default function VendorTourDashboard() {
                                             </div>
                                             <div className="meta-item">
                                                 <Users size={16} />
-                                                <span>{tour.groupSizeMin}-{tour.groupSizeMax} pax</span>
+                                                <span>{tour.availableSlots ?? tour.groupSizeMax} left of {tour.groupSizeMax} pax</span>
                                             </div>
                                         </div>
 

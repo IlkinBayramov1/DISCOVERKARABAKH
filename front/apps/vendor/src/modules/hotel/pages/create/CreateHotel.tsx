@@ -1,4 +1,4 @@
-    import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHotels } from '../../hooks/useHotels';
 import { useUpload } from '../../hooks/useUpload';
@@ -32,7 +32,8 @@ import {
     RefreshCw,
     CheckCircle2,
     Frown,
-    AlertCircle
+    AlertCircle,
+    Link as LinkIcon
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import './CreateHotel.css';
@@ -67,6 +68,7 @@ export default function CreateHotel() {
             navigate('/vendor/hotel/dashboard');
         }
     }, [hotels, hotelsLoading, id, navigate]);
+
     const { uploadImages, uploading, uploadError } = useUpload();
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -134,7 +136,6 @@ export default function CreateHotel() {
         const { name, value } = e.target;
         let parsedValue: any = value;
         if (name === 'starRating') parsedValue = Number(value);
-        // Coordinates will be parsed on submit to avoid input jumping
         setFormData(prev => ({ ...prev, [name]: parsedValue }));
     };
 
@@ -142,7 +143,7 @@ export default function CreateHotel() {
         const required = ['name', 'description', 'address', 'city', 'phone', 'email'];
         for (const field of required) {
             if (!formData[field as keyof IHotelPayload] || String(formData[field as keyof IHotelPayload]).trim() === '') {
-                setError(`Please complete the ${field} field.`);
+                setError(`Please complete the ${field.charAt(0).toUpperCase() + field.slice(1)} field.`);
                 return false;
             }
         }
@@ -171,9 +172,7 @@ export default function CreateHotel() {
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         
-        // Safety Guard: Only allow submission if we are on the final step
         if (currentStep !== 4) return;
-
         if (!validateForm()) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
@@ -184,7 +183,6 @@ export default function CreateHotel() {
         setSuccessMsg(null);
         
         try {
-            // Final Coordinate Synthesis
             const finalPayload: IHotelPayload = {
                 ...formData,
                 latitude: typeof formData.latitude === 'string' ? parseCoordinate(formData.latitude) : formData.latitude,
@@ -202,11 +200,11 @@ export default function CreateHotel() {
                 setSuccessMsg('Property blueprint updated successfully!');
             } else {
                 await createHotel(finalData);
-                setSuccessMsg('Success! Your property is now live and visible to travelers. Redirecting to dashboard...');
+                setSuccessMsg('Success! Your property is now live. Redirecting to dashboard...');
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => navigate('/vendor/dashboard'), 2000);
+            setTimeout(() => navigate('/vendor/hotel/dashboard'), 2000);
         } catch (err: any) {
             console.error('Deployment Error:', err);
             setError(err.message || 'Deployment failed. Please check your connection and inputs.');
@@ -223,192 +221,267 @@ export default function CreateHotel() {
             setTimeout(() => setSubmitReady(true), 500);
         }
         setCurrentStep(next);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+    const prevStep = () => {
+        setCurrentStep(prev => Math.max(prev - 1, 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const renderStepNav = () => (
-        <div className="wizard-nav">
+        <div className="dk-wizard-nav">
             {[
                 { n: 1, label: 'Identity', icon: Home },
-                { n: 2, label: 'DNA', icon: Dna },
+                { n: 2, label: 'Property DNA', icon: Dna },
                 { n: 3, label: 'Amenities', icon: Sparkles },
-                { n: 4, label: 'Media', icon: ImageIcon },
-            ].map(s => (
-                <div 
-                    key={s.n} 
-                    className={`nav-step ${currentStep === s.n ? 'active' : ''} ${currentStep > s.n ? 'completed' : ''}`}
-                    onClick={() => currentStep > s.n && setCurrentStep(s.n)}
-                >
-                    <div className="step-num">{currentStep > s.n ? <CheckCircle2 size={18} /> : s.n}</div>
-                    <span className="step-label">{s.label}</span>
-                </div>
+                { n: 4, label: 'Media Lab', icon: ImageIcon },
+            ].map((s, index, array) => (
+                <React.Fragment key={s.n}>
+                    <div 
+                        className={`dk-step-item ${currentStep === s.n ? 'active' : ''} ${currentStep > s.n ? 'completed' : ''}`}
+                        onClick={() => currentStep > s.n && setCurrentStep(s.n)}
+                    >
+                        <div className="dk-step-icon">
+                            {currentStep > s.n ? <CheckCircle2 size={18} /> : <s.icon size={18} />}
+                        </div>
+                        <span className="dk-step-label">{s.label}</span>
+                    </div>
+                    {index < array.length - 1 && <div className={`dk-step-line ${currentStep > s.n ? 'completed' : ''}`} />}
+                </React.Fragment>
             ))}
         </div>
     );
 
     return (
-        <div className="hotel-create-container">
-            <div className="wizard-card">
+        <div className="dk-create-layout">
+            <div className="dk-wizard-container">
+                
+                {/* WIZARD NAVIGATION */}
                 {renderStepNav()}
 
-                <div className="wizard-body">
-                    {(error || hookError) && <div className="alert-box error"><AlertCircle size={20} /> {error || hookError}</div>}
-                    {successMsg && <div className="alert-box success"><CheckCircle2 size={20} /> {successMsg}</div>}
+                <div className="dk-wizard-body">
+                    
+                    {/* ALERTS */}
+                    {(error || hookError) && (
+                        <div className="dk-alert-box error mb-6">
+                            <AlertCircle size={20} /> {error || hookError}
+                        </div>
+                    )}
+                    {successMsg && (
+                        <div className="dk-alert-box success mb-6">
+                            <CheckCircle2 size={20} /> {successMsg}
+                        </div>
+                    )}
 
+                    {/* STEP 1: IDENTITY */}
                     {currentStep === 1 && (
-                        <div className="step-content">
-                            <div className="step-header">
+                        <div className="dk-step-content animation-fade-in">
+                            <div className="dk-step-header">
                                 <h2>Property Identity</h2>
                                 <p>Establish the foundation of your listing in Karabakh</p>
                             </div>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Commercial Name</label>
-                                    <input type="text" name="name" className="input-premium" value={formData.name} onChange={handleChange} placeholder="e.g. Shusha Palace" required />
+                            
+                            <div className="dk-form-grid">
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>Commercial Name</label>
+                                    <input 
+                                        type="text" name="name" 
+                                        className="dk-input main-input" 
+                                        value={formData.name} onChange={handleChange} 
+                                        placeholder="e.g. Shusha Palace Resort" required 
+                                    />
                                 </div>
-                                <div className="input-premium-group">
-                                    <label className="label-premium">City Tier</label>
-                                    <select name="city" className="select-premium" value={formData.city} onChange={handleChange}>
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>City Tier</label>
+                                    <select name="city" className="dk-input" value={formData.city} onChange={handleChange}>
                                         <option value="Shusha">Shusha (Şuşa)</option>
                                         <option value="Lachin">Lachin (Laçın)</option>
                                         <option value="Khankendi">Khankendi (Xankəndi)</option>
                                         <option value="Aghdam">Aghdam (Ağdam)</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div className="input-premium-group">
-                                <label className="label-premium">Global Address</label>
-                                <input type="text" name="address" className="input-premium" value={formData.address} onChange={handleChange} placeholder="District, Street, Building No." required />
-                            </div>
-                            <div className="input-premium-group">
-                                <label className="label-premium">Official Description (Blueprint)</label>
-                                <textarea name="description" className="textarea-premium" value={formData.description} onChange={handleChange} placeholder="Narrate the unique experience your property offers..." required />
+                                <div className="dk-form-group col-span-2">
+                                    <label>Global Address</label>
+                                    <div className="dk-input-wrap">
+                                        <MapPin size={18} className="dk-input-icon text-slate-400" />
+                                        <input 
+                                            type="text" name="address" 
+                                            className="dk-input with-icon" 
+                                            value={formData.address} onChange={handleChange} 
+                                            placeholder="District, Street, Building No." required 
+                                        />
+                                    </div>
+                                </div>
+                                <div className="dk-form-group col-span-2">
+                                    <label>Official Description (Blueprint)</label>
+                                    <textarea 
+                                        name="description" 
+                                        className="dk-input textarea" 
+                                        value={formData.description} onChange={handleChange} 
+                                        placeholder="Narrate the unique experience your property offers..." 
+                                        rows={4} required 
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
 
+                    {/* STEP 2: DNA */}
                     {currentStep === 2 && (
-                        <div className="step-content">
-                            <div className="step-header">
+                        <div className="dk-step-content animation-fade-in">
+                            <div className="dk-step-header">
                                 <h2>Property DNA</h2>
                                 <p>Technical specifications and contact protocols</p>
                             </div>
-                            <div className="grid grid-cols-3 gap-8">
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Star Rating</label>
-                                    <div className="flex items-center gap-2">
-                                        <input type="number" name="starRating" className="input-premium" min="1" max="5" value={formData.starRating} onChange={handleChange} />
+                            
+                            <div className="dk-form-grid">
+                                <div className="dk-form-group">
+                                    <label>Star Rating</label>
+                                    <div className="dk-rating-input">
+                                        <input 
+                                            type="number" name="starRating" 
+                                            className="dk-input text-center" 
+                                            min="1" max="5" 
+                                            value={formData.starRating} onChange={handleChange} 
+                                        />
                                         <Star size={24} className="text-amber-400 fill-amber-400" />
                                     </div>
                                 </div>
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Check-In</label>
-                                    <div className="relative">
-                                        <input type="time" name="checkInTime" className="input-premium" value={formData.checkInTime} onChange={handleChange} required />
-                                        <Clock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <div className="dk-form-group">
+                                    <label>Check-In Time</label>
+                                    <div className="dk-input-wrap">
+                                        <Clock size={18} className="dk-input-icon text-blue-500" />
+                                        <input type="time" name="checkInTime" className="dk-input with-icon" value={formData.checkInTime} onChange={handleChange} required />
                                     </div>
                                 </div>
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Check-Out</label>
-                                    <div className="relative">
-                                        <input type="time" name="checkOutTime" className="input-premium" value={formData.checkOutTime} onChange={handleChange} required />
-                                        <Clock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <div className="dk-form-group">
+                                    <label>Check-Out Time</label>
+                                    <div className="dk-input-wrap">
+                                        <Clock size={18} className="dk-input-icon text-emerald-500" />
+                                        <input type="time" name="checkOutTime" className="dk-input with-icon" value={formData.checkOutTime} onChange={handleChange} required />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Verified Phone</label>
-                                    <div className="relative">
-                                        <input type="tel" name="phone" className="input-premium pl-12" value={formData.phone} onChange={handleChange} placeholder="+994 (00) 000-00-00" required />
-                                        <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+
+                                <div className="col-span-2 my-4"><hr className="dk-divider"/></div>
+
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>Verified Phone</label>
+                                    <div className="dk-input-wrap">
+                                        <Phone size={18} className="dk-input-icon text-slate-400" />
+                                        <input type="tel" name="phone" className="dk-input with-icon" value={formData.phone} onChange={handleChange} placeholder="+994 (00) 000-00-00" required />
                                     </div>
                                 </div>
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Official Email</label>
-                                    <div className="relative">
-                                        <input type="email" name="email" className="input-premium pl-12" value={formData.email} onChange={handleChange} placeholder="management@property.com" required />
-                                        <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>Official Email</label>
+                                    <div className="dk-input-wrap">
+                                        <Mail size={18} className="dk-input-icon text-slate-400" />
+                                        <input type="email" name="email" className="dk-input with-icon" value={formData.email} onChange={handleChange} placeholder="management@property.com" required />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Latitude (Strategic)</label>
-                                    <div className="relative">
-                                        <input type="text" name="latitude" className="input-premium pl-12" value={formData.latitude || ''} onChange={handleChange} placeholder="e.g. 39.758" />
-                                        <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500" />
+
+                                <div className="col-span-2 my-4"><hr className="dk-divider"/></div>
+
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>Latitude (Strategic Coord)</label>
+                                    <div className="dk-input-wrap">
+                                        <MapPin size={18} className="dk-input-icon text-blue-500" />
+                                        <input type="text" name="latitude" className="dk-input with-icon" value={formData.latitude || ''} onChange={handleChange} placeholder="e.g. 39.758" />
                                     </div>
                                 </div>
-                                <div className="input-premium-group">
-                                    <label className="label-premium">Longitude (Strategic)</label>
-                                    <div className="relative">
-                                        <input type="text" name="longitude" className="input-premium pl-12" value={formData.longitude || ''} onChange={handleChange} placeholder="e.g. 46.742" />
-                                        <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" />
+                                <div className="dk-form-group col-span-2 md:col-span-1">
+                                    <label>Longitude (Strategic Coord)</label>
+                                    <div className="dk-input-wrap">
+                                        <MapPin size={18} className="dk-input-icon text-emerald-500" />
+                                        <input type="text" name="longitude" className="dk-input with-icon" value={formData.longitude || ''} onChange={handleChange} placeholder="e.g. 46.742" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     )}
 
+                    {/* STEP 3: AMENITIES */}
                     {currentStep === 3 && (
-                        <div className="step-content">
-                            <div className="step-header">
+                        <div className="dk-step-content animation-fade-in">
+                            <div className="dk-step-header">
                                 <h2>Amenity Selection</h2>
                                 <p>Select the exclusive facilities available at your property</p>
                             </div>
-                            <div className="amenities-blueprint-grid">
-                                {AMENITY_DEFS.map(({ name, icon: Icon }) => (
-                                    <div 
-                                        key={name}
-                                        className={`amenity-card ${formData.amenities?.includes(name) ? 'active' : ''}`}
-                                        onClick={() => handleFacilityToggle(name)}
-                                    >
-                                        <div className="icon-wrapper"><Icon size={24} /></div>
-                                        <span>{name}</span>
-                                    </div>
-                                ))}
+                            <div className="dk-amenities-grid">
+                                {AMENITY_DEFS.map(({ name, icon: Icon }) => {
+                                    const isActive = formData.amenities?.includes(name);
+                                    return (
+                                        <div 
+                                            key={name}
+                                            className={`dk-amenity-card ${isActive ? 'active' : ''}`}
+                                            onClick={() => handleFacilityToggle(name)}
+                                        >
+                                            <div className="am-icon"><Icon size={24} /></div>
+                                            <span className="am-name">{name}</span>
+                                            <div className="am-check">
+                                                {isActive && <CheckCircle2 size={16} strokeWidth={3} />}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
 
+                    {/* STEP 4: MEDIA */}
                     {currentStep === 4 && (
-                        <div className="step-content">
-                            <div className="step-header">
+                        <div className="dk-step-content animation-fade-in">
+                            <div className="dk-step-header">
                                 <h2>Media Laboratory</h2>
                                 <p>Manage the visual representation of your blueprint</p>
                             </div>
                             
-                            <label className="media-blueprint-header">
+                            <label className="dk-media-dropzone">
                                 <UploadCloud size={48} className="text-blue-500 mx-auto mb-4" />
-                                <h4 className="text-xl font-black text-slate-800">Upload High-Res Assets</h4>
-                                <p className="text-slate-400 font-bold mt-1">Select local files or drop them here</p>
-                                <input type="file" multiple accept="image/*" onChange={(e) => e.target.files && setLocalFiles(prev => [...prev, ...Array.from(e.target.files!)])} className="hidden" />
+                                <h4>Upload High-Res Assets</h4>
+                                <p>Select local files or drop them here</p>
+                                <input 
+                                    type="file" multiple accept="image/*" className="hidden" 
+                                    onChange={(e) => e.target.files && setLocalFiles(prev => [...prev, ...Array.from(e.target.files!)])} 
+                                />
                             </label>
 
-                            {uploadError && <div className="p-4 mb-6 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl font-bold text-sm italic flex items-center gap-2"><Frown size={16} /> Upload Error: {uploadError}</div>}
+                            {uploadError && (
+                                <div className="dk-alert-box error mt-4">
+                                    <Frown size={18} /> Upload Error: {uploadError}
+                                </div>
+                            )}
 
-                            <div className="input-premium-group mt-8">
-                                <label className="label-premium">External Asset URL</label>
+                            <div className="dk-form-group mt-8">
+                                <label>External Asset URL (Optional)</label>
                                 <div className="flex gap-4">
-                                    <input type="url" className="input-premium" value={imageUrlInput} onChange={e => setImageUrlInput(e.target.value)} placeholder="https://external-storage.com/image.jpg" />
-                                    <button type="button" onClick={handleAddImage} className="btn-approve-full !w-40 !rounded-2xl">Integrate</button>
+                                    <div className="dk-input-wrap flex-1">
+                                        <LinkIcon size={18} className="dk-input-icon text-slate-400" />
+                                        <input type="url" className="dk-input with-icon" value={imageUrlInput} onChange={e => setImageUrlInput(e.target.value)} placeholder="https://external-storage.com/image.jpg" />
+                                    </div>
+                                    <button type="button" onClick={handleAddImage} className="dk-btn-secondary w-32">Integrate</button>
                                 </div>
                             </div>
 
-                            <div className="section-title-premium mt-12">Gallery Preview ({ (formData.images?.length || 0) + localFiles.length } / 20)</div>
-                            <div className="media-grid">
+                            <div className="dk-section-title mt-10">
+                                Gallery Preview ({(formData.images?.length || 0) + localFiles.length} / 20)
+                            </div>
+                            
+                            <div className="dk-media-preview-grid">
                                 {formData.images?.map((url, idx) => (
-                                    <div key={idx} className="media-card">
+                                    <div key={idx} className="media-preview-card">
                                         <img src={url} alt="Hotel" />
-                                        <button type="button" className="btn-remove-media" onClick={() => setFormData(p => ({ ...p, images: p.images?.filter((_, i) => i !== idx) }))}><X size={16} /></button>
+                                        <button type="button" className="btn-remove" onClick={() => setFormData(p => ({ ...p, images: p.images?.filter((_, i) => i !== idx) }))}>
+                                            <X size={14} strokeWidth={3}/>
+                                        </button>
                                     </div>
                                 ))}
                                 {localFiles.map((file, idx) => (
-                                    <div key={`local-${idx}`} className="media-card grayscale hover:grayscale-0">
+                                    <div key={`local-${idx}`} className="media-preview-card local">
                                         <img src={URL.createObjectURL(file)} alt="Local" />
-                                        <button type="button" className="btn-remove-media" onClick={() => setLocalFiles(p => p.filter((_, i) => i !== idx))}><X size={16} /></button>
-                                        <div className="absolute inset-0 bg-blue-600/20 pointer-events-none" />
+                                        <div className="local-overlay"><UploadCloud size={20} className="animate-pulse text-white" /></div>
+                                        <button type="button" className="btn-remove" onClick={() => setLocalFiles(p => p.filter((_, i) => i !== idx))}>
+                                            <X size={14} strokeWidth={3}/>
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -416,24 +489,33 @@ export default function CreateHotel() {
                     )}
                 </div>
 
-                <div className="wizard-footer">
-                    <button type="button" className="btn-wizard-prev" onClick={prevStep} style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}>
-                        <ChevronLeft size={20} /> Back
+                {/* WIZARD FOOTER */}
+                <div className="dk-wizard-footer">
+                    <button 
+                        type="button" 
+                        className={`dk-btn-ghost ${currentStep === 1 ? 'invisible' : ''}`} 
+                        onClick={prevStep}
+                    >
+                        <ChevronLeft size={20} /> Go Back
                     </button>
 
-                    <div className="flex gap-4">
+                    <div className="footer-right">
                         {currentStep < 4 ? (
-                            <button type="button" className="btn-wizard-next" onClick={nextStep}>
+                            <button type="button" className="dk-btn-primary" onClick={nextStep}>
                                 Continue <ChevronRight size={20} />
                             </button>
                         ) : (
                             <button 
                                 type="button" 
-                                className="btn-wizard-next !bg-emerald-600" 
+                                className="dk-btn-submit" 
                                 disabled={loading || uploading || !submitReady}
                                 onClick={() => handleSubmit()}
                             >
-                                {loading || uploading ? <RefreshCw size={20} className="spin" /> : <><Save size={20} /> Deploy Property</>}
+                                {loading || uploading ? (
+                                    <><RefreshCw size={20} className="spin-icon" /> Processing...</>
+                                ) : (
+                                    <><Save size={20} /> Deploy Property</>
+                                )}
                             </button>
                         )}
                     </div>

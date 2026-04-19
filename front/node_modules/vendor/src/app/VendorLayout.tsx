@@ -12,11 +12,11 @@ export default function VendorLayout() {
     }
 
     return (
-        <div className="vendor-layout">
+        <div className="dk-vendor-layout">
             <Sidebar />
-            <div className="vendor-main-content">
+            <div className="dk-vendor-main-area">
                 <Header />
-                <main className="vendor-page-wrapper">
+                <main className="dk-vendor-page-content">
                     <Outlet />
                 </main>
             </div>

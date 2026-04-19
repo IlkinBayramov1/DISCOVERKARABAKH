@@ -30,7 +30,7 @@ const ROLE_PERMISSIONS = {
 
 class AuthService {
   async register(data) {
-    const { email, password, role } = data;
+    const { email, password, role, firstName, lastName } = data;
 
     const existingUser = await userRepository.findByEmail(email);
     if (existingUser) {
@@ -47,6 +47,8 @@ class AuthService {
           email,
           password: hashedPassword,
           role: role || 'user',
+          firstName,
+          lastName,
           isApproved: role !== 'vendor', // Vendors need approval
         },
       });

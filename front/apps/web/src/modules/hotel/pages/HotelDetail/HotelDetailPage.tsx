@@ -16,6 +16,32 @@ export const HotelDetailPage: React.FC = () => {
 
     const { rooms, loading: roomsLoading } = useHotelRooms(hotelId);
     const [selectedRoom, setSelectedRoom] = useState<IRoomType | null>(null);
+    
+    // Modal State
+    const [detailsModalRoom, setDetailsModalRoom] = useState<IRoomType | null>(null);
+
+    const [cardImageIndexes, setCardImageIndexes] = useState<Record<string, number>>({});
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // YENİ: Qalereya üçün State-lər
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+    const [galleryIndex, setGalleryIndex] = useState(0);
+
+    // YENİLƏNİB: Hər iki modal açılanda arxa fonu kilidləmək üçün
+    useEffect(() => {
+        if (detailsModalRoom || isGalleryOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [detailsModalRoom, isGalleryOpen]);
+
+    // Qalereyanı açmaq üçün köməkçi funksiya
+    const openGallery = (index: number) => {
+        setGalleryIndex(index);
+        setIsGalleryOpen(true);
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -45,14 +71,12 @@ export const HotelDetailPage: React.FC = () => {
     if (error) return <div className="error-state">{error}</div>;
     if (!hotel) return <div className="empty-state">Hotel not found</div>;
 
-    // Helper to format image URLs
     const getImageUrl = (url: string) => {
         if (!url) return 'https://placehold.co/800x600?text=No+Image';
         if (url.startsWith('http') || url.startsWith('/images/')) return url;
         return `http://localhost:4004${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
-    // Helper for gallery images
     const images = hotel.images && hotel.images.length > 0 ? hotel.images : [{ id: '1', url: '/images/shusha-hotel.png', order: 0 }];
     const mainImg = getImageUrl(images[0].url);
     const sideImgs = [
@@ -62,7 +86,6 @@ export const HotelDetailPage: React.FC = () => {
         getImageUrl(images[4 % images.length].url),
     ];
 
-    // Premium Amenity Icon Mapper
     const getAmenityConfig = (name: string) => {
         const lower = name.toLowerCase();
         if (lower.includes('wifi')) return 'fa-solid fa-wifi';
@@ -122,30 +145,42 @@ export const HotelDetailPage: React.FC = () => {
 
                 {/* GALLERY SECTION (1 Main + 4 Small Grid) */}
                 <section className="premium-gallery">
-                    <div className="gallery-main">
+                    <div className="gallery-main" onClick={() => openGallery(0)} style={{ cursor: 'pointer' }}>
                         <img src={mainImg} alt="Main view" />
                         <div className="gallery-badge">Exterior</div>
                     </div>
+                    
                     <div className="gallery-grid-4">
-                        <div className="gallery-item"><img src={sideImgs[0]} alt="Gallery 1" /></div>
-                        <div className="gallery-item"><img src={sideImgs[1]} alt="Gallery 2" /></div>
-                        <div className="gallery-item"><img src={sideImgs[2]} alt="Gallery 3" /></div>
-                        <div className="gallery-item"><img src={sideImgs[3]} alt="Gallery 4" /></div>
+                        <div className="gallery-item" onClick={() => openGallery(1)}>
+                            <img src={sideImgs[0]} alt="Gallery 1" />
+                        </div>
+                        <div className="gallery-item" onClick={() => openGallery(2)}>
+                            <img src={sideImgs[1]} alt="Gallery 2" />
+                        </div>
+                        <div className="gallery-item" onClick={() => openGallery(3)}>
+                            <img src={sideImgs[2]} alt="Gallery 3" />
+                        </div>
+                        
+                        {/* 4-cü kiçik şəkil (Əgər 5-dən çox şəkil varsa Overlay olacaq) */}
+                        <div className="gallery-item" onClick={() => openGallery(4)}>
+                            <img src={sideImgs[3]} alt="Gallery 4" />
+                            {images.length > 5 && (
+                                <div className="gallery-overlay-more">
+                                    <span>+{images.length - 5}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </section>
 
-                {/* CONTENT SPLIT (Left: About/Amenities, Right: Map/Rating) */}
+                {/* CONTENT SPLIT */}
                 <div className="premium-content-split">
-                    
-                    {/* LEFT COLUMN */}
                     <div className="split-main">
-                        {/* ABOUT CARD */}
                         <div className="premium-card">
                             <h2>About the Hotel</h2>
                             <p className="about-text">{hotel.description || 'Experience luxury and traditional hospitality in the heart of Karabakh. Our hotel offers panoramic views and premium amenities.'}</p>
                         </div>
 
-                        {/* AMENITIES CARD */}
                         {hotel.amenities && hotel.amenities.length > 0 && (
                             <div className="premium-card">
                                 <h2>Amenities</h2>
@@ -164,43 +199,15 @@ export const HotelDetailPage: React.FC = () => {
                         )}
                     </div>
 
-                    {/* RIGHT COLUMN */}
                     <div className="split-sidebar">
-                        {/* MAP CARD */}
                         <div className="premium-card map-wrapper-card">
                             <div className="map-embed">
                                 {hotel.latitude && hotel.longitude ? (
-                                    /* Koordinatlarla xəritə */
-                                    <iframe 
-                                        title="Map" 
-                                        width="100%" 
-                                        height="100%" 
-                                        style={{ border: 0 }} 
-                                        loading="lazy" 
-                                        src={`https://maps.google.com/maps?q=${hotel.latitude},${hotel.longitude}&z=15&output=embed`}
-                                    ></iframe>
+                                    <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://maps.google.com/maps?q=${hotel.latitude},${hotel.longitude}&z=15&output=embed`}></iframe>
                                 ) : (
-                                    /* Əgər koordinat yoxdursa, ünvanla axtarış */
-                                    <iframe 
-                                        title="Map" 
-                                        width="100%" 
-                                        height="100%" 
-                                        style={{ border: 0 }} 
-                                        loading="lazy" 
-                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}
-                                    ></iframe>
+                                    <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}></iframe>
                                 )}
-                                
-                                {/* "View on map" düyməsi üçün linki düzəldirik */}
-                                <a 
-                                    className="map-overlay-btn" 
-                                    href={hotel.latitude && hotel.longitude 
-                                        ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` 
-                                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`
-                                    } 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                >
+                                <a className="map-overlay-btn" href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
                                     <i className="fa-solid fa-location-crosshairs"></i> View on map
                                 </a>
                             </div>
@@ -210,7 +217,6 @@ export const HotelDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* RATING CARD */}
                         <div className="premium-card rating-breakdown-card">
                             <div className="rating-score-head">
                                 <div className="score-circle">{hotel.rating ? hotel.rating.toFixed(1) : '5.0'}</div>
@@ -239,10 +245,9 @@ export const HotelDetailPage: React.FC = () => {
                             <a href="#reviews" className="read-reviews-link">Read all reviews <i className="fa-solid fa-arrow-right"></i></a>
                         </div>
                     </div>
-
                 </div>
 
-                {/* HORIZONTAL CONTEXT SEARCH BAR */}
+                {/* CONTEXTUAL SEARCH BAR */}
                 <div className="contextual-search-bar">
                     <div className="cs-item">
                         <div className="cs-icon"><i className="fa-solid fa-location-dot"></i></div>
@@ -290,28 +295,88 @@ export const HotelDetailPage: React.FC = () => {
                     )}
                     {rooms.map(room => (
                         <article key={room.id} className={`room-premium-card ${selectedRoom?.id === room.id ? 'selected-ring' : ''}`}>
-                            
-                            {/* SOL TƏRƏF: Şəkil */}
                             <div className="room-image-col">
-                                <img src={room.images && room.images.length > 0 ? getImageUrl(room.images[0].url) : 'https://placehold.co/400x300?text=Room'} alt={room.name} />
-                                {room.totalInventory > 0 && <span className="best-seller-badge">BEST SELLER</span>}
+                                {(() => {
+                                    // Otağın şəkilləri yoxdursa placeholder qoyuruq
+                                    const roomImages = room.images && room.images.length > 0 
+                                        ? room.images 
+                                        : [{ id: '1', url: 'https://placehold.co/400x300?text=Room', order: 0 }];
+                                    
+                                    // Bu otaq üçün aktiv olan şəklin indeksi (default 0)
+                                    const activeImgIdx = cardImageIndexes[room.id] || 0;
+
+                                    return (
+                                        <>
+                                            {/* Slayder Oxları və Nöqtələri (Əgər 1-dən çox şəkil varsa) */}
+                                            {roomImages.length > 1 && (
+                                                <>
+                                                    <button 
+                                                        className="card-slider-btn prev"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCardImageIndexes(prev => ({
+                                                                ...prev,
+                                                                [room.id]: prev[room.id] === undefined || prev[room.id] === 0 
+                                                                    ? roomImages.length - 1 
+                                                                    : prev[room.id] - 1
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-chevron-left"></i>
+                                                    </button>
+                                                    <button 
+                                                        className="card-slider-btn next"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCardImageIndexes(prev => ({
+                                                                ...prev,
+                                                                [room.id]: ((prev[room.id] || 0) + 1) % roomImages.length
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-chevron-right"></i>
+                                                    </button>
+                                                    
+                                                    <div className="card-slider-dots">
+                                                        {roomImages.map((_, idx) => (
+                                                            <span 
+                                                                key={idx} 
+                                                                className={`card-dot ${idx === activeImgIdx ? 'active' : ''}`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setCardImageIndexes(prev => ({ ...prev, [room.id]: idx }));
+                                                                }}
+                                                            ></span>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+                                            
+                                            {/* Aktiv Şəkil */}
+                                            <img src={getImageUrl(roomImages[activeImgIdx].url)} alt={room.name} />
+                                            {room.totalInventory > 0}
+                                        </>
+                                    );
+                                })()}
                             </div>
                             
-                            {/* SAĞ TƏRƏF: Məzmun */}
                             <div className="room-content-col">
-                                
-                                {/* Header: Başlıq və Details Düyməsi */}
                                 <div className="room-header-row">
                                     <div className="room-title-area">
                                         <h3>{room.name}</h3>
                                         <span className="hotel-sub">{hotel.name}</span>
                                     </div>
-                                    <button className="details-pill-btn">
+                                    <button 
+                                        className="details-pill-btn"
+                                        onClick={() => {
+                                            setDetailsModalRoom(room);
+                                            setCurrentImageIndex(0); // YENİ: Slayderi sıfırlayır
+                                        }}
+                                    >
                                         <i className="fa-solid fa-circle-info"></i> Details
                                     </button>
                                 </div>
                                 
-                                {/* Specs: Pill (kapsul) formalı özəlliklər */}
                                 <div className="room-specs-pills">
                                     {room.roomSizeM2 && (
                                         <span className="spec-pill">
@@ -329,12 +394,10 @@ export const HotelDetailPage: React.FC = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Açıqlama */}
                                 <p className="room-desc-text">
                                     {room.description || 'Experience luxury with a panoramic view of the Karabakh mountains. Includes a minibar, working desk, and premium toiletries.'}
                                 </p>
                                 
-                                {/* Footer: Qiymət və Seçim Düyməsi */}
                                 <div className="room-footer-row">
                                     <div className="price-info-area">
                                         <span className="starting-label">Starting from</span>
@@ -352,7 +415,6 @@ export const HotelDetailPage: React.FC = () => {
                                         {selectedRoom?.id === room.id ? 'Selected ✓' : 'Select Room'}
                                     </button>
                                 </div>
-
                             </div>
                         </article>
                     ))}
@@ -382,6 +444,177 @@ export const HotelDetailPage: React.FC = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* ROOM DETAILS MODAL (NEW) */}
+            {detailsModalRoom && (
+                <div className="room-modal-overlay" onClick={() => setDetailsModalRoom(null)}>
+                    <div className="room-modal-content" onClick={e => e.stopPropagation()}>
+                        
+                        <button className="room-modal-close" onClick={() => setDetailsModalRoom(null)}>
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+
+                        {/* YENİLƏNMİŞ SLAYDER HİSSƏSİ */}
+                        <div className="room-modal-image">
+                            {detailsModalRoom.images && detailsModalRoom.images.length > 1 && (
+                                <>
+                                    <button 
+                                        className="modal-slider-btn prev" 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentImageIndex((prev) => prev === 0 ? detailsModalRoom.images!.length - 1 : prev - 1);
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    
+                                    <button 
+                                        className="modal-slider-btn next" 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentImageIndex((prev) => (prev + 1) % detailsModalRoom.images!.length);
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-chevron-right"></i>
+                                    </button>
+
+                                    <div className="modal-slider-dots">
+                                        {detailsModalRoom.images.map((_, idx) => (
+                                            <span 
+                                                key={idx} 
+                                                className={`slider-dot ${idx === currentImageIndex ? 'active' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCurrentImageIndex(idx);
+                                                }}
+                                            ></span>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                            
+                            <img 
+                                src={detailsModalRoom.images && detailsModalRoom.images.length > 0 
+                                    ? getImageUrl(detailsModalRoom.images[currentImageIndex].url) 
+                                    : 'https://placehold.co/800x400?text=Room'} 
+                                alt={detailsModalRoom.name} 
+                            />
+                        </div>
+
+                        <div className="room-modal-body">
+                            <h2>{detailsModalRoom.name}</h2>
+                            <p className="modal-hotel-sub">{hotel.name}</p>
+
+                            <div className="modal-specs-grid">
+                                {detailsModalRoom.roomSizeM2 && (
+                                    <div className="modal-spec-box">
+                                        <div className="spec-icon"><i className="fa-solid fa-ruler-combined"></i></div>
+                                        <div className="spec-details">
+                                            <span>Room Size</span>
+                                            <strong>{detailsModalRoom.roomSizeM2} m²</strong>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="modal-spec-box">
+                                    <div className="spec-icon"><i className="fa-solid fa-user-group"></i></div>
+                                    <div className="spec-details">
+                                        <span>Capacity</span>
+                                        <strong>Max {detailsModalRoom.maxAdults} Guests</strong>
+                                    </div>
+                                </div>
+                                <div className="modal-spec-box">
+                                    <div className="spec-icon"><i className="fa-solid fa-bed"></i></div>
+                                    <div className="spec-details">
+                                        <span>Bed Type</span>
+                                        <strong>{detailsModalRoom.bedType || '1 King Bed'}</strong>
+                                    </div>
+                                </div>
+                                <div className="modal-spec-box">
+                                    <div className="spec-icon"><i className="fa-solid fa-mountain-sun"></i></div>
+                                    <div className="spec-details">
+                                        <span>View</span>
+                                        <strong>Mountain View</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="modal-desc-box">
+                                <h3>About this room</h3>
+                                <p>{detailsModalRoom.description || 'Experience luxury with a panoramic view of the Karabakh mountains. Includes a minibar, working desk, and premium toiletries. Perfect for both leisure and business travelers seeking comfort and style.'}</p>
+                            </div>
+                        </div>
+
+                        <div className="room-modal-footer">
+                            <div className="modal-price">
+                                <span>Price per night</span>
+                                <strong>₼{detailsModalRoom.basePrice || '---'}</strong>
+                            </div>
+                            <button 
+                                className="modal-select-btn"
+                                onClick={() => {
+                                    setSelectedRoom(detailsModalRoom);
+                                    setDetailsModalRoom(null); // Modalı bağla
+                                }}
+                            >
+                                {selectedRoom?.id === detailsModalRoom.id ? 'Selected ✓' : 'Select Room'}
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {/* FULLSCREEN GALLERY MODAL (NEW) */}
+            {isGalleryOpen && (
+                <div className="fullscreen-gallery-modal" onClick={() => setIsGalleryOpen(false)}>
+                    
+                    <button className="gallery-close-btn" onClick={() => setIsGalleryOpen(false)}>
+                        <i className="fa-solid fa-xmark"></i>
+                    </button>
+
+                    <div className="gallery-main-view" onClick={e => e.stopPropagation()}>
+                        <button 
+                            className="gallery-nav-btn prev" 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setGalleryIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+                            }}
+                        >
+                            <i className="fa-solid fa-chevron-left"></i>
+                        </button>
+                        
+                        <img 
+                            src={getImageUrl(images[galleryIndex].url)} 
+                            alt={`Gallery ${galleryIndex + 1}`} 
+                            key={galleryIndex} /* Animasiya üçün key vacibdir */
+                            className="gallery-active-img"
+                        />
+                        
+                        <button 
+                            className="gallery-nav-btn next" 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setGalleryIndex(prev => (prev + 1) % images.length);
+                            }}
+                        >
+                            <i className="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div className="gallery-thumbnails" onClick={e => e.stopPropagation()}>
+                        {images.map((img, idx) => (
+                            <div 
+                                key={img.id || idx} 
+                                className={`thumb-item ${idx === galleryIndex ? 'active' : ''}`}
+                                onClick={() => setGalleryIndex(idx)}
+                            >
+                                <img src={getImageUrl(img.url)} alt={`Thumbnail ${idx + 1}`} />
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            )}            
         </div>
     );
 };

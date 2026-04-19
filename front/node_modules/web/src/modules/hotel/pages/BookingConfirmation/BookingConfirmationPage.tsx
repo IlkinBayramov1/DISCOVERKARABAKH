@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../../../booking/api/booking.api';
-import { CheckCircle, Clock, MapPin, Download } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, Download, ShieldCheck } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import logoImg from '../../../../assets/dk logo main3.png';
 
 export const BookingConfirmationPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -10,6 +13,51 @@ export const BookingConfirmationPage: React.FC = () => {
     const [booking, setBooking] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [downloading, setDownloading] = useState(false);
+    const receiptRef = useRef<HTMLDivElement>(null);
+
+    const handleDownloadPDF = async () => {
+        if (!receiptRef.current) return;
+        setDownloading(true);
+        
+        try {
+            const canvas = await html2canvas(receiptRef.current, {
+                scale: 3, // Ultra high resolution
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                onclone: (clonedDoc) => {
+                    // Show PDF-only elements in the clone
+                    const pdfElements = clonedDoc.querySelectorAll('.pdf-only');
+                    pdfElements.forEach(el => {
+                        (el as HTMLElement).style.display = 'flex';
+                    });
+                    
+                    // Hide UI elements that shouldn't be in PDF
+                    const noPrintElements = clonedDoc.querySelectorAll('.no-print');
+                    noPrintElements.forEach(el => {
+                        (el as HTMLElement).style.display = 'none';
+                    });
+                }
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            // Padding and styling for the PDF
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            pdf.save(`DK_Booking_${booking?.bookingNumber || 'Receipt'}.pdf`);
+        } catch (err) {
+            console.error('PDF Generation Error:', err);
+            alert('Failed to generate PDF. Please try again.');
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchConfirmation = async () => {
@@ -60,6 +108,7 @@ export const BookingConfirmationPage: React.FC = () => {
         totalPrice = 0, 
         currency = 'AZN',
         hotel, 
+        Tour,
         tour,
         items = [], 
         guests = [] 
@@ -68,11 +117,20 @@ export const BookingConfirmationPage: React.FC = () => {
     const isTour = bookingType === 'tour';
     const primaryItem = items.length > 0 ? items[0] : null;
     const primaryGuest = guests.length > 0 ? guests[0] : null;
-    const details = isTour ? tour : hotel;
+    const details = isTour ? (Tour || tour) : hotel;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto" ref={receiptRef}>
+                {/* PDF Header (Hidden in Web, Shown in PDF) */}
+                <div className="hidden pdf-only flex justify-between items-center mb-8 border-b-2 border-blue-600 pb-4">
+                    <img src={logoImg} alt="Discover Karabakh" className="h-12 w-auto" />
+                    <div className="text-right">
+                        <h4 className="text-blue-600 font-black text-xl">Official Receipt</h4>
+                        <p className="text-gray-500 text-xs">{new Date().toLocaleString()}</p>
+                    </div>
+                </div>
+
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
                     <div className="bg-green-600 p-8 text-center text-white">
                         <CheckCircle size={64} className="mx-auto mb-4 opacity-90" />
@@ -80,13 +138,22 @@ export const BookingConfirmationPage: React.FC = () => {
                         <p className="text-green-100">You're all set. A digital receipt has been sent to your email.</p>
                     </div>
                     
-                    <div className="p-8 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="p-8 border-b border-gray-100 flex flex-col sm:sm:flex-row justify-between items-center gap-4">
                         <div>
                             <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mb-1">Confirmation Number</p>
                             <p className="text-2xl font-mono font-bold text-gray-900">{bookingNumber}</p>
                         </div>
-                        <button className="flex items-center gap-2 text-blue-600 font-medium hover:bg-blue-50 px-4 py-2 rounded-lg transition">
-                            <Download size={18} /> Download PDF
+                        <button 
+                            onClick={handleDownloadPDF}
+                            disabled={downloading}
+                            className={`flex items-center gap-2 text-blue-600 font-medium hover:bg-blue-50 px-4 py-2 rounded-lg transition no-print ${downloading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {downloading ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            ) : (
+                                <Download size={18} />
+                            )}
+                            {downloading ? 'Generating...' : 'Download PDF'}
                         </button>
                     </div>
                 </div>
@@ -165,6 +232,17 @@ export const BookingConfirmationPage: React.FC = () => {
                         <strong className="text-2xl font-bold text-gray-900">
                             {typeof totalPrice === 'number' ? totalPrice.toFixed(2) : totalPrice} {currency}
                         </strong>
+                    </div>
+
+                    {/* PDF Footer (Hidden in Web, Styled for PDF) */}
+                    <div className="mt-8 pt-6 border-t border-gray-100 text-center pdf-only">
+                        <div className="flex items-center justify-center gap-2 text-blue-600 font-bold mb-2">
+                            <ShieldCheck size={18} />
+                            Official Reservation Confirmation
+                        </div>
+                        <p className="text-gray-500 text-sm mb-1">Support: support@discoverkarabakh.az</p>
+                        <p className="text-gray-500 text-sm">Please present this digital receipt at check-in.</p>
+                        <div className="mt-4 text-[10px] text-gray-300">Generated by Discover Karabakh Platform</div>
                     </div>
                 </div>
 

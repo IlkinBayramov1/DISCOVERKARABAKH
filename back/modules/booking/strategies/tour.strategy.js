@@ -1,5 +1,6 @@
 import { BookingStrategy } from '../booking.strategy.js';
 import prisma from '../../../config/db.js';
+import { tourRepository } from '../../businesses/tour/tour.repository.js';
 import { ApiError } from '../../../core/api.error.js';
 import { tourEvents, TOUR_RESERVATION_CREATED, TOUR_RESERVATION_CANCELLED } from '../../businesses/tour/tour.events.js';
 import { notificationService } from '../../shared/notification/notification.service.js';
@@ -34,37 +35,15 @@ export class TourBookingStrategy extends BookingStrategy {
             throw ApiError.badRequest('Cannot book a tour in the past');
         }
         
-        // 3. Count existing active bookings for this date
-        const existingBookings = await prisma.booking.findMany({
-            where: {
-                tourId: entityId,
-                status: { in: ['pending_payment', 'confirmed', 'checked_in'] },
-                items: {
-                    some: {
-                        checkIn: new Date(finalTourDate)
-                    }
-                }
-            },
-            include: {
-                items: true
+        // 3. Strict Capacity Check
+        const totalRequested = finalParticipants;
+        const available = tour.availableSlots ?? (tour.groupSizeMax - currentParticipantsCount);
+
+        if (totalRequested > available) {
+            if (available <= 0) {
+                throw ApiError.badRequest('This tour is fully booked for this date.');
             }
-        });
-        
-        let currentParticipantsCount = 0;
-        existingBookings.forEach(b => {
-            b.items.forEach(item => {
-                // Ensure we only count items matching the specific date
-                if (new Date(item.checkIn).getTime() === new Date(finalTourDate).getTime()) {
-                    currentParticipantsCount += (item.adults + (item.children || 0));
-                }
-            });
-        });
-        
-        // 4. Capacity check
-        const totalAfterBooking = currentParticipantsCount + finalParticipants;
-        if (totalAfterBooking > tour.groupSizeMax) {
-            const seatsLeft = tour.groupSizeMax - currentParticipantsCount;
-            throw ApiError.badRequest(`Tour is full for this date. Seats remaining: ${seatsLeft > 0 ? seatsLeft : 0}`);
+            throw ApiError.badRequest(`Not enough seats available. Only ${available} seat(s) left. Please reduce your participant count.`);
         }
         
         // Map vendorId for BookingService
@@ -102,6 +81,11 @@ export class TourBookingStrategy extends BookingStrategy {
         };
     }
 
+    async performTransactionActions(tx, booking, data) {
+        const participants = data.participants || (data.items?.[0]?.adults + (data.items?.[0]?.children || 0));
+        await tourRepository.decrementAvailableSlots(booking.entityId, participants, tx);
+    }
+
     async onBookingSuccess(booking) {
         // Broadcast Domain isolated Event
         tourEvents.emit(TOUR_RESERVATION_CREATED, {
@@ -127,6 +111,10 @@ export class TourBookingStrategy extends BookingStrategy {
             tourId: booking.tourId,
             timestamp: new Date()
         });
+
+        // Increment available slots back
+        const participants = fullBooking.items.reduce((sum, item) => sum + (item.adults + (item.children || 0)), 0);
+        await tourRepository.incrementAvailableSlots(fullBooking.entityId, participants);
 
         // Fire Cancellation Notification
         await notificationService.sendBookingCancellation(fullBooking);

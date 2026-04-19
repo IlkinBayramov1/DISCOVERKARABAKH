@@ -39,6 +39,7 @@ export interface ITour {
     ownerId: string;
     isApproved: boolean;
     isFeatured: boolean;
+    availableSlots?: number;
     createdAt: string;
     updatedAt: string;
 }

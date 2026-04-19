@@ -6,6 +6,8 @@ export interface ILoginCredentials {
 }
 
 export interface IUserRegisterPayload {
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
     role: 'tourist' | 'resident';

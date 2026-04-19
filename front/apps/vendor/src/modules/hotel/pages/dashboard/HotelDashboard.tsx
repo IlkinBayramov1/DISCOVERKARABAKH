@@ -114,50 +114,52 @@ export default function HotelDashboard() {
                                     <div className="legend-item"><span className="legend-puck revenue"></span> Gross Revenue</div>
                                 </div>
                             </div>
-                            <div style={{ width: '100%', height: 350 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={chartData}>
-                                        <defs>
-                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                        <XAxis 
-                                            dataKey="date" 
-                                            axisLine={false} 
-                                            tickLine={false} 
-                                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
-                                            dy={10}
-                                        />
-                                        <YAxis 
-                                            axisLine={false} 
-                                            tickLine={false} 
-                                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
-                                            dx={-10}
-                                        />
-                                        <Tooltip 
-                                            contentStyle={{ 
-                                                borderRadius: '16px', 
-                                                border: 'none', 
-                                                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-                                                background: 'rgba(255, 255, 255, 0.95)',
-                                                backdropFilter: 'blur(10px)'
-                                            }}
-                                        />
-                                        <Area 
-                                            type="monotone" 
-                                            dataKey="revenue" 
-                                            stroke="#3b82f6" 
-                                            strokeWidth={4} 
-                                            fillOpacity={1} 
-                                            fill="url(#colorRevenue)" 
-                                            name="Revenue"
-                                            animationDuration={1500}
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                            <div style={{ width: '100%', height: 350, minHeight: 350 }}>
+                                {chartData.length > 0 && (
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                                        <AreaChart data={chartData}>
+                                            <defs>
+                                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                            <XAxis 
+                                                dataKey="date" 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                                                dy={10}
+                                            />
+                                            <YAxis 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                                                dx={-10}
+                                            />
+                                            <Tooltip 
+                                                contentStyle={{ 
+                                                    borderRadius: '16px', 
+                                                    border: 'none', 
+                                                    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+                                                    background: 'rgba(255, 255, 255, 0.95)',
+                                                    backdropFilter: 'blur(10px)'
+                                                }}
+                                            />
+                                            <Area 
+                                                type="monotone" 
+                                                dataKey="revenue" 
+                                                stroke="#3b82f6" 
+                                                strokeWidth={4} 
+                                                fillOpacity={1} 
+                                                fill="url(#colorRevenue)" 
+                                                name="Revenue"
+                                                animationDuration={1500}
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                )}
                             </div>
                         </div>
 

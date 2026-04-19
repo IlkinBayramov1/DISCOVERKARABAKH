@@ -71,11 +71,6 @@ export const ReservationPage: React.FC = () => {
             paymentMethod
         });
 
-        if (data && data.data?.paymentUrl && paymentMethod === 'card') {
-            window.location.href = data.data.paymentUrl;
-            return;
-        }
-
         if (data && data.data?.id) {
             navigate(`/booking-confirmation/${data.data.id}`);
         }

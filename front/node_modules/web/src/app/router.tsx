@@ -34,6 +34,9 @@ import { TourReservationPage } from '../modules/tour/pages/TourReservationPage/T
 import { AttractionsPage } from '../modules/attraction/pages/AttractionsPage';
 import { AttractionDetailsPage } from '../modules/attraction/pages/AttractionDetailsPage';
 
+import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
+import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
+
 // ─── Driver Portal ────────────────────────────────────────────────────────────
 import DriverLayout from '../modules/driver/components/DriverLayout';
 import DriverDashboard from '../modules/driver/pages/DriverDashboard';
@@ -203,11 +206,11 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'account/profile',
-                        element: <div className="p-20 text-center">Profile coming soon…</div>,
+                        element: <ProfilePage />,
                     },
                     {
                         path: 'account/trips',
-                        element: <div className="p-20 text-center">My Trips coming soon…</div>,
+                        element: <TripsPage />,
                     },
                     {
                         path: 'auth/login',

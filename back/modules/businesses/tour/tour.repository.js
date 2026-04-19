@@ -3,7 +3,10 @@ import prisma from '../../../config/db.js';
 class TourRepository {
     async create(data) {
         return prisma.tour.create({
-            data,
+            data: {
+                ...data,
+                availableSlots: data.groupSizeMax
+            },
         });
     }
 
@@ -105,6 +108,30 @@ class TourRepository {
         });
 
         return total;
+    }
+
+    async decrementAvailableSlots(tourId, count, tx) {
+        const client = tx || prisma;
+        return client.tour.update({
+            where: { id: tourId },
+            data: {
+                availableSlots: {
+                    decrement: count
+                }
+            }
+        });
+    }
+
+    async incrementAvailableSlots(tourId, count, tx) {
+        const client = tx || prisma;
+        return client.tour.update({
+            where: { id: tourId },
+            data: {
+                availableSlots: {
+                    increment: count
+                }
+            }
+        });
     }
 }
 

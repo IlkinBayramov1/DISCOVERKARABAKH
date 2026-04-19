@@ -45,9 +45,10 @@
         function submitPayment(status) {
             document.getElementById('statusInput').value = status;
             const form = document.getElementById('paymentForm');
-            // Setting action to our callback endpoint
-            form.action = `/api/v1/payments/callback/local?transId=${transId}&status=${status}`;
-            form.submit();
+            const transIdValue = document.getElementById('transIdInput').value;
+            
+            // Using a simple GET redirect for the mock bank to avoid cross-origin POST issues
+            window.location.href = `/api/v1/payments/callback/local?transId=${transIdValue}&status=${status}`;
         }
     </script>
 </body>

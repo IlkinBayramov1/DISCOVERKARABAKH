@@ -38,6 +38,7 @@ export interface ITour {
     ownerId: string;
     isApproved: boolean;
     isFeatured: boolean;
+    availableSlots?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -55,9 +56,12 @@ export interface ITourFilters {
     page?: number;
     limit?: number;
     city?: string;
+    q?: string;
     minPrice?: number;
     maxPrice?: number;
-    duration?: number[];
+    duration?: number;
+    difficulty?: string;
+    sortBy?: string;
 }
 
 export type TourEventType = 

@@ -10,6 +10,8 @@ export default function WebRegister() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState<IUserRegisterPayload>({
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         role: 'tourist'
@@ -61,6 +63,31 @@ export default function WebRegister() {
                             <option value="tourist">Tourist / Visitor</option>
                             <option value="resident">Local Resident</option>
                         </select>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <div className="form-group flex-1">
+                            <label>First Name</label>
+                            <input
+                                type="text"
+                                required
+                                className="form-input"
+                                value={formData.firstName}
+                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                placeholder="John"
+                            />
+                        </div>
+                        <div className="form-group flex-1">
+                            <label>Last Name</label>
+                            <input
+                                type="text"
+                                required
+                                className="form-input"
+                                value={formData.lastName}
+                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                placeholder="Doe"
+                            />
+                        </div>
                     </div>
 
                     <div className="form-group">

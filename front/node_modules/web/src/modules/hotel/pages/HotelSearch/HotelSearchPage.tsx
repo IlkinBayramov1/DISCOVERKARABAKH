@@ -110,8 +110,8 @@ export const HotelSearchPage: React.FC = () => {
             <main className="container">
                 
                 {/* HERO SECTION */}
-                <section className="hero">
-                    <div className="hero-overlay">
+                <section className="hotel-hero">
+                    <div className="hotel-hero-overlay">
                         <h1>Hotels & Accommodations</h1>
                         <p>Find the perfect place to stay in Karabakh.</p>
                     </div>

@@ -23,3 +23,15 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getMe = async (req, res, next) => {
+  try {
+    // req.user is already populated by authMiddleware
+    res.status(200).json({
+      success: true,
+      data: req.user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

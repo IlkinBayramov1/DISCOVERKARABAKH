@@ -8,7 +8,6 @@ import {
     X,
     Save,
     ChevronLeft,
-    Calendar,
     Star,
     BadgeCheck,
     Clock

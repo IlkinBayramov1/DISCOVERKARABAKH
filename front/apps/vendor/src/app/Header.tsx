@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Search, User, Building2, LogOut } from 'lucide-react';
+import { Bell, Search, User, Building2, LogOut, ChevronDown } from 'lucide-react';
 import { useHotels } from '../modules/hotel/hooks/useHotels';
 import { getVendorCategory, removeToken } from '../shared/utils/token';
 import './Header.css';
@@ -8,21 +8,25 @@ import './Header.css';
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    
     const navigate = useNavigate();
     const searchRef = useRef<HTMLDivElement>(null);
+    const profileRef = useRef<HTMLDivElement>(null);
     
     const category = getVendorCategory();
     const isHotelVendor = category === 'hotel';
     
-    // Only call the hook if we are actually a hotel vendor
-    // We use a local variable to avoid calling useHotels conditionally (hook rule)
-    // but we ensure the hook itself handles the 'enabled' state inside it (it already does via autoFetch param)
     const { data: hotels } = useHotels(isHotelVendor);
 
+    // Kənar klikləri dinləyərək dropdown-ları bağlayırıq
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setIsSearchFocused(false);
+            }
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -34,8 +38,8 @@ export default function Header() {
         h.address.toLowerCase().includes(searchQuery.toLowerCase())
     ) : [];
 
-    const handleSelectProperty = (id: string, name: string) => {
-        setSearchQuery(name);
+    const handleSelectProperty = (id: string) => {
+        setSearchQuery('');
         setIsSearchFocused(false);
         navigate(`/hotel/edit/${id}`);
     };
@@ -54,47 +58,51 @@ export default function Header() {
     const handleLogout = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        
         console.log('Action: Logout triggered');
         removeToken();
-        
-        // Use window.location.replace for the most definitive session termination
         window.location.replace('/vendor/login');
     };
 
     return (
-        <header className="vendor-header">
-            <div className="header-search" ref={searchRef}>
-                <Search className="search-icon" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search dashboard..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                />
+        <header className="dk-vendor-header">
+            
+            {/* SEARCH AREA */}
+            <div className="dk-header-search" ref={searchRef}>
+                <div className={`search-input-wrap ${isSearchFocused ? 'focused' : ''}`}>
+                    <Search className="search-icon" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search properties, reservations, or guests..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
+                    />
+                </div>
 
                 {isHotelVendor && isSearchFocused && searchQuery.trim().length > 0 && (
-                    <div className="search-dropdown">
+                    <div className="dk-search-dropdown animation-slide-down">
+                        <div className="dropdown-label">Search Results</div>
                         {filteredHotels.length > 0 ? (
                             filteredHotels.map(hotel => (
                                 <div
                                     key={hotel.id}
                                     className="search-result-item"
-                                    onClick={() => handleSelectProperty(hotel.id, hotel.name)}
+                                    onClick={() => handleSelectProperty(hotel.id)}
                                 >
-                                    <Building2 size={16} className="result-icon" />
+                                    <div className="result-icon-box">
+                                        <Building2 size={16} />
+                                    </div>
                                     <div className="result-details">
                                         <span className="result-name">{hotel.name}</span>
                                         <span className="result-address">{hotel.address}</span>
                                     </div>
-                                    <span className={`status-badge ${hotel.status} small`}>
+                                    <span className={`result-status ${hotel.status}`}>
                                         {hotel.status}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="search-no-results">
+                            <div className="search-empty-state">
                                 No records found matching "{searchQuery}"
                             </div>
                         )}
@@ -102,29 +110,50 @@ export default function Header() {
                 )}
             </div>
 
-            <div className="header-actions">
-                <button className="icon-btn" type="button">
+            {/* ACTIONS AREA */}
+            <div className="dk-header-actions">
+                
+                {/* Notifications */}
+                <button className="dk-icon-btn notification" type="button" title="Notifications">
                     <Bell size={20} />
-                    <span className="badge">1</span>
+                    <span className="notification-badge">3</span>
                 </button>
-                <div className="user-profile">
-                    <div className="avatar">
-                        <User size={20} />
-                    </div>
-                    <div className="user-info">
-                        <span className="name">Karabakh Vendor</span>
-                        <span className="role">{getRoleName()}</span>
-                    </div>
+
+                {/* Divider */}
+                <div className="dk-header-divider"></div>
+
+                {/* Profile Area */}
+                <div className="dk-profile-dropdown-wrap" ref={profileRef}>
+                    <button 
+                        className="dk-profile-trigger" 
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    >
+                        <div className="profile-avatar">
+                            <span className="avatar-initial">KV</span>
+                        </div>
+                        <div className="profile-info">
+                            <span className="profile-name">Karabakh Vendor</span>
+                            <span className="profile-role">{getRoleName()}</span>
+                        </div>
+                        <ChevronDown size={16} className={`dropdown-arrow ${isProfileOpen ? 'open' : ''}`} />
+                    </button>
+
+                    {isProfileOpen && (
+                        <div className="dk-profile-dropdown animation-slide-down">
+                            <div className="dropdown-header">
+                                <span className="user-email">vendor@discoverkarabakh.az</span>
+                            </div>
+                            <div className="dropdown-body">
+                                <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); navigate('/vendor/settings'); }}>
+                                    <User size={16} /> Account Settings
+                                </button>
+                                <button className="dropdown-item logout" onClick={handleLogout}>
+                                    <LogOut size={16} /> Secure Logout
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <button 
-                    className="logout-btn" 
-                    onClick={handleLogout} 
-                    title="Çıxış"
-                    type="button"
-                    style={{ cursor: 'pointer', zIndex: 100 }}
-                >
-                    <LogOut size={20} />
-                </button>
             </div>
         </header>
     );

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useHotels } from '../../../hooks/useHotels';
 import { useRooms } from '../../../hooks/useRooms';
 import { useCalendar } from '../../../hooks/useCalendar';
-import BulkUpdateDrawer from '../BulkUpdateDrawer';
+import BulkUpdateModal from '../BulkUpdateModal';
 import {
     Calendar as CalendarIcon,
     RefreshCw,
@@ -12,35 +12,20 @@ import {
     DollarSign,
     Users,
     Activity,
-    Lock,
     Edit3,
-    Layers
+    Layers,
+    MapPin
 } from 'lucide-react';
 import './Availability.css';
 
 export default function Availability() {
     const { data: hotels, loading: hotelsLoading } = useHotels(true);
     const [selectedHotelId, setSelectedHotelId] = useState<string>('');
+    const [selectedRoomId, setSelectedRoomId] = useState<string>('all');
     const [isBulkOpen, setIsBulkOpen] = useState(false);
 
-    // Default 14-day window
-    const [viewStartDate, setViewStartDate] = useState(() => {
-        const d = new Date();
-        return d.toISOString().split('T')[0];
-    });
-
-    const timelineDates = useMemo(() => {
-        const dates = [];
-        const start = new Date(viewStartDate);
-        for (let i = 0; i < 14; i++) {
-            const d = new Date(start);
-            d.setDate(d.getDate() + i);
-            dates.push(d.toISOString().split('T')[0]);
-        }
-        return dates;
-    }, [viewStartDate]);
-
-    const viewEndDate = timelineDates[13];
+    // Current Month State
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
         if (hotels && hotels.length > 0 && !selectedHotelId) {
@@ -51,12 +36,27 @@ export default function Availability() {
     const { rooms } = useRooms(selectedHotelId || undefined);
     const { calendarData, loading, error, fetchCalendar, bulkUpdate } = useCalendar(selectedHotelId);
 
-    // Initial Fetch
+    // Get First and Last day of the current selected month
+    const { startDate, endDate } = useMemo(() => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        // Bir ayın 1-i
+        const firstDay = new Date(Date.UTC(year, month, 1));
+        // Gələn ayın 1-indən 1 gün çıxırıq ki, bu ayın son gününü tapaq
+        const lastDay = new Date(Date.UTC(year, month + 1, 0));
+        
+        return {
+            startDate: firstDay.toISOString().split('T')[0],
+            endDate: lastDay.toISOString().split('T')[0]
+        };
+    }, [currentDate]);
+
+    // Initial Fetch for the month
     useEffect(() => {
-        if (selectedHotelId && viewStartDate && viewEndDate) {
-            fetchCalendar(viewStartDate, viewEndDate);
+        if (selectedHotelId && startDate && endDate) {
+            fetchCalendar(startDate, endDate);
         }
-    }, [selectedHotelId, viewStartDate, viewEndDate, fetchCalendar]);
+    }, [selectedHotelId, startDate, endDate, fetchCalendar]);
 
     // Statistics Calculation
     const stats = useMemo(() => {
@@ -68,7 +68,12 @@ export default function Availability() {
         let avgPrice = 0;
         let priceCount = 0;
 
-        calendarData.forEach(room => {
+        // Eger otaq secilibse ancaq onu hesablasin
+        const dataToProcess = selectedRoomId === 'all' 
+            ? calendarData 
+            : calendarData.filter(r => r.roomTypeId === selectedRoomId);
+
+        dataToProcess.forEach(room => {
             room.days.forEach(day => {
                 totalAvailable += day.availableRooms;
                 totalInventory += room.totalInventory;
@@ -89,28 +94,67 @@ export default function Availability() {
             avgPrice: priceCount > 0 ? Math.round(avgPrice / priceCount) : 0,
             revenueProjection: soldNights * (priceCount > 0 ? avgPrice / priceCount : 0)
         };
-    }, [calendarData]);
+    }, [calendarData, selectedRoomId]);
 
-    const handleDateNav = (offset: number) => {
-        const d = new Date(viewStartDate);
-        d.setDate(d.getDate() + offset);
-        setViewStartDate(d.toISOString().split('T')[0]);
+    const prevMonth = () => {
+        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+    };
+
+    const nextMonth = () => {
+        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
+    };
+
+    const resetToToday = () => {
+        setCurrentDate(new Date());
     };
 
     const handleBulkUpdate = async (payload: any) => {
         const success = await bulkUpdate(payload);
         if (success) {
             alert('Calendar updated successfully!');
-            fetchCalendar(viewStartDate, viewEndDate);
+            fetchCalendar(startDate, endDate);
             return true;
         }
         return false;
     };
 
+    // Calendar Generation Logic
+    const generateCalendarGrid = () => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Adjust for Monday start (Optional, but common in Europe/Azerbaijan)
+        // 0=Sun, 1=Mon ... 6=Sat. We want 0=Mon, 6=Sun.
+        const startingEmptyCells = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+        const days = [];
+        for (let i = 0; i < startingEmptyCells; i++) {
+            days.push(null);
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+            // ISO format qorumaq üçün UTC ilə yığırıq ki vaxt zonası problemi olmasın
+            const d = new Date(Date.UTC(year, month, i));
+            days.push(d.toISOString().split('T')[0]);
+        }
+        return days;
+    };
+
+    const calendarGrid = useMemo(() => generateCalendarGrid(), [currentDate]);
+    const monthYearLabel = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // Sechilmish otagin datasi (teqvimde gostermek ucun)
+    const activeRoomData = useMemo(() => {
+        if (!calendarData || calendarData.length === 0) return null;
+        if (selectedRoomId === 'all') return calendarData[0]; // Eger "All" secilibse birincini goster
+        return calendarData.find(r => r.roomTypeId === selectedRoomId) || calendarData[0];
+    }, [calendarData, selectedRoomId]);
+
     if (hotelsLoading) {
         return (
-            <div className="availability-dashboard centered" style={{ padding: '4rem', textAlign: 'center' }}>
-                <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+            <div className="dk-av-loading-screen">
+                <RefreshCw className="spin-icon" size={48} />
                 <p>Loading Property Data...</p>
             </div>
         );
@@ -118,186 +162,169 @@ export default function Availability() {
 
     if (!hotels || hotels.length === 0) {
         return (
-            <div className="availability-dashboard" style={{ padding: '2rem' }}>
-                <div className="empty-state glassmorphism-card centered">
-                    <AlertCircle size={48} className="empty-icon text-muted" />
+            <div className="dk-av-layout">
+                <div className="dk-av-empty-state">
+                    <AlertCircle size={48} className="text-slate-400 mb-4" />
                     <h3>No Hotels Found</h3>
                     <p>You must create a property first to manage its inventory.</p>
-                    <button className="btn-primary mt-2">Create Property</button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="availability-dashboard">
-            <div className="dashboard-header mb-8 flex justify-between items-end">
+        <div className="dk-av-layout">
+            
+            {/* HEADER & SELECTORS */}
+            <div className="dk-av-header">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-                        <CalendarIcon size={32} className="text-blue-600" /> Inventory Architecture
+                    <h1 className="dk-av-title">
+                        <CalendarIcon size={28} className="text-blue-600" /> Inventory Architecture
                     </h1>
-                    <p className="text-slate-400 font-bold mt-1">Real-time room allocation and dynamic rate management</p>
+                    <p className="dk-av-subtitle">Real-time room allocation and dynamic rate management</p>
                 </div>
 
-                <div className="header-actions flex gap-4">
-                    <select
-                        className="input-premium !py-3 !px-6 min-w-[200px]"
-                        value={selectedHotelId}
-                        onChange={(e) => setSelectedHotelId(e.target.value)}
-                    >
-                        {hotels.map(h => (
-                            <option key={h.id} value={h.id}>{h.name}</option>
-                        ))}
-                    </select>
-                    <button className="btn-icon-text refresh-btn bg-slate-100 hover:bg-slate-200 p-3 rounded-2xl transition-all" onClick={() => fetchCalendar(viewStartDate, viewEndDate)} disabled={loading}>
-                        <RefreshCw size={18} className={loading ? 'spin text-blue-600' : 'text-slate-600'} />
+                <div className="dk-av-selectors">
+                    <div className="selector-group">
+                        <MapPin size={16} className="selector-icon" />
+                        <select value={selectedHotelId} onChange={(e) => setSelectedHotelId(e.target.value)}>
+                            {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="selector-group">
+                        <Layers size={16} className="selector-icon" />
+                        <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(e.target.value)}>
+                            <option value="all">View All (Aggregated Stats)</option>
+                            {rooms?.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </select>
+                    </div>
+                    <button className="dk-btn-refresh" onClick={() => fetchCalendar(startDate, endDate)} disabled={loading}>
+                        <RefreshCw size={16} className={loading ? 'spin' : ''} />
                     </button>
                 </div>
             </div>
 
             {/* DASHBOARD STATS */}
-            <div className="availability-stats mb-8">
-                <div className="stat-card compact glassmorphism-card border border-white/50">
-                    <div className="icon-box blue"><Activity size={20} /></div>
-                    <div className="stat-content">
+            <div className="dk-av-stats-grid">
+                <div className="dk-av-stat-card">
+                    <div className="stat-icon blue"><Activity size={20} /></div>
+                    <div className="stat-info">
                         <span className="label">Monthly Yield</span>
                         <span className="value">{stats?.occupancy || 0}%</span>
                     </div>
                 </div>
-                <div className="stat-card compact glassmorphism-card border border-white/50">
-                    <div className="icon-box orange"><AlertCircle size={20} /></div>
-                    <div className="stat-content">
+                <div className="dk-av-stat-card">
+                    <div className="stat-icon orange"><AlertCircle size={20} /></div>
+                    <div className="stat-info">
                         <span className="label">Critical Supply</span>
                         <span className="value">{stats?.lowInventoryDays || 0} Days</span>
                     </div>
                 </div>
-                <div className="stat-card compact glassmorphism-card border border-white/50">
-                    <div className="icon-box purple"><DollarSign size={20} /></div>
-                    <div className="stat-content">
+                <div className="dk-av-stat-card">
+                    <div className="stat-icon purple"><DollarSign size={20} /></div>
+                    <div className="stat-info">
                         <span className="label">Forecasted ADR</span>
                         <span className="value">₼{stats?.avgPrice || 0}</span>
                     </div>
                 </div>
-                <div className="stat-card compact glassmorphism-card border border-white/50">
-                    <div className="icon-box green"><Users size={20} /></div>
-                    <div className="stat-content">
+                <div className="dk-av-stat-card">
+                    <div className="stat-icon green"><Users size={20} /></div>
+                    <div className="stat-info">
                         <span className="label">Revenue Projection</span>
                         <span className="value">₼{stats?.revenueProjection.toLocaleString() || 0}</span>
                     </div>
                 </div>
             </div>
 
-            {/* ERROR ALERT */}
-            {error && <div className="alert-box error mb-6 p-4 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 font-bold">{error}</div>}
+            {error && <div className="dk-alert-error mb-6">{error}</div>}
 
-            {/* HORIZONTAL PMS MATRIX */}
-            <div className="pms-matrix-container glassmorphism-card">
-                <div className="matrix-toolbar">
-                    <div className="date-navigator">
-                        <button className="btn-nav-date hover:bg-slate-200 transition-all" onClick={() => handleDateNav(-7)} title="Prev Week"><ChevronLeft size={18} /></button>
-                        <span className="current-range-label font-black text-slate-800">
-                            {new Date(viewStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(viewEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                        <button className="btn-nav-date hover:bg-slate-200 transition-all" onClick={() => handleDateNav(7)} title="Next Week"><ChevronRight size={18} /></button>
+            {/* MONTHLY CALENDAR VIEW */}
+            <div className="dk-calendar-card">
+                
+                {/* Calendar Toolbar */}
+                <div className="dk-calendar-toolbar">
+                    <div className="month-navigator">
+                        <button className="nav-btn" onClick={prevMonth}><ChevronLeft size={20} /></button>
+                        <h2 className="current-month">{monthYearLabel}</h2>
+                        <button className="nav-btn" onClick={nextMonth}><ChevronRight size={20} /></button>
                     </div>
-
-                    <div className="view-actions">
-                        <button className="px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-black text-xs uppercase tracking-widest hover:bg-blue-100 transition-all" onClick={() => setViewStartDate(new Date().toISOString().split('T')[0])}>Reset to Today</button>
+                    <div className="calendar-actions">
+                        <button className="dk-btn-ghost" onClick={resetToToday}>Today</button>
+                        <button className="dk-btn-primary" onClick={() => setIsBulkOpen(true)}>
+                            <Edit3 size={16} /> Deploy Strategy
+                        </button>
                     </div>
                 </div>
 
-                <div className="matrix-scroll-wrapper">
-                    {loading && calendarData.length === 0 ? (
-                        <div className="matrix-loader-overlay p-20 text-center">
-                            <RefreshCw size={48} className="spin text-blue-500 mx-auto mb-4" />
-                            <p className="font-bold text-slate-400">Syncing Matrix Grid...</p>
-                        </div>
-                    ) : (
-                        <div className="pms-grid">
-                            {/* GRID HEADER: DATES */}
-                            <div className="grid-header-cell sticky-col !bg-slate-50 !border-b-2 !border-slate-200 uppercase tracking-widest text-[10px] items-center flex">Strategy Matrix</div>
-                            {timelineDates.map(date => {
-                                const d = new Date(date);
-                                const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                                return (
-                                    <div key={date} className={`grid-header-cell date-header ${isWeekend ? 'weekend !bg-blue-50/30' : ''}`}>
-                                        <span className="day">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                        <span className="num">{d.getDate()}</span>
+                {/* Calendar Grid */}
+                <div className="dk-calendar-grid">
+                    {/* Day Names Header */}
+                    <div className="week-days-header">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span className="weekend">Sat</span><span className="weekend">Sun</span>
+                    </div>
+
+                    <div className="days-grid relative">
+                        {loading && (
+                            <div className="calendar-loader-overlay">
+                                <RefreshCw size={40} className="spin text-blue-500 mb-2" />
+                                <span>Syncing Data...</span>
+                            </div>
+                        )}
+
+                        {calendarGrid.map((dateStr, idx) => {
+                            if (!dateStr) return <div key={`empty-${idx}`} className="day-cell empty"></div>;
+
+                            // Find data for this specific day
+                            const dayData = activeRoomData?.days.find(d => d.date === dateStr);
+                            const dayNumber = parseInt(dateStr.split('-')[2], 10);
+                            
+                            // Tarix yoxlamaları
+                            const cellDateObj = new Date(dateStr);
+                            const todayObj = new Date();
+                            todayObj.setHours(0, 0, 0, 0); // Bu günü saat 00:00-a sıfırlayırıq
+                            
+                            const isToday = dateStr === new Date().toISOString().split('T')[0];
+                            const isPast = cellDateObj < todayObj; // Keçmiş tarixdirmi?
+
+                            // Logic for UI
+                            const isSS = dayData?.isStopped;
+                            const isCTA = dayData?.closedToArrival;
+                            const isCTD = dayData?.closedToDeparture;
+                            const inv = dayData?.availableRooms ?? 0;
+                            const totalInv = activeRoomData?.totalInventory ?? 0;
+                            
+                            let invStatus = 'normal';
+                            if (inv === 0) invStatus = 'sold-out';
+                            else if (inv <= 2) invStatus = 'low';
+
+                            return (
+                                // Yeni "past-date" klası əlavə edildi
+                                <div key={dateStr} className={`day-cell ${isToday ? 'today' : ''} ${isSS ? 'stopped' : ''} ${isPast && !isToday ? 'past-date' : ''}`}>
+                                    <div className="day-header">
+                                        <span className="day-num">{dayNumber}</span>
+                                        {isSS && <span className="badge badge-ss" title="Stop Sell">SS</span>}
+                                        {isCTA && <span className="badge badge-cta" title="Closed to Arrival">CTA</span>}
+                                        {isCTD && <span className="badge badge-ctd" title="Closed to Departure">CTD</span>}
                                     </div>
-                                );
-                            })}
-
-                            {/* ROOM TYPE ROWS */}
-                            {calendarData.map(room => (
-                                <React.Fragment key={room.roomTypeId}>
-                                    <div className="room-group-header flex items-center gap-2">
-                                        <Layers size={14} /> {room.roomTypeName}
+                                    
+                                    <div className="day-data">
+                                        <div className={`data-row inventory ${invStatus}`}>
+                                            <Layers size={12} />
+                                            <span>{inv}/{totalInv} Available</span>
+                                        </div>
+                                        <div className="data-row price">
+                                            <DollarSign size={12} />
+                                            <span>{dayData?.basePrice ? `₼${dayData.basePrice}` : '--'}</span>
+                                        </div>
                                     </div>
-
-                                    {/* INVENTORY ROW */}
-                                    <div className="attr-label-cell"><Activity size={12} className="text-blue-500" /> Inventory</div>
-                                    {timelineDates.map(date => {
-                                        const dayData = room.days.find(d => d.date === date);
-                                        const isLow = (dayData?.availableRooms || 0) <= 2;
-                                        const isNone = (dayData?.availableRooms || 0) === 0;
-                                        return (
-                                            <div key={date} className={`data-cell val-inv ${isNone ? 'empty' : isLow ? 'low' : ''}`}>
-                                                {dayData?.availableRooms ?? '0'}
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* PRICE ROW */}
-                                    <div className="attr-label-cell"><DollarSign size={12} className="text-emerald-500" /> Daily Rate</div>
-                                    {timelineDates.map(date => {
-                                        const dayData = room.days.find(d => d.date === date);
-                                        return (
-                                            <div key={date} className="data-cell val-price">
-                                                {dayData?.basePrice ? `₼${dayData.basePrice}` : '--'}
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* RESTRICTIONS ROW */}
-                                    <div className="attr-label-cell"><Lock size={12} className="text-amber-500" /> Strategy</div>
-                                    {timelineDates.map(date => {
-                                        const dayData = room.days.find(d => d.date === date);
-                                        const isSS = dayData?.isStopped;
-                                        const isCTA = dayData?.closedToArrival;
-                                        const isCTD = dayData?.closedToDeparture;
-
-                                        return (
-                                            <div key={date} className="data-cell">
-                                                <div className="flex gap-1">
-                                                    {isSS ? <span className="restriction-indicator res-ss" title="Full Stop Sell">STOP</span> : (
-                                                        <>
-                                                            {isCTA && <span className="restriction-indicator res-cta" title="Closed to Arrival">CTA</span>}
-                                                            {isCTD && <span className="restriction-indicator res-ctd" title="Closed to Departure">CTD</span>}
-                                                            {!isCTA && !isCTD && <span className="text-slate-300 font-black text-[10px]">ACTIVE</span>}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
-            {/* ACTION FOOTER */}
-            <div className="mt-8 flex justify-end">
-                <button 
-                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center gap-3 hover:translate-y-[-2px] transition-all hover:shadow-xl"
-                    onClick={() => setIsBulkOpen(true)}
-                >
-                    <Edit3 size={18} /> Deploy Bulk Strategy
-                </button>
-            </div>
-
-            <BulkUpdateDrawer
+            <BulkUpdateModal
                 isOpen={isBulkOpen}
                 onClose={() => setIsBulkOpen(false)}
                 rooms={rooms || []}

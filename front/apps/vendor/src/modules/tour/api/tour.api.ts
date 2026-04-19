@@ -35,4 +35,8 @@ export const tourApi = {
     // PUBLIC/VENDOR: Check tour availability for a specific date
     getTourAvailability: (id: string, date: string) =>
         httpClient<{ success: boolean; data: ITourAvailabilityResponse }>(`/tours/${id}/availability?date=${date}`),
+
+    // VENDOR: Get bookings for the vendor's tours
+    getVendorBookings: () =>
+        httpClient<{ success: boolean; data: any[] }>('/bookings/vendor')
 };

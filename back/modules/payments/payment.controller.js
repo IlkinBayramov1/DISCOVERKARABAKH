@@ -18,18 +18,26 @@ class PaymentController {
 
     async callback(req, res, next) {
         try {
-            // Merging body and query to support both GET redirects and POST webhooks
+            console.log(`[Payment] Callback received. Method: ${req.method}, Provider: ${req.params.provider}`);
             const params = { ...req.query, ...req.body };
+            console.log('[Payment] Callback Params:', params);
+
             const updatedTx = await paymentService.handleCallback(params, req.params.provider || 'local');
+            console.log('[Payment] Transaction updated successfully. Status:', updatedTx.status);
+
+            const frontendUrl = process.env.FRONTEND_WEB_URL || 'http://localhost:5173';
+            const redirectUrl = `${frontendUrl}/booking-confirmation/${updatedTx.bookingId}`;
             
-            // In a real bank redirect, we might want to redirect the user to a success page
-            // Redirect back to frontend for browser-based callbacks
+            console.log(`[Payment] Redirecting user to: ${redirectUrl}`);
+
+            // If it's a browser request (likely our mock bank or a real redirect), send 302
             if (req.accepts('html') || req.method === 'POST' || req.method === 'GET') {
-                return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/booking-confirmation/${updatedTx.bookingId}`);
+                return res.redirect(redirectUrl);
             }
             
             return successResponse(res, updatedTx, { message: 'Payment processed' });
         } catch (error) {
+            console.error('[Payment] Callback Error:', error);
             next(error);
         }
     }

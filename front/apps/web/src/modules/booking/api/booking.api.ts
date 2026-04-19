@@ -46,5 +46,10 @@ export const bookingApi = {
     getMyBookings: async () => {
         const response = await httpClient.get('/bookings/my');
         return response.data;
+    },
+
+    cancelBooking: async (bookingId: string) => {
+        const response = await httpClient.patch(`/bookings/${bookingId}/cancel`);
+        return response.data;
     }
 };
