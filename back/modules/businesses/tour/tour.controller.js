@@ -85,3 +85,27 @@ export const getTourAvailability = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getMonthlyAvailability = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) throw ApiError.badRequest('startDate and endDate are required');
+
+        const availability = await tourService.getMonthlyAvailability(id, startDate, endDate);
+        res.status(200).json({ success: true, data: availability });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const bulkUpdateAvailability = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await tourService.bulkUpdateAvailability(id, req.body);
+        res.status(200).json({ success: true, message: 'Availability updated successfully', data: result });
+    } catch (error) {
+        next(error);
+    }
+};

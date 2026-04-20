@@ -1,30 +1,65 @@
-import { AttractionReview } from './attractionReview.model.js';
+import prisma from '../../../../config/db.js';
 
 class AttractionReviewRepository {
     async create(data) {
-        return AttractionReview.create(data);
+        return await prisma.attractionReview.create({
+            data,
+            include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
     }
 
-    async findByAttractionId(attractionId, query = {}) {
-        return AttractionReview.find({ attraction: attractionId, ...query })
-            .populate('user', 'firstName lastName email')
-            .sort('-createdAt');
+    async findByAttractionId(attractionId, query = { status: 'approved' }) {
+        return await prisma.attractionReview.findMany({
+            where: { 
+                attractionId,
+                status: query.status || 'approved' 
+            },
+            include: { 
+                user: { select: { id: true, firstName: true, lastName: true, email: true } } 
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async findByAttractionIds(attractionIds, query = {}) {
+        return await prisma.attractionReview.findMany({
+            where: {
+                attractionId: { in: attractionIds },
+                ...(query.status && { status: query.status })
+            },
+            include: {
+                user: { select: { id: true, firstName: true, lastName: true, email: true } },
+                attraction: { select: { id: true, name: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
     }
 
     async findById(id) {
-        return AttractionReview.findById(id).populate('user', 'firstName lastName email');
+        return await prisma.attractionReview.findUnique({
+            where: { id },
+            include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
     }
 
     async findOne(query) {
-        return AttractionReview.findOne(query);
+        return await prisma.attractionReview.findFirst({
+            where: query
+        });
     }
 
     async update(id, data) {
-        return AttractionReview.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+        return await prisma.attractionReview.update({
+            where: { id },
+            data,
+            include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
     }
 
     async delete(id) {
-        return AttractionReview.findByIdAndDelete(id);
+        return await prisma.attractionReview.delete({
+            where: { id }
+        });
     }
 }
 

@@ -15,9 +15,6 @@ export function useAttraction(idOrSlug: string | undefined) {
         try {
             const data = await attractionApi.getAttractionById(idOrSlug);
             setAttraction(data.data);
-            
-            // Fire and forget view recording
-            attractionApi.recordView(data.data.id).catch(console.error);
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to fetch attraction details');
         } finally {

@@ -4,6 +4,8 @@ import { ShieldCheck, Info, Users, CreditCard, ChevronLeft } from 'lucide-react'
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { tourWebApi } from '../../api/tour.api';
 import type { ITour } from '../../types';
+import { useProfile } from '../../../account/hooks/useProfile';
+import './TourReservationPage.css';
 
 export const TourReservationPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -18,9 +20,20 @@ export const TourReservationPage: React.FC = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
 
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
+    const { profile, loading: profileLoading } = useProfile();
+
+    useEffect(() => {
+        if (profile) {
+            if (!firstName) setFirstName(profile.firstName || '');
+            if (!lastName) setLastName(profile.lastName || '');
+            if (!email) setEmail(profile.email || '');
+            if (!phone) setPhone(profile.phone || '');
+        }
+    }, [profile]);
 
     useEffect(() => {
         if (tourId) {
@@ -37,7 +50,7 @@ export const TourReservationPage: React.FC = () => {
     }, [tourId]);
 
     const handleBooking = async () => {
-        if (!tourId || !firstName || !lastName || !email || !tour?.startDate) {
+        if (!tourId || !firstName || !lastName || !email || !phone || !tour?.startDate) {
             alert('Please fill out all required details');
             return;
         }
@@ -56,7 +69,8 @@ export const TourReservationPage: React.FC = () => {
             guests: [{
                 firstName,
                 lastName,
-                email
+                email,
+                phone
             }],
             paymentMethod
         });
@@ -133,6 +147,15 @@ export const TourReservationPage: React.FC = () => {
                                         className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-0 outline-none transition-all" 
                                         placeholder="Confirmation goes here" 
                                         value={email} onChange={e => setEmail(e.target.value)}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
+                                    <input 
+                                        type="text" 
+                                        className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-0 outline-none transition-all" 
+                                        placeholder="e.g. +994 50 123 45 67" 
+                                        value={phone} onChange={e => setPhone(e.target.value)}
                                     />
                                 </div>
                             </div>

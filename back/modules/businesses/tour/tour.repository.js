@@ -133,6 +133,124 @@ class TourRepository {
             }
         });
     }
+
+    async getMonthlyAvailability(tourId, startDate, endDate) {
+        // 1. Get base tour data
+        const tour = await prisma.tour.findUnique({
+            where: { id: tourId },
+            select: { groupSizeMax: true, pricePerPerson: true }
+        });
+
+        if (!tour) return [];
+
+        // 2. Get specific availability overrides
+        const overrides = await prisma.tourAvailability.findMany({
+            where: {
+                tourId,
+                date: {
+                    gte: new Date(startDate),
+                    lte: new Date(endDate)
+                }
+            }
+        });
+
+        // 3. Get bookings for this month
+        const bookings = await prisma.booking.findMany({
+            where: {
+                tourId,
+                status: { in: ['pending_payment', 'confirmed', 'checked_in'] },
+                items: {
+                    some: {
+                        checkIn: {
+                            gte: new Date(startDate),
+                            lte: new Date(endDate)
+                        }
+                    }
+                }
+            },
+            include: { items: true }
+        });
+
+        // 4. Map them to a days object for easy lookup
+        const results = [];
+        const current = new Date(startDate);
+        const end = new Date(endDate);
+
+        while (current <= end) {
+            const dateStr = current.toISOString().split('T')[0];
+            const override = overrides.find(o => o.date.toISOString().split('T')[0] === dateStr);
+            
+            // Calculate booked participants for this day
+            let bookedCount = 0;
+            bookings.forEach(b => {
+                b.items.forEach(item => {
+                    if (item.checkIn && item.checkIn.toISOString().split('T')[0] === dateStr) {
+                        bookedCount += (item.adults + (item.children || 0));
+                    }
+                });
+            });
+
+            if (override || bookedCount > 0) {
+                results.push({
+                    date: dateStr,
+                    maxSeats: override?.maxSeats ?? tour.groupSizeMax,
+                    bookedCount,
+                    remainingSeats: Math.max(0, (override?.maxSeats ?? tour.groupSizeMax) - bookedCount),
+                    isStopped: override?.isStopped ?? false,
+                    price: override?.priceOverride ?? tour.pricePerPerson
+                });
+            }
+
+            current.setDate(current.getDate() + 1);
+        }
+
+        return results;
+    }
+
+    async bulkUpdateAvailability(tourId, data) {
+        const { startDate, endDate, daysOfWeek, isStopped, maxSeats, priceOverride } = data;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const current = new Date(start);
+
+        const updates = [];
+
+        while (current <= end) {
+            const dayOfWeek = current.getDay(); // 0 = Sunday, 1 = Monday...
+            
+            // Map common day mapping: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+            const dayMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayName = dayMap[dayOfWeek];
+
+            if (!daysOfWeek || daysOfWeek.includes(dayName)) {
+                updates.push(
+                    prisma.tourAvailability.upsert({
+                        where: {
+                            tourId_date: {
+                                tourId,
+                                date: new Date(current)
+                            }
+                        },
+                        update: {
+                            isStopped: isStopped !== undefined ? isStopped : undefined,
+                            maxSeats: maxSeats !== undefined ? maxSeats : undefined,
+                            priceOverride: priceOverride !== undefined ? priceOverride : undefined
+                        },
+                        create: {
+                            tourId,
+                            date: new Date(current),
+                            isStopped: isStopped ?? false,
+                            maxSeats,
+                            priceOverride
+                        }
+                    })
+                );
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        return prisma.$transaction(updates);
+    }
 }
 
 export const tourRepository = new TourRepository();

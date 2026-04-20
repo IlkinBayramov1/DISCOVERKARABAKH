@@ -24,15 +24,15 @@ import WebRegister from '../modules/auth/pages/WebRegister';
 import { HotelSearchPage } from '../modules/hotel/pages/HotelSearch';
 import { HotelDetailPage } from '../modules/hotel/pages/HotelDetail';
 import { ReservationPage } from '../modules/hotel/pages/Reservation';
-import { BookingConfirmationPage } from '../modules/hotel/pages/BookingConfirmation';
+import { BookingConfirmationPage } from '../modules/booking/pages/BookingConfirmation';
 import { PassengerTransportPage } from '../modules/transport/pages/passenger/PassengerTransportPage';
 import { CargoTransportPage } from '../modules/transport/pages/cargo/CargoTransportPage';
 import { DriverTransportPage } from '../modules/transport/pages/driver/DriverTransportPage';
 import { ToursPage } from '../modules/tour/pages/ToursPage/ToursPage';
 import { TourDetailsPage } from '../modules/tour/pages/TourDetailsPage/TourDetailsPage';
 import { TourReservationPage } from '../modules/tour/pages/TourReservationPage/TourReservationPage';
-import { AttractionsPage } from '../modules/attraction/pages/AttractionsPage';
-import { AttractionDetailsPage } from '../modules/attraction/pages/AttractionDetailsPage';
+import { AttractionsPage } from '../modules/attraction/pages/AttractionsPage/AttractionsPage';
+import { AttractionDetailsPage } from '../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage';
 
 import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
 import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';

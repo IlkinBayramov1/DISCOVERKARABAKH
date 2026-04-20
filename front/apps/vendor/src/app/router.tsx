@@ -29,11 +29,13 @@ import VendorTourDashboard from '../modules/tour/pages/VendorTourDashboard/Vendo
 import ManageTourPage from '../modules/tour/pages/ManageTourPage/ManageTourPage';
 import TourBookings from '../modules/tour/pages/TourBookings/TourBookings';
 import TourReviews from '../modules/tour/pages/TourReviews/TourReviews';
+import TourSchedule from '../modules/tour/pages/Schedule/TourSchedule';
 
 // Attraction Vendor Pages
 import VendorAttractionDashboard from '../modules/attraction/pages/dashboard/VendorAttractionDashboard';
 import ManageAttractionPage from '../modules/attraction/pages/manage/ManageAttractionPage';
 import AttractionReviews from '../modules/attraction/pages/reviews/AttractionReviews';
+import AttractionAnalyticsPage from '../modules/attraction/pages/analytics/AttractionAnalyticsPage';
 
 import DashRedirect from './DashRedirect';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
@@ -162,6 +164,10 @@ export const router = createBrowserRouter([
                 path: 'tours/reviews',
                 element: <TourReviews />
             },
+            {
+                path: 'tours/schedule',
+                element: <TourSchedule />
+            },
             // Attraction Routes
             {
                 path: 'attractions',
@@ -178,6 +184,14 @@ export const router = createBrowserRouter([
             {
                 path: 'attractions/reviews',
                 element: <AttractionReviews />
+            },
+            {
+                path: 'attractions/analytics',
+                element: <AttractionAnalyticsPage />
+            },
+            {
+                path: 'attractions/analytics/:id',
+                element: <AttractionAnalyticsPage />
             },
             {
                 path: '*',

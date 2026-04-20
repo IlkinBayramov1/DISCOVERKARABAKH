@@ -1,0 +1,180 @@
+paths:
+  /:
+    get:
+      tags: [Attraction]
+      summary: Get list of attractions
+      parameters:
+        - name: q
+          in: query
+          description: Multilingual search query (AZ, EN, RU)
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+        - name: city
+          in: query
+          description: Filter by city/rayon
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by status (active, draft, hidden)
+          schema:
+            type: string
+        - name: isFeatured
+          in: query
+          description: Filter by featured status
+          schema:
+            type: boolean
+        - name: entryType
+          in: query
+          schema:
+            type: string
+            enum: [free, paid, donation]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: './schemas.yaml#/components/schemas/Attraction'
+    post:
+      tags: [Attraction]
+      summary: Create a new attraction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yaml#/components/schemas/AttractionCreate'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: './schemas.yaml#/components/schemas/Attraction'
+
+  /nearby:
+    get:
+      tags: [Attraction]
+      summary: Get nearby attractions based on geo-coordinates
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: radiusKm
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas.yaml#/components/schemas/Attraction'
+
+  /{id}:
+    get:
+      tags: [Attraction]
+      summary: Get attraction details
+      description: Returns full attraction details including nearby events in the same city.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: './schemas.yaml#/components/schemas/Attraction'
+    put:
+      tags: [Attraction]
+      summary: Update attraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yaml#/components/schemas/AttractionUpdate'
+      responses:
+        200:
+          description: Success
+    delete:
+      tags: [Attraction]
+      summary: Delete attraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Deleted
+
+  /{id}/weather:
+    get:
+      tags: [Attraction]
+      summary: Get current weather for attraction location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success

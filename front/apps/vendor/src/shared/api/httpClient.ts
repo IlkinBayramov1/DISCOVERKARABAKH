@@ -1,4 +1,4 @@
-import { getToken } from '../utils/token';
+import { getToken, removeToken } from '../utils/token';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4004/api/v1';
 
@@ -30,6 +30,10 @@ export async function httpClient<T>(
     });
 
     if (!response.ok) {
+        if (response.status === 401) {
+            removeToken();
+            window.location.href = '/vendor/login';
+        }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error ${response.status}`);
     }

@@ -1,0 +1,222 @@
+.attractions-page {
+    min-height: 100vh;
+    background: #0B0F19;
+    padding-bottom: 4rem;
+    color: #F8FAFC;
+}
+
+/* Glassmorphism Utility */
+.glass {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.attractions-hero {
+    position: relative;
+    background: url('https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=2000') center/cover;
+    padding: 8rem 2rem 6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(11, 15, 25, 0.5),
+        #0B0F19
+    );
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: white;
+    margin: 0 0 1.5rem 0;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background: linear-gradient(to right, #fff, #94a3b8);    
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+/* Search Container */
+.search-container {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.search-input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 6px 6px 6px 20px;
+    border-radius: 100px;
+    transition: all 0.3s ease;
+}
+
+.search-input-wrapper:focus-within {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(30, 41, 59, 0.6);
+    transform: scale(1.02);
+}
+
+.search-icon {
+    color: #64748b;
+    margin-right: 12px;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    padding: 12px 0;
+    outline: none;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 100px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+/* Container */
+.attractions-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 3rem;
+    align-items: start;
+    margin-top: -2rem; /* Pull up into hero a bit */
+    position: relative;
+    z-index: 20;
+}
+
+/* Sidebar */
+.attractions-sidebar {
+    padding: 2rem;
+    border-radius: 24px;
+    position: sticky;
+    top: 100px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.sidebar-header svg {
+    color: #3b82f6;
+}
+
+/* Main Content */
+.attractions-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.attractions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-info h2 {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.active-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .attractions-container {
+        grid-template-columns: 1fr;
+        margin-top: 2rem;
+    }
+    
+    .attractions-sidebar {
+        position: static;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .search-input-wrapper {
+        border-radius: 20px;
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .search-btn {
+        width: 100%;
+    }
+
+    .header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

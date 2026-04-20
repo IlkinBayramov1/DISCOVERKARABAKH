@@ -1,0 +1,278 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { bookingApi } from '../../api/booking.api';
+import { CheckCircle, Clock, MapPin, Download, ShieldCheck, Users, Home } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import logoImg from '../../../../assets/dk logo main3.png'; // Yolunuzu yoxlayın
+import './BookingConfirmation.css'; // Yeni DK CSS
+
+export const BookingConfirmationPage: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    
+    const [booking, setBooking] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [downloading, setDownloading] = useState(false);
+    const receiptRef = useRef<HTMLDivElement>(null);
+
+    const handleDownloadPDF = async () => {
+        if (!receiptRef.current) return;
+        setDownloading(true);
+        
+        try {
+            const canvas = await html2canvas(receiptRef.current, {
+                scale: 3, // Ultra high resolution
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                onclone: (clonedDoc) => {
+                    const pdfElements = clonedDoc.querySelectorAll('.pdf-only');
+                    pdfElements.forEach(el => {
+                        (el as HTMLElement).style.display = 'flex';
+                    });
+                    
+                    const noPrintElements = clonedDoc.querySelectorAll('.no-print');
+                    noPrintElements.forEach(el => {
+                        (el as HTMLElement).style.display = 'none';
+                    });
+                }
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            pdf.save(`DK_Booking_${booking?.bookingNumber || 'Receipt'}.pdf`);
+        } catch (err) {
+            console.error('PDF Generation Error:', err);
+            alert('Failed to generate PDF. Please try again.');
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    useEffect(() => {
+        const fetchConfirmation = async () => {
+            if (!id) return;
+            setLoading(true);
+            try {
+                const res = await bookingApi.getBookingDetails(id);
+                const fetchedBooking = (res as any).data || res;
+                setBooking(fetchedBooking);
+            } catch (err: any) {
+                setError(err.message || 'Failed to load booking confirmation');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchConfirmation();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="dk-bc-loading-layout">
+                <div className="spin-loader"></div>
+                <p>Retrieving your reservation protocol...</p>
+            </div>
+        );
+    }
+
+    if (error || !booking) {
+        return (
+            <div className="dk-bc-error-layout">
+                <div className="dk-bc-error-card">
+                    <div className="error-icon">!</div>
+                    <h2>Wait, something went wrong</h2>
+                    <p>{error || 'Booking could not be loaded.'}</p>
+                    <button onClick={() => navigate('/')} className="dk-btn-primary full-width">
+                        Return to Homepage
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const { 
+        bookingNumber = 'N/A', 
+        bookingType = 'hotel',
+        status = 'pending', 
+        paymentStatus = 'pending', 
+        paymentMethod = 'Card',
+        totalPrice = 0, 
+        currency = 'AZN',
+        hotel, 
+        Tour,
+        tour,
+        items = [], 
+        guests = [] 
+    } = booking;
+  
+    const isTour = bookingType === 'tour';
+    const primaryItem = items.length > 0 ? items[0] : null;
+    const primaryGuest = guests.length > 0 ? guests[0] : null;
+    const details = isTour ? (Tour || tour) : hotel;
+
+    const totalPax = primaryItem ? (primaryItem.adults + (primaryItem.children || 0)) : 0;
+    const guestInitial = primaryGuest?.firstName?.[0] || primaryGuest?.email?.[0]?.toUpperCase() || 'G';
+
+    return (
+        <div className="dk-bc-layout">
+            <div className="dk-bc-container">
+                
+                {/* RECEIPT PAPER START */}
+                <div className="dk-bc-receipt-card" ref={receiptRef}>
+                    
+                    {/* PDF Header (Hidden in Web, Shown in PDF) */}
+                    <div className="pdf-only dk-pdf-header">
+                        <img src={logoImg} alt="Discover Karabakh" className="pdf-logo" />
+                        <div className="pdf-header-text">
+                            <h4>Official Reservation Receipt</h4>
+                            <p>{new Date().toLocaleString('en-GB')}</p>
+                        </div>
+                    </div>
+
+                    {/* SUCCESS BANNER */}
+                    <div className="dk-bc-success-banner">
+                        <CheckCircle size={56} className="banner-icon" strokeWidth={1.5} />
+                        <h1>Booking Confirmed!</h1>
+                        <p>Your reservation is secure. A digital copy has been sent to your email.</p>
+                    </div>
+                    
+                    {/* HEADER ROW: BOOKING ID & DOWNLOAD */}
+                    <div className="dk-bc-header-row">
+                        <div className="booking-id-block">
+                            <span className="label">Confirmation Protocol</span>
+                            <span className="value">#{bookingNumber}</span>
+                        </div>
+                        <button 
+                            onClick={handleDownloadPDF}
+                            disabled={downloading}
+                            className={`dk-btn-download no-print ${downloading ? 'disabled' : ''}`}
+                        >
+                            {downloading ? <div className="spin-loader small"></div> : <Download size={18} />}
+                            {downloading ? 'Generating...' : 'Download PDF'}
+                        </button>
+                    </div>
+
+                    <div className="dk-bc-divider"></div>
+
+                    {/* OVERVIEW SECTION */}
+                    <div className="dk-bc-section">
+                        <h2 className="section-title">
+                            {isTour ? 'Adventure Overview' : 'Stay Overview'}
+                        </h2>
+                        
+                        <div className="dk-bc-overview-grid">
+                            <div className="property-info">
+                                <h3>{details?.name || (isTour ? 'Your Tour' : 'Your Hotel')}</h3>
+                                <p className="location-text">
+                                    <MapPin size={16} />
+                                    {details?.address || details?.city || 'Address not provided'}
+                                </p>
+                                {!isTour && primaryItem?.roomType && (
+                                    <p className="room-text">
+                                        <Home size={14}/> Room: {primaryItem.roomType.name}
+                                    </p>
+                                )}
+                                {isTour && primaryItem && (
+                                    <p className="room-text">
+                                        <Users size={14}/> {totalPax} Explorers Selected
+                                    </p>
+                                )}
+                            </div>
+                            
+                            <div className="dk-bc-date-box">
+                                <div className="date-col">
+                                    <span className="date-label">{isTour ? 'Expedition Date' : 'Check-in'}</span>
+                                    <span className="date-value">{primaryItem ? new Date(primaryItem.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : 'N/A'}</span>
+                                    <span className="time-text"><Clock size={12}/> {details?.checkInTime || '09:00'}</span>
+                                </div>
+                                {!isTour && primaryItem && (
+                                    <>
+                                        <div className="date-divider"></div>
+                                        <div className="date-col">
+                                            <span className="date-label">Check-out</span>
+                                            <span className="date-value">{new Date(primaryItem.checkOut).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'})}</span>
+                                            <span className="time-text"><Clock size={12}/> {details?.checkOutTime || '12:00'}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* GUEST SECTION */}
+                    {primaryGuest && (
+                        <div className="dk-bc-guest-box">
+                            <div className="guest-avatar">{guestInitial}</div>
+                            <div className="guest-details">
+                                <h4>{primaryGuest.firstName} {primaryGuest.lastName}</h4>
+                                <p>{primaryGuest.email}</p>
+                            </div>
+                            <div className="guest-status">
+                                <span className={`status-pill ${status}`}>
+                                    {status.replace('_', ' ').toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="dk-bc-divider"></div>
+
+                    {/* PAYMENT SUMMARY SECTION */}
+                    <div className="dk-bc-section">
+                        <h2 className="section-title">Financial Summary</h2>
+                        
+                        <div className="dk-bc-payment-row">
+                            <span className="pay-label">Payment Status</span>
+                            <span className={`pay-value capitalize ${paymentStatus === 'captured' || paymentStatus === 'success' ? 'success' : 'warning'}`}>
+                                {paymentStatus}
+                            </span>
+                        </div>
+                        
+                        <div className="dk-bc-payment-row">
+                            <span className="pay-label">Transaction Method</span>
+                            <span className="pay-value font-medium">{paymentMethod || 'Secure Checkout'}</span>
+                        </div>
+
+                        <div className="dk-bc-total-row">
+                            <span className="total-label">Total Charged</span>
+                            <span className="total-value">
+                                {typeof totalPrice === 'number' ? totalPrice.toFixed(2) : totalPrice} <span className="currency">{currency}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* PDF Footer (Hidden in Web) */}
+                    <div className="pdf-only dk-pdf-footer">
+                        <div className="pdf-security-badge">
+                            <ShieldCheck size={16} /> Official Digital Protocol
+                        </div>
+                        <p>Support Contact: support@discoverkarabakh.az</p>
+                        <p>Please present this digital receipt upon arrival.</p>
+                        <span className="pdf-watermark">Generated securely by Discover Karabakh Operations</span>
+                    </div>
+
+                </div>
+                {/* RECEIPT PAPER END */}
+
+                {/* BOTTOM ACTIONS (Hidden in PDF) */}
+                <div className="dk-bc-bottom-actions no-print">
+                    <button onClick={() => navigate(isTour ? '/tours' : '/hotels')} className="dk-btn-ghost">
+                        Explore more {isTour ? 'adventures' : 'properties'}
+                    </button>
+                    <button onClick={() => navigate('/account/trips')} className="dk-btn-dark">
+                        View My Itineraries
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    );
+};

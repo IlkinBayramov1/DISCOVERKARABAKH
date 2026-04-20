@@ -1,0 +1,169 @@
+paths:
+  /:
+    get:
+      tags: [Review]
+      summary: Get reviews for an attraction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas.yaml#/components/schemas/Review'
+    post:
+      tags: [Review]
+      summary: Add a review to an attraction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  description: Rating from 1 to 5 stars
+                comment:
+                  type: string
+                  maxLength: 1000
+                images:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                    format: uri
+      responses:
+        201:
+          description: Review created
+
+  /{reviewId}:
+    put:
+      tags: [Review]
+      summary: Update a review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                comment:
+                  type: string
+      responses:
+        200:
+          description: Updated
+    delete:
+      tags: [Review]
+      summary: Delete a review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Deleted
+
+  /{reviewId}/report:
+    post:
+      tags: [Review]
+      summary: Report/Flag an inappropriate review
+      description: |
+        Allows users to report reviews. Supports both standard reasons and custom notes.
+        NOTE: If a review receives 5 or more reports, its status will automatically change to 'under_review' and be hidden from public view until admin approval.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Standard reason (e.g., "Spam", "Insult", "Fake")
+                customNote:
+                  type: string
+                  description: Optional custom explanation from the user
+      responses:
+        201:
+          description: Report submitted
+
+  /reports:
+    get:
+      tags: [Review]
+      summary: Get all review reports (Admin Only)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas.yaml#/components/schemas/ReviewReport'
+
+  /reports/{reportId}:
+    patch:
+      tags: [Review]
+      summary: Update report status (Admin Only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [investigated, resolved, dismissed]
+      responses:
+        200:
+          description: Status updated

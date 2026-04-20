@@ -3,7 +3,14 @@ import { attractionApi } from '../api/attraction.api';
 import type { Attraction, AttractionCategory } from '../types';
 
 interface UseAttractionsProps {
-    initialParams?: Record<string, any>;
+    initialParams?: {
+        q?: string;
+        city?: string;
+        categoryId?: string;
+        status?: string;
+        page?: number;
+        limit?: number;
+    };
 }
 
 export function useAttractions({ initialParams = {} }: UseAttractionsProps = {}) {
@@ -13,7 +20,7 @@ export function useAttractions({ initialParams = {} }: UseAttractionsProps = {})
     const [error, setError] = useState<string | null>(null);
     const [params, setParams] = useState(initialParams);
 
-    const fetchAttractions = useCallback(async (currentParams: Record<string, any>) => {
+    const fetchAttractions = useCallback(async (currentParams: any) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -29,8 +36,6 @@ export function useAttractions({ initialParams = {} }: UseAttractionsProps = {})
     const fetchCategories = useCallback(async () => {
         try {
             const data = await attractionApi.getCategories();
-            // Assuming categories are returned inside data.data or similar structure
-            // Adjust based on your generic response format
             setCategories(data.data || []);
         } catch (err: any) {
             console.error('Failed to fetch attraction categories');
@@ -45,8 +50,12 @@ export function useAttractions({ initialParams = {} }: UseAttractionsProps = {})
         fetchCategories();
     }, [fetchCategories]);
 
-    const updateFilters = useCallback((newParams: Record<string, any>) => {
+    const updateFilters = useCallback((newParams: Partial<typeof initialParams>) => {
         setParams(prev => ({ ...prev, ...newParams }));
+    }, []);
+
+    const handleSearch = useCallback((query: string) => {
+        setParams(prev => ({ ...prev, q: query, page: 1 }));
     }, []);
 
     return {
@@ -55,6 +64,7 @@ export function useAttractions({ initialParams = {} }: UseAttractionsProps = {})
         isLoading,
         error,
         updateFilters,
+        handleSearch,
         params,
         refresh: () => fetchAttractions(params),
     };

@@ -30,6 +30,6 @@ export function useTourBookings() {
         bookings,
         loading,
         error,
-        refresh: fetchBookings
+        refetch: fetchBookings
     };
 }

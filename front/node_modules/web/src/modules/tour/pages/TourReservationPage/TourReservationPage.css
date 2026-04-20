@@ -1,0 +1,639 @@
+/* ============================================
+   TOUR RESERVATION PAGE - PREMIUM STYLES
+   ============================================ */
+
+:root {
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --primary-soft: #eef2ff;
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.15);
+    --radius-sm: 0.5rem;
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+}
+
+/* ============================================
+   BASE & LAYOUT
+   ============================================ */
+
+.min-h-screen {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.max-w-7xl {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   BACK BUTTON
+   ============================================ */
+
+button:has(> svg) {
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+button:has(> svg)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--primary-soft);
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: inherit;
+}
+
+button:has(> svg):hover {
+    color: var(--primary);
+    transform: translateX(-4px);
+}
+
+button:has(> svg):hover::before {
+    opacity: 1;
+}
+
+button:has(> svg) svg {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s;
+}
+
+button:has(> svg):hover svg {
+    transform: translateX(-2px);
+}
+
+/* ============================================
+   PAGE TITLE
+   ============================================ */
+
+h1.text-3xl {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+h1.text-3xl::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+    margin-top: 0.75rem;
+}
+
+/* ============================================
+   ERROR BANNER
+   ============================================ */
+
+.bg-red-50 {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-red-50::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--danger);
+}
+
+.bg-red-50.text-red-600 {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
+
+.bg-white.rounded-3xl {
+    background: var(--card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-white.rounded-3xl::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.bg-white.rounded-3xl:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.bg-white.rounded-3xl:hover::before {
+    opacity: 1;
+}
+
+/* Section Headers */
+.text-xl.font-bold {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.text-xl.font-bold svg {
+    width: 24px;
+    height: 24px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   INPUT FIELDS
+   ============================================ */
+
+label.block {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+input[type="text"],
+input[type="email"] {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    color: var(--text);
+    background: #fafbfc;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder {
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover {
+    border-color: #cbd5e1;
+    background: white;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), var(--shadow);
+    outline: none;
+}
+
+/* Input Grid */
+.grid.grid-cols-1.md\:grid-cols-2 {
+    gap: 1.25rem;
+}
+
+/* ============================================
+   PAYMENT METHODS
+   ============================================ */
+
+label:has(input[type="radio"]) {
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: #fafbfc;
+}
+
+label:has(input[type="radio"]):hover {
+    border-color: #c7d2fe;
+    background: white;
+    transform: translateX(4px);
+}
+
+label:has(input[type="radio"]:checked) {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    box-shadow: var(--shadow-md);
+}
+
+label:has(input[type="radio"]:checked)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-gradient);
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* Payment Labels */
+label:has(input[type="radio"]) .block.font-bold {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+label:has(input[type="radio"]) .text-sm.text-gray-500 {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Card Badges */
+label:has(input[type="radio"]) .flex.gap-2 span {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   SIDEBAR - BOOKING SUMMARY
+   ============================================ */
+
+.w-full.lg\:w-\[400px\] .bg-white {
+    background: var(--card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 6rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.w-full.lg\:w-\[400px\] .bg-white:hover {
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+/* Tour Image */
+.w-24.h-24.rounded-xl {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border-light);
+    transition: all 0.3s;
+}
+
+.w-24.h-24.rounded-xl:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+.w-24.h-24.rounded-xl img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.w-24.h-24.rounded-xl:hover img {
+    transform: scale(1.1);
+}
+
+/* Tour Name */
+h3.font-bold {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.text-gray-500.text-sm {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Date & Participants Box */
+.bg-blue-50\/50 {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #f5f3ff 100%);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+}
+
+.bg-blue-50\/50 .flex {
+    margin-bottom: 0.75rem;
+}
+
+.bg-blue-50\/50 .flex:last-child {
+    margin-bottom: 0;
+}
+
+.text-sm.font-bold.text-gray-600 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.font-bold.text-gray-900 {
+    font-weight: 800;
+    color: var(--text);
+}
+
+/* Participant Counter */
+button.rounded-full {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+button.rounded-full:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+    transform: scale(1.1);
+}
+
+button.rounded-full:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+button.rounded-full+span {
+    font-weight: 800;
+    color: var(--text);
+    font-size: 1rem;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+/* Price Breakdown */
+.space-y-4.text-sm {
+    border-top: 1px solid var(--border-light);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.flex.justify-between.text-gray-600 {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.flex.justify-between.pt-4 {
+    border-top: 2px solid var(--border);
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.text-xl.font-black {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--text);
+}
+
+/* ============================================
+   COMPLETE BOOKING BUTTON
+   ============================================ */
+
+.bg-blue-600 {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 1.125rem;
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+}
+
+.bg-blue-600::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.bg-blue-600:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 30px -5px rgba(79, 70, 229, 0.4);
+}
+
+.bg-blue-600:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.bg-blue-600:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.bg-blue-400 {
+    background: #a5b4fc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Button Icon */
+.bg-blue-600 svg {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Spinner */
+.animate-spin {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+}
+
+/* Info Footer */
+.mt-6.flex.items-center {
+    color: var(--text-light);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.mt-6.flex.items-center svg {
+    color: var(--primary-light);
+    width: 14px;
+    height: 14px;
+}
+
+/* ============================================
+   INVALID BOOKING STATE
+   ============================================ */
+
+.min-h-screen.py-20 .text-center {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.min-h-screen.py-20 h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+}
+
+.min-h-screen.py-20 .text-gray-500 {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.min-h-screen.py-20 button {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: var(--shadow);
+}
+
+.min-h-screen.py-20 button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white.rounded-3xl {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.bg-white.rounded-3xl:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.bg-white.rounded-3xl:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.bg-white.rounded-3xl:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .w-full.lg\:w-\[400px\] .bg-white {
+        position: relative;
+        top: 0;
+        margin-top: 2rem;
+    }
+
+    h1.text-3xl {
+        font-size: 1.875rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .py-12 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .bg-white.rounded-3xl {
+        padding: 1.5rem;
+    }
+
+    .text-xl.font-black {
+        font-size: 1.25rem;
+    }
+}

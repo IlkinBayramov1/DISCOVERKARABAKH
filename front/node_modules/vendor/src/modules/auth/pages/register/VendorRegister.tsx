@@ -5,6 +5,8 @@ import './VendorRegister.css'; // Will reuse heavily from Login
 
 export default function VendorRegister() {
     const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         companyName: '',
@@ -79,6 +81,29 @@ export default function VendorRegister() {
                     {error && <div className="auth-alert error">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="split-form">
+                        <div className="form-row" style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                            <div className="input-group" style={{ flex: 1, margin: 0 }}>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    required
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                />
+                                <label>First Name</label>
+                            </div>
+                            <div className="input-group" style={{ flex: 1, margin: 0 }}>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    required
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                />
+                                <label>Last Name</label>
+                            </div>
+                        </div>
+
                         <div className="input-group">
                             <input
                                 type="text"

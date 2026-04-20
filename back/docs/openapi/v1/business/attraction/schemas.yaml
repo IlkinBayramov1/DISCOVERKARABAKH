@@ -1,0 +1,307 @@
+components:
+  schemas:
+    Attraction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        entryType:
+          type: string
+          enum: [free, paid, donation]
+        price:
+          type: number
+          nullable: true
+        crowdLevel:
+          type: string
+          enum: [low, medium, high]
+        audioUrl:
+          type: string
+          format: uri
+          nullable: true
+        virtualTourUrl:
+          type: string
+          format: uri
+          nullable: true
+        searchKeywords:
+          type: string
+          nullable: true
+        isFeatured:
+          type: boolean
+        status:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        vendorId:
+          type: string
+          format: uuid
+          nullable: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionImage'
+        stats:
+          $ref: '#/components/schemas/AttractionStat'
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionWorkingHour'
+        nearbyEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/NearbyEvent'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AttractionImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        type:
+          type: string
+          enum: [image, 360_image, vr_tour]
+        isCover:
+          type: boolean
+        order:
+          type: integer
+
+    AttractionStat:
+      type: object
+      properties:
+        averageRating:
+          type: number
+        viewCount:
+          type: integer
+        favoriteCount:
+          type: integer
+        popularityScore:
+          type: number
+
+    AttractionWorkingHour:
+      type: object
+      properties:
+        dayOfWeek:
+          type: integer
+          description: 0 (Sunday) to 6 (Saturday)
+        openTime:
+          type: string
+          example: "09:00"
+        closeTime:
+          type: string
+          example: "18:00"
+        isClosed:
+          type: boolean
+
+    NearbyEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        city:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+
+    AttractionCreate:
+      type: object
+      required: [name, slug, description, address, latitude, longitude, city, categoryId]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        entryType:
+          type: string
+          enum: [free, paid, donation]
+        price:
+          type: number
+        audioUrl:
+          type: string
+        virtualTourUrl:
+          type: string
+        searchKeywords:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        images:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                properties:
+                  url:
+                    type: string
+                  type:
+                    type: string
+                    enum: [image, 360_image, vr_tour]
+
+    AttractionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        price:
+          type: number
+        status:
+          type: string
+          enum: [active, closed, maintenance]
+        isFeatured:
+          type: boolean
+        images:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                properties:
+                  url:
+                    type: string
+                  type:
+                    type: string
+                    enum: [image, 360_image, vr_tour]
+
+    ReviewReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reviewId:
+          type: string
+          format: uuid
+        reviewType:
+          type: string
+        reporterId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          description: Standard template reason (e.g., Spam, Insult)
+        customNote:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, investigated, resolved, dismissed]
+        createdAt:
+          type: string
+          format: date-time
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [approved, under_review, rejected]
+          description: "Review status. 'under_review' means it's hidden due to reports or manual check."
+        createdAt:
+          type: string
+          format: date-time
+
+    DeepAnalyticsResponse:
+      type: object
+      properties:
+        totalViews:
+          type: integer
+        periodDays:
+          type: integer
+        hourlyDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+                description: 0-23
+              count:
+                type: integer
+        dailyDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: string
+                description: Day name (Monday, Tuesday, etc.)
+              count:
+                type: integer
+
+    AttractionCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        image:
+          type: string
+          format: uri
+        description:
+          type: string
+        order:
+          type: integer

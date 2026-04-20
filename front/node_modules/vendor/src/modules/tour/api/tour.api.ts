@@ -38,5 +38,16 @@ export const tourApi = {
 
     // VENDOR: Get bookings for the vendor's tours
     getVendorBookings: () =>
-        httpClient<{ success: boolean; data: any[] }>('/bookings/vendor')
+        httpClient<{ success: boolean; data: any[] }>('/bookings/vendor'),
+
+    // VENDOR: Get monthly availability matrix for a tour
+    getMonthlyAvailability: (id: string, startDate: string, endDate: string) =>
+        httpClient<{ success: boolean; data: ITourAvailabilityResponse[] }>(`/tours/${id}/monthly-availability?startDate=${startDate}&endDate=${endDate}`),
+
+    // VENDOR: Bulk update tour availability
+    bulkUpdateAvailability: (id: string, data: any) =>
+        httpClient<{ success: boolean; message: string }> (`/tours/${id}/availability/bulk`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        })
 };

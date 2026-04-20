@@ -8,13 +8,16 @@ export interface AttractionCategory {
 export interface AttractionImage {
     id: string;
     url: string;
+    type: 'image' | '360_image' | 'vr_tour';
     isCover: boolean;
+    order: number;
 }
 
 export interface AttractionStat {
     averageRating: number;
     viewCount: number;
     favoriteCount: number;
+    popularityScore: number;
 }
 
 export interface AttractionWorkingHour {
@@ -22,6 +25,14 @@ export interface AttractionWorkingHour {
     openTime?: string;
     closeTime?: string;
     isClosed: boolean;
+}
+
+export interface NearbyEvent {
+    id: string;
+    title: string;
+    city: string;
+    startDate: string;
+    endDate: string;
 }
 
 export interface Attraction {
@@ -36,6 +47,9 @@ export interface Attraction {
     entryType: string;
     price?: number;
     crowdLevel: string;
+    audioUrl?: string | null;
+    virtualTourUrl?: string | null;
+    searchKeywords?: string | null;
     isFeatured: boolean;
     status: string;
     categoryId: string;
@@ -43,6 +57,9 @@ export interface Attraction {
     images: AttractionImage[];
     stats?: AttractionStat;
     workingHours: AttractionWorkingHour[];
+    nearbyEvents?: NearbyEvent[];
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface AttractionReview {
@@ -50,11 +67,13 @@ export interface AttractionReview {
     attractionId: string;
     userId: string;
     user: {
-        _id: string;
+        id: string;
         firstName: string;
         lastName: string;
     };
     rating: number;
     comment?: string;
+    images?: string[];
+    status: 'approved' | 'under_review' | 'rejected';
     createdAt: string;
 }

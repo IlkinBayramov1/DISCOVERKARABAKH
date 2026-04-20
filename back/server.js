@@ -2,13 +2,14 @@ import http from 'http';
 import app from './app.js';
 import { env, connectDB } from './config/index.js';
 import { startEventJobs } from './modules/businesses/event/event.cron.js';
+import { startAttractionJobs } from './modules/businesses/attraction/attraction.cron.js';
 
 const startServer = async () => {
   await connectDB();
 
   // Start background jobs
   startEventJobs();
-
+  startAttractionJobs();
   const server = http.createServer(app);
 
   server.listen(env.port, () => {

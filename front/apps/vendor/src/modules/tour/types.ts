@@ -73,4 +73,6 @@ export interface ITourAvailabilityResponse {
     bookedCount: number;
     remainingSeats: number;
     isFull: boolean;
+    isStopped: boolean;
+    price: number;
 }

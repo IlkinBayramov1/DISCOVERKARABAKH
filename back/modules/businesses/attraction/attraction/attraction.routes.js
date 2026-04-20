@@ -8,6 +8,10 @@ const router = Router();
 
 // Publicly Cached Endpoints
 router.get('/', validate(attractionValidation.queryAttractions, 'query'), attractionController.getList);
+router.get('/nearby', validate(attractionValidation.nearbyQuery, 'query'), attractionController.getNearby.bind(attractionController));
+router.get('/reviews', authMiddleware, attractionController.getVendorReviews.bind(attractionController));
+router.get('/weather', attractionController.getWeatherByCity.bind(attractionController));
+router.get('/:id/weather', attractionController.getWeather.bind(attractionController));
 router.get('/:id', attractionController.getById);
 
 // Protected Modification Endpoints

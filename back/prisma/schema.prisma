@@ -178,6 +178,7 @@ model User {
   AttractionFavorite AttractionFavorite[]
   AttractionReview   AttractionReview[]
   locations          Location[]           @relation("VendorLocations")
+  reports            ReviewReport[]       @relation("UserReports")
 }
 
 model Blacklist {
@@ -823,10 +824,42 @@ model Tour {
   bookings Booking[]
   reviews  Review[]
 
+  availabilities TourAvailability[]
+  calendarNotes  TourCalendarNote[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   availableSlots Int?
+}
+
+model TourAvailability {
+  id   String   @id @default(uuid())
+  date DateTime @db.Date
+
+  maxSeats       Int?    // Override base groupSizeMax for this date
+  isStopped      Boolean @default(false)
+  priceOverride  Float?  // Specific price for this date
+
+  tourId String
+  tour   Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, date])
+}
+
+model TourCalendarNote {
+  id     String   @id @default(uuid())
+  tourId String
+  date   DateTime @db.Date
+  note   String   @db.Text
+  type   String   @default("info") // info, warning, success, event
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, date])
 }
 
 // ---------------------------
@@ -1186,6 +1219,9 @@ model Attraction {
 
   isFeatured Boolean @default(false)
   status     String  @default("active")
+  audioUrl   String?
+  virtualTourUrl  String?
+  searchKeywords  String? @db.Text
 
   categoryId String
   category   AttractionCategory @relation(fields: [categoryId], references: [id])
@@ -1200,12 +1236,14 @@ model Attraction {
   generalReviews Review[]
   workingHours AttractionWorkingHour[]
   nearbyHotels   HotelPOI[]
+  hourlyStats    AttractionHourlyStat[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([latitude, longitude])
   @@index([categoryId, status, isFeatured])
+  @@fulltext([name, description, searchKeywords])
 }
 
 model AttractionImage {
@@ -1259,9 +1297,37 @@ model AttractionReview {
   rating       Int
   comment      String?    @db.Text
   status       String     @default("approved")
+  images       Json?
   createdAt    DateTime   @default(now())
 
   @@unique([userId, attractionId])
+}
+
+model AttractionHourlyStat {
+  attractionId String
+  date         DateTime @db.Date
+  hour         Int      // 0-23
+  count        Int      @default(0)
+
+  attraction Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+
+  @@id([attractionId, date, hour])
+}
+
+model ReviewReport {
+  id         String   @id @default(uuid())
+  reviewId   String
+  reviewType String   @default("attraction") // "general" or "attraction"
+  reporterId String
+  reason     String?  // Standard template reason
+  customNote String?  @db.Text
+  status     String   @default("pending") // pending, investigated, resolved, dismissed
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reporter User @relation("UserReports", fields: [reporterId], references: [id])
+
+  @@index([reviewId])
 }
 
 model PaymentTransaction {

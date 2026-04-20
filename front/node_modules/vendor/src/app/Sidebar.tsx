@@ -13,88 +13,149 @@ import {
     Map,
     MapPin,
     Plus,
-    Compass,
     Home,
-    ShieldCheck
+    ShieldCheck,
+    BarChart3
 } from 'lucide-react';
-import { getVendorCategory } from '@/shared/utils/token';
-import logoImg from '../assets/dk-logo3.png'; // Logonu öz layihənizə uyğun tənzimləyin
+import { getVendorCategory } from '../shared/utils/token';
+import logoImg from '../assets/dk-logo3.png';
 import './Sidebar.css';
+
+interface RouteItem {
+    path: string;
+    name: string;
+    icon: React.ElementType;
+}
+
+interface NavSection {
+    title: string;
+    items: RouteItem[];
+}
 
 type ModuleType = 'hotel' | 'transport' | 'tour' | 'attraction' | 'default';
 
 export default function Sidebar() {
     const location = useLocation();
 
-    // URL və ya token əsasında cari modulu (hotel, tour, vs.) təyin edirik
     const getActiveModule = (): ModuleType => {
         const path = location.pathname;
         
-        // 1. URL əsasında yoxlama
-        if (path.startsWith('/attraction')) return 'attraction';
-        if (path.startsWith('/tour')) return 'tour';
+        if (path.startsWith('/attractions')) return 'attraction';
+        if (path.startsWith('/tours')) return 'tour';
         if (path.startsWith('/transport')) return 'transport';
-        if (path.startsWith('/restaurant')) return 'default';
         if (path.startsWith('/hotel')) return 'hotel';
         
-        // 2. Token daxilindəki kateqoriyaya əsasən yoxlama
         const storedCategory = getVendorCategory()?.toLowerCase();
         if (storedCategory === 'attraction') return 'attraction';
         if (storedCategory === 'tour') return 'tour';
         if (storedCategory === 'transport') return 'transport';
         if (storedCategory === 'hotel') return 'hotel';
 
-        // 3. Hotel modulu üçün xüsusi alt yollar
-        const hotelOnlySubPaths = ['/reservations', '/rooms', '/availability', '/reviews', '/content'];
-        if (hotelOnlySubPaths.some(sub => path === sub || path.startsWith(sub))) return 'hotel';
-
-        return 'hotel'; // Heç biri tapılmazsa default olaraq hotel
+        return 'hotel'; 
     };
 
     const activeModule = getActiveModule();
 
-    // Hər modul üçün fərqli menyu strukturu
-    const moduleRoutes: Record<ModuleType, { path: string; name: string; icon: React.ElementType }[]> = {
+    const moduleRoutes: Record<ModuleType, NavSection[]> = {
         hotel: [
-            { path: '/hotel/dashboard', name: 'Dashboard', icon: LayoutDashboard },
-            { path: '/hotel/my-property', name: 'My Property', icon: Home },
-            { path: '/reservations', name: 'Reservations', icon: CalendarCheck },
-            { path: '/rooms', name: 'Room Types', icon: BedDouble },
-            { path: '/availability', name: 'Availability Matrix', icon: CalendarDays },
-            { path: '/hotel/pricing', name: 'Pricing Rules', icon: DollarSign },
-            { path: '/reviews', name: 'Guest Reviews', icon: MessageSquare },
-            { path: '/content', name: 'Media Center', icon: ImageIcon },
+            {
+                title: 'Ümumi Baxış',
+                items: [
+                    { path: '/hotel/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+                    { path: '/hotel/my-property', name: 'Məkanım (Property)', icon: Home },
+                ]
+            },
+            {
+                title: 'İdarəetmə',
+                items: [
+                    { path: '/reservations', name: 'Rezervasiyalar', icon: CalendarCheck },
+                    { path: '/rooms', name: 'Otaq Növləri', icon: BedDouble },
+                    { path: '/availability', name: 'Əlyetərlilik Matrisi', icon: CalendarDays },
+                    { path: '/hotel/pricing', name: 'Qiymət Qaydaları', icon: DollarSign },
+                ]
+            },
+            {
+                title: 'Əlaqə və Media',
+                items: [
+                    { path: '/reviews', name: 'Müştəri Rəyləri', icon: MessageSquare },
+                    { path: '/content', name: 'Media Mərkəzi', icon: ImageIcon },
+                ]
+            }
         ],
         transport: [
-            { path: '/transport/dashboard', name: 'Dashboard', icon: LayoutDashboard },
-            { path: '/transport/fleet', name: 'Vehicle Fleet', icon: Car },
-            { path: '/transport/drivers', name: 'Drivers Network', icon: Users },
-            { path: '/transport/pricing', name: 'Pricing Engine', icon: DollarSign },
-            { path: '/transport/locations', name: 'Service Areas', icon: MapPin },
-            { path: '/transport/orders', name: 'Active Orders', icon: Map },
+            {
+                title: 'Əməliyyatlar',
+                items: [
+                    { path: '/transport/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+                    { path: '/transport/orders', name: 'Aktiv Sifarişlər', icon: Map },
+                ]
+            },
+            {
+                title: 'Resurslar',
+                items: [
+                    { path: '/transport/fleet', name: 'Nəqliyyat Parkı', icon: Car },
+                    { path: '/transport/drivers', name: 'Sürücü Şəbəkəsi', icon: Users },
+                    { path: '/transport/locations', name: 'Xidmət Sahələri', icon: MapPin },
+                ]
+            },
+            {
+                title: 'Maliyyə',
+                items: [
+                    { path: '/transport/pricing', name: 'Qiymət Mühərriki', icon: DollarSign },
+                ]
+            }
         ],
         tour: [
-            { path: '/tours', name: 'Dashboard', icon: LayoutDashboard },
-            { path: '/tours/bookings', name: 'Tour Bookings', icon: CalendarCheck },
-            { path: '/availability', name: 'Schedule', icon: CalendarDays },
-            { path: '/tours/reviews', name: 'Traveler Reviews', icon: MessageSquare },
-            { path: '/tours/create', name: 'Create Experience', icon: Plus },
+            {
+                title: 'Planlaşdırma',
+                items: [
+                    { path: '/tours', name: 'Dashboard', icon: LayoutDashboard },
+                    { path: '/tours/schedule', name: 'Cədvəl', icon: CalendarDays },
+                ]
+            },
+            {
+                title: 'Satış',
+                items: [
+                    { path: '/tours/bookings', name: 'Tur Rezervləri', icon: CalendarCheck },
+                    { path: '/tours/create', name: 'Yeni Təcrübə Yarat', icon: Plus },
+                ]
+            },
+            {
+                title: 'Feedback',
+                items: [
+                    { path: '/tours/reviews', name: 'Səyahətçi Rəyləri', icon: MessageSquare },
+                ]
+            }
         ],
         attraction: [
-            { path: '/attractions', name: 'Dashboard', icon: LayoutDashboard },
-            { path: '/attractions/reviews', name: 'Visitor Reviews', icon: MessageSquare },
-            { path: '/attractions/create', name: 'Add Attraction', icon: Compass },
+            {
+                title: 'Ümumi Baxış',
+                items: [
+                    { path: '/attractions', name: 'Dashboard', icon: LayoutDashboard },
+                    { path: '/attractions/analytics', name: 'Analitika', icon: BarChart3 },
+                ]
+            },
+            {
+                title: 'İdarəetmə',
+                items: [
+                    { path: '/attractions/create', name: 'Yeni Məkan', icon: Plus },
+                ]
+            },
+            {
+                title: 'Feedback',
+                items: [
+                    { path: '/attractions/reviews', name: 'Ziyarətçi Rəyləri', icon: MessageSquare },
+                ]
+            }
         ],
         default: []
     };
 
-    const routes = moduleRoutes[activeModule] || [];
+    const sections = moduleRoutes[activeModule] || [];
     const moduleName = activeModule.charAt(0).toUpperCase() + activeModule.slice(1);
 
     return (
         <aside className="dk-vendor-sidebar">
-            
-            {/* BRANDING / LOGO AREA */}
             <div className="dk-sidebar-brand">
                 <img src={logoImg} alt="Discover Karabakh" className="dk-sidebar-logo" />
                 <div className="dk-vendor-badge">
@@ -102,32 +163,35 @@ export default function Sidebar() {
                 </div>
             </div>
 
-            {/* NAVIGATION LINKS */}
             <nav className="dk-sidebar-nav">
-                <ul>
-                    {routes.map((route) => {
-                        const Icon = route.icon;
-                        return (
-                            <li key={route.path}>
-                                <NavLink
-                                    to={route.path}
-                                    className={({ isActive }) => 
-                                        isActive || location.pathname.includes(route.path) 
-                                            ? 'dk-sidebar-link active' 
-                                            : 'dk-sidebar-link'
-                                    }
-                                >
-                                    <Icon className="dk-sidebar-icon" size={20} strokeWidth={2.5} />
-                                    <span>{route.name}</span>
-                                </NavLink>
-                            </li>
-                        );
-                    })}
+                <ul className="dk-sidebar-sections-list">
+                    {sections.map((section, sIdx) => (
+                        <li key={sIdx} className="dk-sidebar-section">
+                            <div className="dk-sidebar-section-label">{section.title}</div>
+                            <ul className="dk-sidebar-items-list">
+                                {section.items.map((route) => {
+                                    const Icon = route.icon;
+                                    return (
+                                        <li key={route.path}>
+                                            <NavLink
+                                                to={route.path}
+                                                className={({ isActive }) => 
+                                                    isActive || (route.path !== '/attractions' && location.pathname.includes(route.path))
+                                                        ? 'dk-sidebar-link active' 
+                                                        : 'dk-sidebar-link'
+                                                }
+                                            >
+                                                <Icon className="dk-sidebar-icon" size={20} strokeWidth={2.5} />
+                                                <span>{route.name}</span>
+                                            </NavLink>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </li>
+                    ))}
                 </ul>
             </nav>
-
-
-            
         </aside>
     );
 }

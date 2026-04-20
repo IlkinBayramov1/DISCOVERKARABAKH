@@ -29,7 +29,8 @@ export const authMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    next(ApiError.unauthorized('Not authorized to access this route'));
+    // Return specific error message for debugging (e.g. 'jwt expired', 'jwt malformed')
+    next(ApiError.unauthorized(error.message || 'Not authorized to access this route'));
   }
 };
 

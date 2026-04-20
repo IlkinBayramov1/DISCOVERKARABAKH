@@ -72,6 +72,14 @@ class TourService {
             isFull: remainingSeats <= 0
         };
     }
+
+    async getMonthlyAvailability(tourId, startDate, endDate) {
+        return tourRepository.getMonthlyAvailability(tourId, startDate, endDate);
+    }
+
+    async bulkUpdateAvailability(tourId, data) {
+        return tourRepository.bulkUpdateAvailability(tourId, data);
+    }
 }
 
 export const tourService = new TourService();

@@ -1,0 +1,119 @@
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-card {
+    padding: 2rem;
+    border-radius: 24px;
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    background: rgba(30, 41, 59, 0.6);
+    transform: translateY(-2px);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.reviewer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.reviewer-info h5 {
+    color: white;
+    margin: 0 0 2px 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.reviewer-info span {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.review-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rating-pill {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    padding: 6px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.report-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.report-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.review-text {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    font-size: 1.05rem;
+}
+
+.review-images {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.review-images img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.loading-reviews,
+.no-reviews {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+    font-style: italic;
+    border-radius: 24px;
+}

@@ -1,4 +1,4 @@
- import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Plus,
     MapPin,
@@ -9,7 +9,9 @@ import {
     Compass,
     Users,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    RefreshCw,
+    CheckCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTours } from '../../hooks/useTours';
@@ -21,8 +23,8 @@ const ImageSlider = ({ images, name }: { images: string[], name: string }) => {
 
     if (!images || images.length === 0) {
         return (
-            <div className="no-image-placeholder">
-                <ImageIcon size={32} />
+            <div className="dk-slider-empty">
+                <ImageIcon size={48} className="text-slate-300" />
             </div>
         );
     }
@@ -38,19 +40,19 @@ const ImageSlider = ({ images, name }: { images: string[], name: string }) => {
     };
 
     return (
-        <div className="tour-image-slider">
-            <img src={images[currentIndex]} alt={`${name} - ${currentIndex + 1}`} />
+        <div className="dk-image-slider">
+            <img src={images[currentIndex]} alt={`${name} - ${currentIndex + 1}`} className="dk-slider-img" />
             {images.length > 1 && (
                 <>
-                    <button className="slider-btn prev" onClick={handlePrevious}>
+                    <button className="dk-slider-btn prev" onClick={handlePrevious}>
                         <ChevronLeft size={20} />
                     </button>
-                    <button className="slider-btn next" onClick={handleNext}>
+                    <button className="dk-slider-btn next" onClick={handleNext}>
                         <ChevronRight size={20} />
                     </button>
-                    <div className="slider-dots">
+                    <div className="dk-slider-dots">
                         {images.map((_, idx) => (
-                            <span key={idx} className={`dot ${idx === currentIndex ? 'active' : ''}`} />
+                            <span key={idx} className={`dk-dot ${idx === currentIndex ? 'active' : ''}`} />
                         ))}
                     </div>
                 </>
@@ -60,11 +62,11 @@ const ImageSlider = ({ images, name }: { images: string[], name: string }) => {
 };
 
 export default function VendorTourDashboard() {
-    const { data: tours, loading, error, removeTour, pagination } = useTours(true);
+    const { data: tours, loading, error, removeTour, pagination, refetch } = useTours(true);
     const navigate = useNavigate();
 
     const handleDelete = async (id: string, name: string) => {
-        if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
+        if (window.confirm(`Warning: Are you absolutely sure you want to delete "${name}"? This action cannot be undone.`)) {
             try {
                 await removeTour(id);
             } catch (err) {
@@ -74,115 +76,145 @@ export default function VendorTourDashboard() {
     };
 
     return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
+        <div className="dk-tour-dash-layout">
+            
+            {/* HEADER */}
+            <div className="dk-tour-dash-header">
                 <div>
-                    <h1>My Tours</h1>
-                    <p>Manage your experience listings and itineraries</p>
+                    <h1 className="dk-td-title">Experiences & Tours</h1>
+                    <p className="dk-td-subtitle">Manage your active tour blueprints, pricing, and availability.</p>
                 </div>
-                <Link to="/tours/create" className="btn-primary">
-                    <Plus size={18} /> Create New Tour
-                </Link>
+                <div className="dk-td-actions">
+                    <button className="dk-btn-refresh" onClick={() => refetch()} title="Refresh Data">
+                        <RefreshCw size={18} className={loading ? 'spin-icon' : ''} />
+                    </button>
+                    <Link to="/tours/create" className="dk-btn-primary">
+                        <Plus size={18} /> New Tour
+                    </Link>
+                </div>
             </div>
 
-            {error && <div className="alert error">{error}</div>}
+            {error && <div className="dk-alert-error mb-6">{error}</div>}
 
-            <div className="dashboard-content">
+            {/* CONTENT */}
+            <div className="dk-tour-dash-content">
                 {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Loading your tours...</p>
+                    <div className="dk-td-loading">
+                        <RefreshCw size={48} className="spin-icon" />
+                        <p>Syncing Experience Database...</p>
                     </div>
                 ) : tours.length === 0 ? (
-                    <div className="empty-state">
-                        <Compass size={48} className="empty-icon" />
-                        <h3>No Tours Found</h3>
-                        <p>You haven't created any tours yet. Share the beauty of Karabakh with the world.</p>
-                        <Link to="/tours/create" className="btn-secondary">
-                            Create Your First Tour
+                    <div className="dk-td-empty">
+                        <div className="empty-icon-circle">
+                            <Compass size={40} />
+                        </div>
+                        <h3>No Tours Registered</h3>
+                        <p>You haven't created any guided experiences yet. Start building your portfolio to accept bookings.</p>
+                        <Link to="/tours/create" className="dk-btn-primary mt-6">
+                            Architect Your First Tour
                         </Link>
                     </div>
                 ) : (
                     <>
-                        <div className="tour-grid">
+                        <div className="dk-tour-grid">
                             {tours.map((tour: ITour) => (
-                                <div key={tour.id} className="tour-card-vendor">
-                                    <div className="tour-card-header">
-                                        <div className="card-status-badges">
+                                <div key={tour.id} className="dk-tour-card">
+                                    
+                                    {/* MEDIA & BADGES */}
+                                    <div className="dk-tour-media">
+                                        <ImageSlider images={tour.images || []} name={tour.name} />
+                                        <div className="dk-tour-badges-top">
                                             {tour.isApproved ? (
-                                                <span className="badge-dot approved" title="Approved" />
+                                                <div className="dk-badge-status approved">
+                                                    <CheckCircle size={12} /> Live
+                                                </div>
                                             ) : (
-                                                <span className="badge-dot pending" title="Pending Approval" />
+                                                <div className="dk-badge-status pending">
+                                                    <Clock size={12} /> Pending Review
+                                                </div>
                                             )}
                                             {tour.isFeatured && (
-                                                <span className="badge-dot featured" title="Featured" />
+                                                <div className="dk-badge-featured">Featured</div>
                                             )}
                                         </div>
                                     </div>
 
-                                    <ImageSlider images={tour.images || []} name={tour.name} />
-
-                                    <div className="tour-card-body">
-                                        <h3 title={tour.name}>{tour.name}</h3>
-
-                                        <div className="tour-meta">
-                                            <div className="meta-item">
-                                                <Clock size={16} />
-                                                <span>{tour.durationDays}d / {tour.durationNights}n</span>
-                                            </div>
-                                            <div className="meta-item">
-                                                <Users size={16} />
-                                                <span>{tour.availableSlots ?? tour.groupSizeMax} left of {tour.groupSizeMax} pax</span>
+                                    {/* BODY */}
+                                    <div className="dk-tour-body">
+                                        <div className="dk-tour-title-row">
+                                            <h3 title={tour.name}>{tour.name}</h3>
+                                            <div className="dk-action-icons">
+                                                <button 
+                                                    className="dk-icon-btn danger" 
+                                                    title="Delete Tour"
+                                                    onClick={() => handleDelete(tour.id, tour.name)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
                                         </div>
 
-                                        <div className="tour-info">
-                                            <MapPin size={16} />
+                                        <div className="dk-tour-location">
+                                            <MapPin size={14} className="text-blue-500" />
                                             <span>{tour.city ? `${tour.city}, ` : ''}{tour.address}</span>
                                         </div>
 
-                                        <div className="tour-price-row">
-                                            <span className="price-label">Price per person</span>
-                                            <span className="price-value">₼{tour.pricePerPerson}</span>
-                                        </div>
+                                        <p className="dk-tour-desc">
+                                            {tour.description || 'No description provided for this experience.'}
+                                        </p>
 
-                                        <div className="card-actions">
-                                            <button
-                                                className="btn-secondary outline"
-                                                onClick={() => navigate(`/tours/edit/${tour.id}`)}
-                                            >
-                                                <PencilLine size={16} /> Edit
-                                            </button>
-                                            <button
-                                                className="btn-delete-prop"
-                                                onClick={() => handleDelete(tour.id, tour.name)}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                        <div className="dk-tour-specs">
+                                            <span className="dk-spec-pill">
+                                                <Clock size={14} /> {tour.durationDays}D / {tour.durationNights}N
+                                            </span>
+                                            <span className="dk-spec-pill">
+                                                <Users size={14} /> Max {tour.groupSizeMax} Pax
+                                            </span>
+                                            <span className="dk-spec-pill difficulty">
+                                                <Compass size={14} /> {tour.difficulty}
+                                            </span>
                                         </div>
+                                    </div>
+
+                                    {/* FOOTER (Price & Action) */}
+                                    <div className="dk-tour-footer">
+                                        <div className="dk-price-block">
+                                            <span className="price-label">Per Explorer</span>
+                                            <div className="price-value">
+                                                <span className="currency">₼</span>{tour.pricePerPerson}
+                                            </div>
+                                        </div>
+                                        
+                                        <button 
+                                            className="dk-btn-manage" 
+                                            onClick={() => navigate(`/tours/edit/${tour.id}`)}
+                                        >
+                                            <PencilLine size={16} /> Manage Tour
+                                        </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
+                        {/* PAGINATION */}
                         {pagination.totalPages > 1 && (
-                            <div className="pagination-wrapper">
+                            <div className="dk-pagination">
                                 <button
-                                    className="pagination-btn"
+                                    className="dk-page-btn"
                                     disabled={pagination.page <= 1}
                                     onClick={() => pagination.setPage(pagination.page - 1)}
                                 >
-                                    <ChevronLeft size={20} /> Prev
+                                    <ChevronLeft size={18} /> Prev
                                 </button>
-                                <div className="page-indicator">
-                                    Page {pagination.page} of {pagination.totalPages}
+                                <div className="dk-page-info">
+                                    Page <strong>{pagination.page}</strong> of {pagination.totalPages}
                                 </div>
                                 <button
-                                    className="pagination-btn"
+                                    className="dk-page-btn"
                                     disabled={pagination.page >= pagination.totalPages}
                                     onClick={() => pagination.setPage(pagination.page + 1)}
                                 >
-                                    Next <ChevronRight size={20} />
+                                    Next <ChevronRight size={18} />
                                 </button>
                             </div>
                         )}

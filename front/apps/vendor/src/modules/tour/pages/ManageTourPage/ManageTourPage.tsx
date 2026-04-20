@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     Plus,
@@ -10,7 +10,17 @@ import {
     ChevronLeft,
     Star,
     BadgeCheck,
-    Clock
+    Clock,
+    MapPin,
+    Phone,
+    Mail,
+    Calendar,
+    Users,
+    DollarSign,
+    Map as MapIcon,
+    Image as ImageIcon,
+    ListChecks,
+    RefreshCw
 } from 'lucide-react';
 import { tourApi } from '../../api/tour.api';
 import { useUpload } from '../../../hotel/hooks/useUpload';
@@ -35,6 +45,9 @@ export default function ManageTourPage() {
     const [error, setError] = useState<string | null>(null);
     const [tourData, setTourData] = useState<ITour | null>(null);
 
+    const [incInput, setIncInput] = useState('');
+    const [excInput, setExcInput] = useState('');
+
     const [formData, setFormData] = useState<ITourPayload>({
         name: '',
         description: '',
@@ -54,6 +67,8 @@ export default function ManageTourPage() {
         exclusions: [],
         startDate: ''
     });
+
+    const [localFiles, setLocalFiles] = useState<File[]>([]);
 
     useEffect(() => {
         if (id) {
@@ -76,11 +91,11 @@ export default function ManageTourPage() {
                 email: tour.email || '',
                 durationDays: tour.durationDays,
                 durationNights: tour.durationNights,
-                difficulty: tour.difficulty,
+                difficulty: tour.difficulty || 'Medium',
                 groupSizeMin: tour.groupSizeMin,
                 groupSizeMax: tour.groupSizeMax,
                 pricePerPerson: tour.pricePerPerson,
-                itinerary: tour.itinerary || [{ ...DEFAULT_ITINERARY_DAY }],
+                itinerary: tour.itinerary?.length > 0 ? tour.itinerary : [{ ...DEFAULT_ITINERARY_DAY }],
                 images: tour.images || [],
                 inclusions: tour.inclusions || [],
                 exclusions: tour.exclusions || [],
@@ -101,9 +116,7 @@ export default function ManageTourPage() {
         }));
     };
 
-
-
-    // Itinerary Handlers
+    // --- ITINERARY HANDLERS ---
     const addDay = () => {
         setFormData(prev => ({
             ...prev,
@@ -117,23 +130,18 @@ export default function ManageTourPage() {
     const removeDay = (index: number) => {
         setFormData(prev => {
             const newItinerary = prev.itinerary?.filter((_, idx) => idx !== index) || [];
-            // Re-index days
-            return {
-                ...prev,
-                itinerary: newItinerary.map((day, idx) => ({ ...day, day: idx + 1 }))
-            };
+            return { ...prev, itinerary: newItinerary.map((day, idx) => ({ ...day, day: idx + 1 })) };
         });
     };
 
-    const updateDay = (index: number, field: keyof ITourItineraryDay, value: string | ITourItineraryDay['activities'] | string[]) => {
+    const updateDay = (index: number, field: keyof ITourItineraryDay, value: any) => {
         setFormData(prev => {
             const newItinerary = [...(prev.itinerary || [])];
-            newItinerary[index] = { ...newItinerary[index], [field]: value } as ITourItineraryDay;
+            newItinerary[index] = { ...newItinerary[index], [field]: value };
             return { ...prev, itinerary: newItinerary };
         });
     };
 
-    // Activity Handlers within a day
     const addActivity = (dayIndex: number) => {
         const newItinerary = [...(formData.itinerary || [])];
         newItinerary[dayIndex] = {
@@ -147,26 +155,35 @@ export default function ManageTourPage() {
         const newItinerary = [...(formData.itinerary || [])];
         const newActivities = [...newItinerary[dayIndex].activities];
         newActivities[actIndex] = { ...newActivities[actIndex], [field]: value };
-        newItinerary[dayIndex] = { ...newItinerary[dayIndex], activities: newActivities };
+        newItinerary[dayIndex].activities = newActivities;
         setFormData({ ...formData, itinerary: newItinerary });
     };
 
     const removeActivity = (dayIndex: number, actIndex: number) => {
         const newItinerary = [...(formData.itinerary || [])];
-        newItinerary[dayIndex] = {
-            ...newItinerary[dayIndex],
-            activities: newItinerary[dayIndex].activities.filter((_, idx) => idx !== actIndex)
-        };
+        newItinerary[dayIndex].activities = newItinerary[dayIndex].activities.filter((_, idx) => idx !== actIndex);
         setFormData({ ...formData, itinerary: newItinerary });
     };
 
-    // Inclusion/Exclusion Handlers
-    const handleListChange = (field: 'inclusions' | 'exclusions', value: string) => {
+    // --- INCLUSIONS / EXCLUSIONS ---
+    const handleAddListItem = (field: 'inclusions' | 'exclusions') => {
+        const value = field === 'inclusions' ? incInput : excInput;
         if (!value.trim()) return;
+        
         setFormData(prev => ({
             ...prev,
             [field]: [...(prev[field] || []), value.trim()]
         }));
+
+        if (field === 'inclusions') setIncInput('');
+        else setExcInput('');
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: 'inclusions' | 'exclusions') => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddListItem(field);
+        }
     };
 
     const removeFromList = (field: 'inclusions' | 'exclusions', index: number) => {
@@ -176,249 +193,334 @@ export default function ManageTourPage() {
         }));
     };
 
-    // Image Upload
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            try {
-                const urls = await uploadImages(Array.from(e.target.files));
-                setFormData(prev => ({
-                    ...prev,
-                    images: [...(prev.images || []), ...urls]
-                }));
-            } catch (err: any) {
-                setError('Failed to upload images');
-            }
+    // --- IMAGES ---
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setLocalFiles(prev => [...prev, ...Array.from(e.target.files!)]);
         }
     };
 
-    const removeImage = (idx: number) => {
+    const removeLocalFile = (idx: number) => {
+        setLocalFiles(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const removeExistingImage = (idx: number) => {
         setFormData(prev => ({
             ...prev,
             images: (prev.images || []).filter((_, i) => i !== idx)
         }));
     };
 
+    // --- SUBMIT ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
         try {
-            if (id) {
-                await tourApi.updateTour(id, formData);
-            } else {
-                await tourApi.createTour(formData);
+            let uploadedUrls: string[] = [];
+            if (localFiles.length > 0) {
+                uploadedUrls = await uploadImages(localFiles);
             }
-            navigate('/vendor/tours');
+
+            const finalData = {
+                ...formData,
+                images: [...(formData.images || []), ...uploadedUrls]
+            };
+
+            if (id) {
+                await tourApi.updateTour(id, finalData);
+            } else {
+                await tourApi.createTour(finalData);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => navigate('/vendor/tours'), 1000);
         } catch (err: any) {
             setError(err.message || 'Failed to save tour');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) return <div className="manage-page-loading">Loading experience details...</div>;
+    if (loading) {
+        return (
+            <div className="dk-mt-loading">
+                <RefreshCw size={48} className="spin-icon" />
+                <p>Loading Experience Blueprint...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="manage-tour-container">
-            <div className="manage-header">
-                <div className="header-top">
-                    <button onClick={() => navigate('/vendor/tours')} className="btn-back">
-                        <ChevronLeft size={20} /> Back to Dashboard
+        <div className="dk-mt-layout">
+            <div className="dk-mt-container">
+                
+                {/* HEADER */}
+                <div className="dk-mt-header">
+                    <button onClick={() => navigate('/vendor/tours')} className="dk-btn-back">
+                        <ChevronLeft size={16} /> Back to Tours
                     </button>
-                    <div className="status-badges">
-                        {tourData?.isApproved ? (
-                            <span className="badge-status approved">
-                                <BadgeCheck size={14} /> Approved
-                            </span>
-                        ) : (
-                            <span className="badge-status pending">
-                                <Clock size={14} /> Pending Approval
-                            </span>
+                    
+                    <div className="header-title-row">
+                        <div>
+                            <h1>{id ? 'Edit Experience Blueprint' : 'Architect New Experience'}</h1>
+                            <p>Configure routing, pricing, and operational details for your tour.</p>
+                        </div>
+                        {id && (
+                            <div className="dk-status-badges">
+                                {tourData?.isApproved ? (
+                                    <span className="badge approved"><BadgeCheck size={14} /> Verified</span>
+                                ) : (
+                                    <span className="badge pending"><Clock size={14} /> Reviewing</span>
+                                )}
+                                {tourData?.isFeatured && (
+                                    <span className="badge featured"><Star size={14} fill="currentColor" /> Featured</span>
+                                )}
+                            </div>
                         )}
-                        {tourData?.isFeatured && (
-                            <span className="badge-status featured">
-                                <Star size={14} /> Featured
-                            </span>
-                        )}
-                    </div>
-                </div>
-                <h1>{id ? 'Edit Your Tour' : 'Create New Experience'}</h1>
-                <p>Provide detailed information about the tour and its itinerary.</p>
-            </div>
-
-            {error && <div className="alert error">{error}</div>}
-
-            <form onSubmit={handleSubmit} className="tour-manage-form">
-                {/* Section 1: Basic Info */}
-                <div className="form-section glassmorphism-card">
-                    <h2>General Information</h2>
-                    <div className="input-group">
-                        <label>Tour Name</label>
-                        <input name="name" value={formData.name} onChange={handleInputChange} required placeholder="e.g. Shusha Historical Walk" />
-                    </div>
-                    <div className="input-row">
-                        <div className="input-group">
-                            <label>City</label>
-                            <select name="city" value={formData.city} onChange={handleInputChange}>
-                                <option value="Shusha">Shusha</option>
-                                <option value="Lachin">Lachin</option>
-                                <option value="Aghdam">Aghdam</option>
-                                <option value="Khankendi">Khankendi</option>
-                            </select>
-                        </div>
-                        <div className="input-group">
-                            <label>Address / Starting Point</label>
-                            <input name="address" value={formData.address} onChange={handleInputChange} required />
-                        </div>
-                    </div>
-                    <div className="input-row">
-                        <div className="input-group">
-                            <label>Contact Phone</label>
-                            <input name="phone" value={formData.phone} onChange={handleInputChange} required placeholder="+994 (__) ___-__-__" />
-                        </div>
-                        <div className="input-group">
-                            <label>Contact Email</label>
-                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} required placeholder="tour@example.com" />
-                        </div>
-                    </div>
-                    <div className="input-group">
-                        <label>Description</label>
-                        <textarea name="description" value={formData.description} onChange={handleInputChange} required rows={5} />
                     </div>
                 </div>
 
-                {/* Section 2: Details & Pricing */}
-                <div className="form-section glassmorphism-card">
-                    <h2>Tour Specifics</h2>
-                    <div className="input-row">
-                        <div className="input-group">
-                            <label>Duration (Days)</label>
-                            <input type="number" name="durationDays" value={formData.durationDays} onChange={handleInputChange} min={1} />
-                        </div>
-                        <div className="input-group">
-                            <label>Duration (Nights)</label>
-                            <input type="number" name="durationNights" value={formData.durationNights} onChange={handleInputChange} min={0} />
-                        </div>
-                    </div>
-                    <div className="input-row">
-                        <div className="input-group">
-                            <label>Min Group Size</label>
-                            <input type="number" name="groupSizeMin" value={formData.groupSizeMin} onChange={handleInputChange} min={1} />
-                        </div>
-                        <div className="input-group">
-                            <label>Max Group Size</label>
-                            <input type="number" name="groupSizeMax" value={formData.groupSizeMax} onChange={handleInputChange} min={1} />
-                        </div>
-                        <div className="input-group highlight-input">
-                            <label>Price (₼ per person)</label>
-                            <input type="number" name="pricePerPerson" value={formData.pricePerPerson} onChange={handleInputChange} required />
-                        </div>
-                    </div>
-                </div>
+                {error && <div className="dk-alert-error">{error}</div>}
 
-                {/* Section: Scheduling & Start Date */}
-                <div className="form-section glassmorphism-card">
-                    <h2>Scheduling</h2>
-                    <div className="input-group">
-                        <label>Tour Start Date</label>
-                        <input
-                            type="date"
-                            name="startDate"
-                            value={formData.startDate}
-                            onChange={handleInputChange}
-                            min={new Date().toISOString().split('T')[0]}
-                            required
-                        />
-                    </div>
-                </div>
+                <form onSubmit={handleSubmit} className="dk-mt-form">
+                    
+                    {/* SECTION 1: IDENTITY */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><MapIcon size={18} /> Experience Identity</h2>
+                        
+                        <div className="dk-input-group">
+                            <label>Tour Commercial Name</label>
+                            <input 
+                                name="name" className="dk-input main-input" 
+                                value={formData.name} onChange={handleInputChange} 
+                                required placeholder="e.g. Majestic Shusha Historical Walk" 
+                            />
+                        </div>
 
-                {/* Section 3: Itinerary Builder */}
-                <div className="form-section glassmorphism-card">
-                    <div className="section-header">
-                        <h2>Daily Itinerary</h2>
-                        <button type="button" onClick={addDay} className="btn-add-day">
-                            <Plus size={16} /> Add Day
-                        </button>
-                    </div>
-
-                    <div className="itinerary-list">
-                        {formData.itinerary?.map((day, dIdx) => (
-                            <div key={dIdx} className="itinerary-day-card">
-                                <div className="day-header">
-                                    <h3>Day {day.day}</h3>
-                                    <button type="button" onClick={() => removeDay(dIdx)} className="btn-remove-day">
-                                        <X size={16} />
-                                    </button>
+                        <div className="dk-grid-2">
+                            <div className="dk-input-group">
+                                <label>Operational Region</label>
+                                <div className="dk-input-wrap">
+                                    <MapPin size={16} className="input-icon" />
+                                    <select name="city" className="dk-input with-icon" value={formData.city} onChange={handleInputChange}>
+                                        <option value="Shusha">Shusha</option>
+                                        <option value="Lachin">Lachin</option>
+                                        <option value="Aghdam">Aghdam</option>
+                                        <option value="Khankendi">Khankendi</option>
+                                    </select>
                                 </div>
-                                <div className="input-group">
-                                    <label>Title for the Day</label>
-                                    <input value={day.title} onChange={(e) => updateDay(dIdx, 'title', e.target.value)} placeholder="e.g. Arrival & Evening Tour" />
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Starting Checkpoint / Address</label>
+                                <div className="dk-input-wrap">
+                                    <MapPin size={16} className="input-icon" />
+                                    <input 
+                                        name="address" className="dk-input with-icon" 
+                                        value={formData.address} onChange={handleInputChange} 
+                                        required placeholder="Meeting point address" 
+                                    />
                                 </div>
-                                <div className="input-group">
-                                    <label>Day Overview</label>
-                                    <textarea value={day.description} onChange={(e) => updateDay(dIdx, 'description', e.target.value)} rows={2} />
-                                </div>
+                            </div>
+                        </div>
 
-                                <div className="activities-builder">
-                                    <div className="builder-header">
-                                        <h4>Activities</h4>
-                                        <button type="button" onClick={() => addActivity(dIdx)} className="btn-mini">Add Activity</button>
+                        <div className="dk-grid-2">
+                            <div className="dk-input-group">
+                                <label>Emergency Contact Phone</label>
+                                <div className="dk-input-wrap">
+                                    <Phone size={16} className="input-icon" />
+                                    <input 
+                                        name="phone" className="dk-input with-icon" 
+                                        value={formData.phone} onChange={handleInputChange} 
+                                        required placeholder="+994 (00) 000-00-00" 
+                                    />
+                                </div>
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Operations Email</label>
+                                <div className="dk-input-wrap">
+                                    <Mail size={16} className="input-icon" />
+                                    <input 
+                                        type="email" name="email" className="dk-input with-icon" 
+                                        value={formData.email} onChange={handleInputChange} 
+                                        required placeholder="tours@property.com" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dk-input-group">
+                            <label>Marketing Description</label>
+                            <textarea 
+                                name="description" className="dk-input textarea" 
+                                value={formData.description} onChange={handleInputChange} 
+                                required rows={4} placeholder="Describe the magic of this experience..." 
+                            />
+                        </div>
+                    </div>
+
+                    {/* SECTION 2: LOGISTICS & PRICING */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><Calendar size={18} /> Logistics & Yield</h2>
+                        
+                        <div className="dk-grid-3">
+                            <div className="dk-input-group">
+                                <label>Duration (Days)</label>
+                                <input type="number" name="durationDays" className="dk-input" value={formData.durationDays} onChange={handleInputChange} min={1} required />
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Duration (Nights)</label>
+                                <input type="number" name="durationNights" className="dk-input" value={formData.durationNights} onChange={handleInputChange} min={0} required />
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Difficulty Level</label>
+                                <select name="difficulty" className="dk-input" value={formData.difficulty} onChange={handleInputChange}>
+                                    <option value="Easy">Easy (Leisure)</option>
+                                    <option value="Medium">Medium (Moderate)</option>
+                                    <option value="Hard">Hard (Challenging)</option>
+                                    <option value="Extreme">Extreme (Expert)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="dk-grid-3">
+                            <div className="dk-input-group">
+                                <label>Min. Explorers</label>
+                                <div className="dk-input-wrap">
+                                    <Users size={16} className="input-icon" />
+                                    <input type="number" name="groupSizeMin" className="dk-input with-icon" value={formData.groupSizeMin} onChange={handleInputChange} min={1} required />
+                                </div>
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Max. Capacity</label>
+                                <div className="dk-input-wrap">
+                                    <Users size={16} className="input-icon" />
+                                    <input type="number" name="groupSizeMax" className="dk-input with-icon" value={formData.groupSizeMax} onChange={handleInputChange} min={1} required />
+                                </div>
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Yield Per Person (₼)</label>
+                                <div className="dk-input-wrap">
+                                    <DollarSign size={16} className="input-icon text-emerald-500" />
+                                    <input type="number" name="pricePerPerson" className="dk-input with-icon font-black text-emerald-600" value={formData.pricePerPerson} onChange={handleInputChange} required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dk-input-group mt-4">
+                            <label>Next Available Start Date</label>
+                            <div className="dk-input-wrap max-w-sm">
+                                <Calendar size={16} className="input-icon text-blue-500" />
+                                <input
+                                    type="date" name="startDate" className="dk-input with-icon"
+                                    value={formData.startDate} onChange={handleInputChange}
+                                    min={new Date().toISOString().split('T')[0]} required
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 3: ITINERARY BUILDER */}
+                    <div className="dk-form-card itinerary-section">
+                        <div className="card-header-flex">
+                            <h2 className="card-title mb-0"><ListChecks size={18} /> Tactical Itinerary</h2>
+                            <button type="button" onClick={addDay} className="dk-btn-secondary small">
+                                <Plus size={16} /> Append Day
+                            </button>
+                        </div>
+
+                        <div className="itinerary-timeline">
+                            {formData.itinerary?.map((day, dIdx) => (
+                                <div key={dIdx} className="dk-itinerary-day-box">
+                                    <div className="day-header-bar">
+                                        <div className="day-badge">Day {day.day}</div>
+                                        <button type="button" onClick={() => removeDay(dIdx)} className="btn-remove-node" title="Remove Day">
+                                            <X size={16} />
+                                        </button>
                                     </div>
-                                    {day.activities.map((act, aIdx) => (
-                                        <div key={aIdx} className="activity-row">
-                                            <input type="time" value={act.time} onChange={(e) => updateActivity(dIdx, aIdx, 'time', e.target.value)} />
-                                            <input type="text" value={act.description} onChange={(e) => updateActivity(dIdx, aIdx, 'description', e.target.value)} placeholder="Activity description" />
-                                            <button type="button" onClick={() => removeActivity(dIdx, aIdx)} className="btn-icon"><X size={14} /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Section 4: Inclusions/Exclusions */}
-                <div className="form-grid-2">
-                    <div className="form-section glassmorphism-card">
-                        <h2>Inclusions</h2>
-                        <div className="list-builder">
-                            <div className="builder-input">
-                                <input id="inc-input" placeholder="Add included item..." onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleListChange('inclusions', (e.target as HTMLInputElement).value);
-                                        (e.target as HTMLInputElement).value = '';
-                                    }
-                                }} />
+                                    <div className="day-content-body">
+                                        <div className="dk-input-group">
+                                            <label>Mission Title</label>
+                                            <input 
+                                                className="dk-input" value={day.title} 
+                                                onChange={(e) => updateDay(dIdx, 'title', e.target.value)} 
+                                                placeholder="e.g. Summit Conquest & Camp Setup" 
+                                            />
+                                        </div>
+                                        <div className="dk-input-group">
+                                            <label>Daily Briefing</label>
+                                            <textarea 
+                                                className="dk-input" value={day.description} 
+                                                onChange={(e) => updateDay(dIdx, 'description', e.target.value)} 
+                                                rows={2} placeholder="Summary of the day's events..." 
+                                            />
+                                        </div>
+
+                                        <div className="activity-container">
+                                            <div className="act-header">
+                                                <h4>Time-Boxed Activities</h4>
+                                                <button type="button" onClick={() => addActivity(dIdx)} className="dk-btn-ghost tiny">Add Activity</button>
+                                            </div>
+                                            
+                                            {day.activities.map((act, aIdx) => (
+                                                <div key={aIdx} className="activity-row">
+                                                    <input 
+                                                        type="time" className="dk-input small time-input" 
+                                                        value={act.time} onChange={(e) => updateActivity(dIdx, aIdx, 'time', e.target.value)} 
+                                                    />
+                                                    <input 
+                                                        type="text" className="dk-input small flex-1" 
+                                                        value={act.description} onChange={(e) => updateActivity(dIdx, aIdx, 'description', e.target.value)} 
+                                                        placeholder="Activity detail (e.g. Lunch at local cafe)" 
+                                                    />
+                                                    <button type="button" onClick={() => removeActivity(dIdx, aIdx)} className="btn-remove-node small">
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* SECTION 4: INCLUSIONS & EXCLUSIONS */}
+                    <div className="dk-grid-2">
+                        <div className="dk-form-card">
+                            <h2 className="card-title text-emerald-600"><CheckCircle2 size={18} /> Inclusions</h2>
+                            <div className="dk-tag-adder">
+                                <input 
+                                    type="text" className="dk-input" placeholder="e.g. Breakfast, Transport..."
+                                    value={incInput} onChange={e => setIncInput(e.target.value)}
+                                    onKeyDown={e => handleKeyDown(e, 'inclusions')}
+                                />
+                                <button type="button" className="dk-btn-primary" onClick={() => handleAddListItem('inclusions')}>Add</button>
                             </div>
-                            <div className="built-list">
+                            <div className="dk-tags-container">
                                 {formData.inclusions?.map((item, idx) => (
-                                    <div key={idx} className="list-item">
-                                        <CheckCircle2 size={14} className="text-green" />
+                                    <div key={idx} className="dk-tag-pill success">
                                         <span>{item}</span>
                                         <button type="button" onClick={() => removeFromList('inclusions', idx)}><X size={14} /></button>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    </div>
 
-                    <div className="form-section glassmorphism-card">
-                        <h2>Exclusions</h2>
-                        <div className="list-builder">
-                            <div className="builder-input">
-                                <input id="exc-input" placeholder="Add excluded item..." onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleListChange('exclusions', (e.target as HTMLInputElement).value);
-                                        (e.target as HTMLInputElement).value = '';
-                                    }
-                                }} />
+                        <div className="dk-form-card">
+                            <h2 className="card-title text-rose-600"><XCircle size={18} /> Exclusions</h2>
+                            <div className="dk-tag-adder">
+                                <input 
+                                    type="text" className="dk-input" placeholder="e.g. Flights, Personal Expenses..."
+                                    value={excInput} onChange={e => setExcInput(e.target.value)}
+                                    onKeyDown={e => handleKeyDown(e, 'exclusions')}
+                                />
+                                <button type="button" className="dk-btn-primary" onClick={() => handleAddListItem('exclusions')}>Add</button>
                             </div>
-                            <div className="built-list">
+                            <div className="dk-tags-container">
                                 {formData.exclusions?.map((item, idx) => (
-                                    <div key={idx} className="list-item">
-                                        <XCircle size={14} className="text-red" />
+                                    <div key={idx} className="dk-tag-pill danger">
                                         <span>{item}</span>
                                         <button type="button" onClick={() => removeFromList('exclusions', idx)}><X size={14} /></button>
                                     </div>
@@ -426,36 +528,55 @@ export default function ManageTourPage() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Section 5: Photos */}
-                <div className="form-section glassmorphism-card">
-                    <h2>Experience Gallery</h2>
-                    <div className="photo-upload-zone">
-                        <label className="upload-btn">
-                            <UploadCloud size={24} />
-                            <span>{uploading ? 'Uploading...' : 'Click to Upload Tour Photos'}</span>
+                    {/* SECTION 5: MEDIA GALLERY */}
+                    <div className="dk-form-card mb-10">
+                        <h2 className="card-title"><ImageIcon size={18} /> Visual Assets</h2>
+                        
+                        <label className="dk-media-dropzone">
+                            <UploadCloud size={40} className="text-blue-500 mb-3" />
+                            <h5>Upload High-Res Tour Photos</h5>
+                            <p>Drag & drop or click to select local files</p>
                             <input type="file" multiple accept="image/*" onChange={handleFileSelect} disabled={uploading} hidden />
                         </label>
-                        <div className="photo-previews">
+
+                        <div className="dk-media-grid mt-6">
                             {formData.images?.map((url, idx) => (
-                                <div key={idx} className="photo-preview">
+                                <div key={`exist-${idx}`} className="dk-media-item">
                                     <img src={url} alt={`Tour ${idx}`} />
-                                    <button type="button" onClick={() => removeImage(idx)}><X size={16} /></button>
+                                    <button type="button" className="btn-remove-media" onClick={() => removeExistingImage(idx)}>
+                                        <X size={14} strokeWidth={3} />
+                                    </button>
+                                </div>
+                            ))}
+                            {localFiles.map((file, idx) => (
+                                <div key={`local-${idx}`} className="dk-media-item local">
+                                    <img src={URL.createObjectURL(file)} alt="Local preview" />
+                                    <div className="media-overlay"><UploadCloud size={20} className="animate-pulse text-white" /></div>
+                                    <button type="button" className="btn-remove-media" onClick={() => removeLocalFile(idx)}>
+                                        <X size={14} strokeWidth={3} />
+                                    </button>
                                 </div>
                             ))}
                         </div>
                     </div>
-                </div>
 
-                <div className="form-submit-actions">
-                    <button type="submit" className="btn-submit-main" disabled={saving || uploading}>
-                        <Save size={20} />
-                        {saving ? 'Saving...' : (id ? 'Update Experience' : 'Publish Tour')}
-                    </button>
-                    <button type="button" onClick={() => navigate('/vendor/tours')} className="btn-cancel">Cancel</button>
-                </div>
-            </form>
+                    {/* STICKY FOOTER */}
+                    <div className="dk-form-footer">
+                        <button type="button" onClick={() => navigate('/vendor/tours')} className="dk-btn-ghost">
+                            Discard Changes
+                        </button>
+                        <button type="submit" className="dk-btn-submit" disabled={saving || uploading}>
+                            {saving || uploading ? (
+                                <><RefreshCw size={20} className="spin-icon" /> Processing...</>
+                            ) : (
+                                <><Save size={20} /> {id ? 'Update Tour Blueprint' : 'Deploy New Tour'}</>
+                            )}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     );
 }
