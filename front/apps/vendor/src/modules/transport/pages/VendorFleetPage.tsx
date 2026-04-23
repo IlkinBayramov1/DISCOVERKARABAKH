@@ -145,7 +145,7 @@ export default function VendorFleetPage() {
                                         <td>{v.brand} {v.model}</td>
                                         <td><strong>{v.plateNumber}</strong></td>
                                         <td>{v.category}</td>
-                                        <td>{v.capacity} nəfər</td>
+                                        <td>{v.seats} nəfər</td>
                                         <td><span className={`status-badge active`}>{v.status}</span></td>
                                         <td>
                                             <div className="flex gap-2">

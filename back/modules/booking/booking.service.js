@@ -2,6 +2,8 @@ import { bookingStrategyRegistry } from './booking.strategy.js';
 import { HotelBookingStrategy } from './strategies/hotel.strategy.js';
 import { TourBookingStrategy } from './strategies/tour.strategy.js';
 import { EventBookingStrategy } from './strategies/event.strategy.js';
+import { AttractionBookingStrategy } from './strategies/attraction.strategy.js';
+import { TransferBookingStrategy } from './strategies/transfer.strategy.js';
 import { paymentService } from '../payments/payment.service.js';
 import prisma from '../../config/db.js';
 import { ApiError } from '../../core/api.error.js';
@@ -11,6 +13,8 @@ import crypto from 'crypto';
 bookingStrategyRegistry.register('hotel', new HotelBookingStrategy());
 bookingStrategyRegistry.register('tour', new TourBookingStrategy());
 bookingStrategyRegistry.register('event', new EventBookingStrategy());
+bookingStrategyRegistry.register('attraction', new AttractionBookingStrategy());
+bookingStrategyRegistry.register('transfer', new TransferBookingStrategy());
 
 class BookingService {
 
@@ -43,7 +47,7 @@ class BookingService {
                     bookingNumber: this._generatePNR(),
                     bookingType: type,
                     entityId: entityId,
-                    userId,
+                    user: { connect: { id: userId } },
                     vendorId: data.vendorId, // Enforced by Strategy validation layer
 
                     status: 'confirmed',
@@ -54,7 +58,10 @@ class BookingService {
                     totalPrice,
                     currency: data.currency || 'AZN',
 
-                    hotelId: type === 'hotel' ? entityId : null,
+                    hotel: type === 'hotel' ? { connect: { id: entityId } } : undefined,
+                    Tour: type === 'tour' ? { connect: { id: entityId } } : undefined,
+                    Event: type === 'event' ? { connect: { id: entityId } } : undefined,
+                    attraction: type === 'attraction' ? { connect: { id: entityId } } : undefined,
 
                     // Specific sub-models injected from Strategy
                     items: {
@@ -145,6 +152,8 @@ class BookingService {
             include: {
                 hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true, images: true } },
                 Tour: { select: { name: true, city: true, address: true, images: true } },
+                Event: { select: { title: true, location: true } },
+                attraction: { select: { name: true, city: true, address: true, images: true } },
                 items: true,
                 guests: true
             }
@@ -187,6 +196,8 @@ class BookingService {
                 user: { select: { email: true } },
                 hotel: { select: { name: true } },
                 Tour: { select: { name: true } },
+                Event: { select: { title: true } },
+                attraction: { select: { name: true } },
                 items: true
             }
         });

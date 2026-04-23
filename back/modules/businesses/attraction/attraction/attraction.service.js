@@ -16,12 +16,23 @@ class AttractionService {
             throw ApiError.badRequest(`Attraction with slug '${data.slug}' already exists`);
         }
         
-        const { images, ...rest } = data;
+        const { images, workingHours, ...rest } = data;
         
         // Auto-generate keywords
         rest.searchKeywords = generateKeywords(rest.name, rest.searchKeywords);
 
         const finalData = { ...rest };
+
+        if (workingHours && workingHours.length > 0) {
+            finalData.workingHours = {
+                create: workingHours.map(h => ({
+                    dayOfWeek: h.dayOfWeek,
+                    openTime: h.openTime,
+                    closeTime: h.closeTime,
+                    isClosed: h.isClosed
+                }))
+            };
+        }
 
         if (images && images.length > 0) {
             finalData.images = {
@@ -96,11 +107,28 @@ class AttractionService {
             }
         }
 
-        const { images, ...rest } = data;
+        const { images, workingHours, ...rest } = data;
 
         // Auto-generate keywords if name or keywords provided
         if (rest.name || rest.searchKeywords) {
             rest.searchKeywords = generateKeywords(rest.name || attraction.name, rest.searchKeywords || attraction.searchKeywords);
+        }
+
+        if (workingHours !== undefined) {
+            // Delete all current working hours
+            await prisma.attractionWorkingHour.deleteMany({
+                where: { attractionId: id }
+            });
+
+            // Prepare for nested create
+            rest.workingHours = {
+                create: workingHours.map(h => ({
+                    dayOfWeek: h.dayOfWeek,
+                    openTime: h.openTime,
+                    closeTime: h.closeTime,
+                    isClosed: h.isClosed
+                }))
+            };
         }
         
         if (images !== undefined) {

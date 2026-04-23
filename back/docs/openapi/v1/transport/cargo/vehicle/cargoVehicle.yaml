@@ -1,0 +1,142 @@
+paths:
+  /api/v1/transport/cargo/vehicles:
+    get:
+      tags:
+        - "[Cargo] Vehicles"
+      summary: Retrieve all cargo vehicles
+      description: Returns a list of cargo vehicles available.
+      responses:
+        '200':
+          description: List of cargo vehicles
+
+    post:
+      tags:
+        - "[Cargo] Vehicles"
+      summary: Register a new Cargo Vehicle
+      description: Only vendors and admins can register a new cargo vehicle mapping to their organization.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - brand
+                - model
+                - year
+                - licensePlate
+                - cargoType
+                - maxWeightKg
+                - maxVolumeM3
+                - insuranceValidUntil
+              properties:
+                brand:
+                  type: string
+                model:
+                  type: string
+                year:
+                  type: integer
+                licensePlate:
+                  type: string
+                cargoType:
+                  type: string
+                  enum: [Box, Refrigerated, Flatbed, Liquid]
+                maxWeightKg:
+                  type: number
+                maxVolumeM3:
+                  type: number
+                isRefrigerated:
+                  type: boolean
+                temperatureRangeMin:
+                  type: number
+                temperatureRangeMax:
+                  type: number
+                insuranceValidUntil:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Cargo vehicle created successfully
+
+  /api/v1/transport/cargo/vehicles/{id}:
+    get:
+      tags:
+        - "[Cargo] Vehicles"
+      summary: Get details of a specific cargo vehicle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cargo vehicle details
+
+    patch:
+      tags:
+        - "[Cargo] Vehicles"
+      summary: Update a cargo vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                model:
+                  type: string
+                year:
+                  type: integer
+                licensePlate:
+                  type: string
+                cargoType:
+                  type: string
+                  enum: [Box, Refrigerated, Flatbed, Liquid]
+                maxWeightKg:
+                  type: number
+                maxVolumeM3:
+                  type: number
+                isRefrigerated:
+                  type: boolean
+                temperatureRangeMin:
+                  type: number
+                temperatureRangeMax:
+                  type: number
+                insuranceValidUntil:
+                  type: string
+                  format: date
+                status:
+                  type: string
+                  enum: [Available, Reserved, Maintenance]
+      responses:
+        '200':
+          description: Cargo vehicle updated
+
+    delete:
+      tags:
+        - "[Cargo] Vehicles"
+      summary: Delete a cargo vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cargo vehicle successfully deleted

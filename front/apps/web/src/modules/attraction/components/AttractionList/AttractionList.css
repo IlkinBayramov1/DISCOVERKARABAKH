@@ -1,84 +1,58 @@
-.attraction-list-grid {
+/* AttractionList.css */
+
+.tour-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
 }
 
-.attraction-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    text-align: center;
-    grid-column: 1 / -1;
-}
-
-.attraction-message .icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-.attraction-message p {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 1.125rem;
-}
-
-.attraction-message.error p {
-    color: #EF4444;
-}
-
-/* Skeleton Loading Animation */
-.skeleton {
-    pointer-events: none;
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.02);
-}
-
-.skeleton-img {
-    width: 100%;
-    height: 200px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+.skeleton-tour {
+    height: 380px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    border-radius: 24px;
+    animation: loadingPulse 1.5s infinite;
 }
 
-.skeleton-content {
-    padding: 1.5rem;
-}
-
-.skeleton-title {
-    height: 24px;
-    width: 70%;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    animation: shimmer 1.5s infinite;
-}
-
-.skeleton-text {
-    height: 14px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    margin-bottom: 0.5rem;
-    animation: shimmer 1.5s infinite;
-}
-
-.skeleton-text.line-1 { width: 100%; }
-.skeleton-text.line-2 { width: 80%; }
-
-@keyframes shimmer {
+@keyframes loadingPulse {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
-@media (max-width: 768px) {
-    .attraction-list-grid {
+.empty-state-premium {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.empty-text {
+    color: var(--text-muted);
+}
+
+.error-premium {
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: 1px solid #fee2e2;
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 1200px) {
+    .tour-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .tour-grid {
         grid-template-columns: 1fr;
     }
 }

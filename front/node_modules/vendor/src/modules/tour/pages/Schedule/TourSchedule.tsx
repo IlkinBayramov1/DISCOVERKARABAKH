@@ -14,7 +14,8 @@ import {
     Edit3,
     MapPin,
     Info,
-    Clock
+    Clock,
+    DollarSign
 } from 'lucide-react';
 import './TourSchedule.css';
 
@@ -120,6 +121,7 @@ export default function TourSchedule() {
         const month = currentDate.getMonth();
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        // Convert Sunday (0) to 6 for standard Mon-Sun week, otherwise shift -1
         const startingEmptyCells = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
         const days = [];
@@ -131,7 +133,7 @@ export default function TourSchedule() {
         return days;
     }, [currentDate]);
 
-    const monthYearLabel = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const monthYearLabel = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
     if (toursLoading && tours.length === 0) {
         return (
@@ -145,11 +147,15 @@ export default function TourSchedule() {
     if (!tours || tours.length === 0) {
         return (
             <div className="dk-ts-layout">
-                <div className="dk-av-empty-state">
-                    <AlertCircle size={48} className="text-slate-400 mb-4" />
+                <div className="dk-ts-empty-state">
+                    <div className="empty-icon-circle">
+                        <AlertCircle size={40} />
+                    </div>
                     <h3>No Active Tours</h3>
                     <p>Launch an experience first to begin scheduling operations.</p>
-                    <button className="dk-btn-primary mt-4" onClick={() => window.location.href = '/vendor/tours/create'}>Create Experience</button>
+                    <button className="dk-btn-primary mt-6" onClick={() => window.location.href = '/vendor/tours/create'}>
+                        Architect Experience
+                    </button>
                 </div>
             </div>
         );
@@ -157,27 +163,28 @@ export default function TourSchedule() {
 
     return (
         <div className="dk-ts-layout">
+            
             {/* HEADER */}
             <div className="dk-ts-header">
                 <div className="header-text">
                     <h1 className="dk-ts-title">
-                        <CalendarIcon size={32} className="title-icon" /> Operational Schedule
+                        Operational Schedule
                     </h1>
-                    <p className="dk-ts-subtitle">Synchronized inventory and participant management for your experiences</p>
+                    <p className="dk-ts-subtitle">Synchronized inventory and participant management for your experiences.</p>
                 </div>
 
                 <div className="dk-ts-selectors">
                     {activeTour && (
-                        <div className="active-tour-meta glass animate-in">
-                            <span className="meta-badge"><Clock size={12} /> {activeTour.durationDays}D/{activeTour.durationNights}N</span>
-                            <span className={`meta-badge difficulty ${activeTour.difficulty.toLowerCase()}`}>
-                                <Activity size={12} /> {activeTour.difficulty}
+                        <div className="active-tour-meta">
+                            <span className="meta-badge"><Clock size={14} /> {activeTour.durationDays}D/{activeTour.durationNights}N</span>
+                            <span className={`meta-badge diff-${activeTour.difficulty.toLowerCase()}`}>
+                                <Activity size={14} /> {activeTour.difficulty}
                             </span>
                         </div>
                     )}
                     <div className="tour-selector-wrapper">
                         <MapPin size={18} className="sel-icon" />
-                        <select value={selectedTourId} onChange={(e) => setSelectedTourId(e.target.value)}>
+                        <select value={selectedTourId} onChange={(e) => setSelectedTourId(e.target.value)} className="dk-tour-select">
                             {tours.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
@@ -186,120 +193,139 @@ export default function TourSchedule() {
 
             {/* ERROR DISPLAY */}
             {error && (
-                <div className="dk-ts-error-banner glass animate-in">
-                    <AlertCircle size={20} className="text-rose-500" />
-                    <p>{error}</p>
-                    <button className="retry-btn" onClick={fetchSchedule}>Retry Connection</button>
+                <div className="dk-alert-error">
+                    <AlertCircle size={20} className="error-icon" />
+                    <div className="error-content">
+                        <h4>Sync Error</h4>
+                        <p>{error}</p>
+                    </div>
+                    <button className="dk-btn-ghost small" onClick={fetchSchedule}>Retry Connection</button>
                 </div>
             )}
 
             {/* KPI STATS */}
-            <div className="dk-ts-stats">
-                <div className="stat-pill glass">
-                    <Activity size={18} className="text-emerald-500" />
-                    <div className="stat-content">
-                        <span className="s-label">Utilization Rate</span>
-                        <span className="s-value">{stats?.utilization}%</span>
+            <div className="dk-ts-stats-grid">
+                <div className="dk-stat-card">
+                    <div className="stat-icon-wrap bg-emerald-50 text-emerald-600"><Activity size={20} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Utilization Rate</span>
+                        <span className="stat-value">{stats?.utilization || 0}%</span>
                     </div>
                 </div>
-                <div className="stat-pill glass">
-                    <Users size={18} className="text-blue-500" />
-                    <div className="stat-content">
-                        <span className="s-label">Total Participants</span>
-                        <span className="s-value">{stats?.totalBooked}</span>
+                <div className="dk-stat-card">
+                    <div className="stat-icon-wrap bg-blue-50 text-blue-600"><Users size={20} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Total Participants</span>
+                        <span className="stat-value">{stats?.totalBooked || 0}</span>
                     </div>
                 </div>
-                <div className="stat-pill glass">
-                    <CalendarIcon size={18} className="text-amber-500" />
-                    <div className="stat-content">
-                        <span className="s-label">Active Deployments</span>
-                        <span className="s-value">{stats?.activeDays} Days</span>
+                <div className="dk-stat-card">
+                    <div className="stat-icon-wrap bg-amber-50 text-amber-600"><CalendarIcon size={20} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Active Deployments</span>
+                        <span className="stat-value">{stats?.activeDays || 0} Days</span>
                     </div>
                 </div>
             </div>
 
             {/* CALENDAR INTERFACE */}
-            <div className="dk-ts-calendar-card glass">
+            <div className="dk-ts-calendar-card">
+                
                 <div className="calendar-toolbar">
-                    <div className="month-nav">
+                    <div className="month-navigator">
                         <button className="nav-btn" onClick={prevMonth}><ChevronLeft size={20} /></button>
                         <h2>{monthYearLabel}</h2>
                         <button className="nav-btn" onClick={nextMonth}><ChevronRight size={20} /></button>
                     </div>
-                    <div className="actions">
-                        <button className="btn-today" onClick={resetToToday}>Today</button>
-                        <button className="btn-bulk" onClick={() => setIsBulkOpen(true)}>
-                            <Edit3 size={16} /> Update Schedule
+                    <div className="calendar-actions">
+                        <button className="dk-btn-secondary" onClick={resetToToday}>Go to Today</button>
+                        <button className="dk-btn-primary" onClick={() => setIsBulkOpen(true)}>
+                            <Edit3 size={16} /> Bulk Update
                         </button>
                     </div>
                 </div>
 
-                <div className="calendar-grid">
-                    <div className="week-header">
+                <div className="dk-cal-wrapper">
+                    <div className="dk-cal-week-header">
                         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span className="weekend">Sat</span><span className="weekend">Sun</span>
                     </div>
 
-                    <div className="days-container">
-                        {loading && <div className="loader-overlay"><RefreshCw className="spin" size={32} /></div>}
+                    <div className="dk-cal-grid">
+                        {loading && (
+                            <div className="dk-cal-loader-overlay">
+                                <RefreshCw className="spin-icon" size={40} />
+                            </div>
+                        )}
                         
                         {calendarGrid.map((dateStr, idx) => {
-                            if (!dateStr) return <div key={`empty-${idx}`} className="day-box empty"></div>;
+                            if (!dateStr) return <div key={`empty-${idx}`} className="dk-day-cell empty"></div>;
 
                             const dayData = calendarData.find(d => d.date === dateStr);
                             const dayNum = parseInt(dateStr.split('-')[2], 10);
+                            
+                            // Date logic for past/today
+                            const cellDateObj = new Date(dateStr);
+                            const todayObj = new Date();
+                            todayObj.setHours(0, 0, 0, 0);
+                            
                             const isToday = dateStr === new Date().toISOString().split('T')[0];
+                            const isPast = cellDateObj < todayObj;
                             const isStopped = dayData?.isStopped;
 
-                            let statusClass = '';
-                            if (dayData) {
-                                if (isStopped) statusClass = 'stopped';
-                                else if (dayData.remainingSeats === 0) statusClass = 'full';
-                                else if (dayData.remainingSeats <= 3) statusClass = 'low';
-                            } else {
-                                statusClass = 'off-schedule';
-                            }
+                            // Determine classes
+                            let statusClass = 'available';
+                            if (!dayData) statusClass = 'off-schedule';
+                            else if (isStopped) statusClass = 'stopped';
+                            else if (dayData.remainingSeats === 0) statusClass = 'full';
+                            else if (dayData.remainingSeats <= 3) statusClass = 'low';
 
                             return (
-                                <div key={dateStr} className={`day-box ${statusClass} ${isToday ? 'is-today' : ''}`}>
-                                    <div className="day-top">
-                                        <span className="number">{dayNum}</span>
-                                        {isStopped && <span className="ss-badge">SS</span>}
+                                <div key={dateStr} className={`dk-day-cell ${statusClass} ${isToday ? 'today' : ''} ${isPast && !isToday ? 'past-date' : ''}`}>
+                                    
+                                    <div className="day-header">
+                                        <span className="day-number">{dayNum}</span>
+                                        {isStopped && <span className="badge-ss">SS</span>}
                                     </div>
                                     
                                     {dayData ? (
-                                        <div className="day-info">
-                                            <div className="info-item participants">
+                                        <div className="day-body">
+                                            <div className={`data-row ${statusClass}`}>
                                                 <Users size={12} />
-                                                <span>{dayData.bookedCount}/{dayData.maxSeats}</span>
+                                                <span>{dayData.bookedCount}/{dayData.maxSeats} Pax</span>
                                             </div>
-                                            <div className="info-item price">
-                                                <span>₼{dayData.price}</span>
+                                            <div className="data-row price">
+                                                <DollarSign size={12} />
+                                                <span>{dayData.price}</span>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="day-off-label">Off-Schedule</div>
+                                        <div className="day-body empty-body">
+                                            <span className="off-text">No Departure</span>
+                                        </div>
                                     )}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
+
+                {/* LEGEND / FOOTER */}
+                <div className="dk-cal-footer">
+                    <div className="dk-legend">
+                        <div className="legend-item"><span className="dot dot-available"></span> Open (Available)</div>
+                        <div className="legend-item"><span className="dot dot-low"></span> Low Capacity</div>
+                        <div className="legend-item"><span className="dot dot-full"></span> Fully Booked</div>
+                        <div className="legend-item"><span className="dot dot-stopped"></span> Stop Sell (SS)</div>
+                        <div className="legend-item"><span className="dot dot-off"></span> Not Scheduled</div>
+                    </div>
+                    <div className="dk-info-box">
+                        <Info size={16} className="text-blue-500" />
+                        <p>Only dates marked as <strong>Open/Available</strong> are visible to adventurers for booking.</p>
+                    </div>
+                </div>
             </div>
 
-            {/* LEGEND/TIPS */}
-            <div className="ts-footer-info">
-                <div className="legend">
-                    <div className="leg-item"><span className="puck stopped"></span> Stop Sell (SS)</div>
-                    <div className="leg-item"><span className="puck full"></span> Fully Booked</div>
-                    <div className="leg-item"><span className="puck low"></span> Critical Supply</div>
-                    <div className="leg-item"><span className="puck off"></span> Not in Schedule</div>
-                </div>
-                <div className="tip-box">
-                    <Info size={16} />
-                    <p>Only dates marked as <strong>Open</strong> in the schedule are visible to customers for booking.</p>
-                </div>
-            </div>
-
+            {/* BULK UPDATE MODAL */}
             <TourBulkUpdateModal 
                 isOpen={isBulkOpen}
                 onClose={() => setIsBulkOpen(false)}

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, CheckCircle, Car, Truck } from 'lucide-react';
-import { transportVendorApi } from '../api/transport.api';
-import type { IDriverProfile, IVehicle, ICargoVehicle } from '../types';
+import { useState } from 'react';
+import { X, CheckCircle, Car } from 'lucide-react';
+import { useAssignDriverVehicle } from '../hooks/useDrivers';
+import { useVehicles } from '../hooks/useVehicles';
+import type { IDriverProfile } from '../types';
 import './DriverModal.css';
 
 interface DriverModalProps {
@@ -11,130 +12,98 @@ interface DriverModalProps {
 }
 
 export default function DriverModal({ driver, onClose, onStatusChange }: DriverModalProps) {
-    const [vehicles, setVehicles] = useState<IVehicle[]>([]);
-    const [cargoVehicles, setCargoVehicles] = useState<ICargoVehicle[]>([]);
-    const [loading, setLoading] = useState(false);
+    const { data: vehicles = [], isLoading: isLoadingVehicles } = useVehicles();
+    const { mutate: assignVehicle, isPending: isAssigning } = useAssignDriverVehicle();
 
     const [selectedVehicleId, setSelectedVehicleId] = useState<string>(driver.currentVehicleId || '');
-    const [selectedCargoVehicleId, setSelectedCargoVehicleId] = useState<string>(driver.currentCargoVehicleId || '');
-    const [assigning, setAssigning] = useState(false);
 
-    useEffect(() => {
-        if (driver.status === 'Approved') {
-            fetchVehicles();
-        }
-    }, [driver]);
-
-    const fetchVehicles = async () => {
-        setLoading(true);
-        try {
-            const [vRes, cvRes] = await Promise.all([
-                transportVendorApi.getVehicles(),
-                transportVendorApi.getCargoVehicles()
-            ]);
-            setVehicles((vRes as any).data || vRes);
-            setCargoVehicles((cvRes as any).data || cvRes);
-        } catch (error) {
-            console.error('Failed to fetch vehicles', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAssign = async () => {
-        setAssigning(true);
-        try {
-            await transportVendorApi.assignDriverVehicle(
-                driver.id,
-                selectedVehicleId || undefined,
-                selectedCargoVehicleId || undefined
-            );
-            alert('Vehicle assigned successfully.');
-            onClose(); // Reload logic will be in parent
-        } catch (error) {
-            console.error('Failed to assign vehicle', error);
-            alert('Error assigning vehicle.');
-        } finally {
-            setAssigning(false);
-        }
+    const handleAssign = () => {
+        assignVehicle({
+            id: driver.id,
+            vehicleId: selectedVehicleId || null
+        }, {
+            onSuccess: () => {
+                onClose(); // Automatically closes after success via callback
+            }
+        });
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="driver-modal-content glassmorphism-card">
-                <button className="modal-close-btn" onClick={onClose}><X size={20} /></button>
+        <div className="v-modal-overlay">
+            <div className="v-modal-glassmorphism slide-up-animation">
+                <button className="v-modal-close" onClick={onClose}><X size={24} /></button>
 
-                <h2>Driver Profile</h2>
-                <div className="driver-details">
-                    <p><strong>Name:</strong> {driver.firstName} {driver.lastName}</p>
-                    <p><strong>Phone:</strong> {driver.phone}</p>
-                    <p><strong>License No:</strong> {driver.licenseNumber}</p>
-                    <p>
-                        <strong>Status:</strong>
-                        <span className={`status-badge ${driver.status.toLowerCase()}`}>{driver.status}</span>
-                    </p>
+                <div className="v-modal-header mb-6 pb-4 border-b border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-800">Sürücü Profili</h2>
+                    <p className="text-sm text-gray-500 mt-1">Sürücüyə dair detallar və tənzimləmələr.</p>
                 </div>
 
-                <div className="driver-actions mt-4 border-top pt-4">
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="v-info-card">
+                        <span className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Ad Soyad</span>
+                        <div className="font-semibold text-gray-800">{driver.firstName} {driver.lastName}</div>
+                    </div>
+                    <div className="v-info-card">
+                        <span className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Əlaqə / Telefon</span>
+                        <div className="font-semibold text-gray-800">{driver.phone}</div>
+                    </div>
+                    <div className="v-info-card">
+                        <span className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Cari Status</span>
+                        <span className={`v-badge status-${driver.status.toLowerCase()} mt-1 block w-max`}>{driver.status}</span>
+                    </div>
+                    <div className="v-info-card">
+                        <span className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Vəsiqə (ŞN)</span>
+                        <div className="font-semibold font-mono text-indigo-600">{driver.licenseNumber}</div>
+                    </div>
+                </div>
+
+                <div className="v-modal-actions mt-4 pt-6 border-t border-gray-100">
                     {driver.status === 'Pending' && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 mb-6">
                             <button
-                                className="btn-primary w-full flex-align-center justify-center gap-2"
+                                className="v-btn-success w-full flex-align-center justify-center gap-2 py-3"
                                 onClick={() => onStatusChange('Approved')}
                             >
-                                <CheckCircle size={16} /> Approve Driver
+                                <CheckCircle size={18} /> İcazə Ver (Onayla)
                             </button>
                             <button
-                                className="btn-secondary w-full flex-align-center justify-center gap-2"
-                                style={{ color: 'red', borderColor: 'red' }}
+                                className="v-btn-danger w-full flex-align-center justify-center gap-2 py-3"
                                 onClick={() => onStatusChange('Rejected')}
                             >
-                                <X size={16} /> Reject Driver
+                                <X size={18} /> İmtina Et
                             </button>
                         </div>
                     )}
 
                     {driver.status === 'Approved' && (
-                        <div className="vehicle-assignment-section">
-                            <h3 className="mb-3">Assign Vehicle</h3>
-                            {loading ? (
-                                <p>Loading available vehicles...</p>
+                        <div className="p-5 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
+                            <h3 className="mb-4 font-semibold flex-align-center gap-2 text-indigo-800">
+                                <Car size={18} /> Nəqliyyat Təyinatı
+                            </h3>
+                            
+                            {isLoadingVehicles ? (
+                                <div className="text-sm text-indigo-500 animate-pulse">Maşın bazası yüklənir...</div>
                             ) : (
-                                <div className="assignment-forms">
-                                    <div className="input-group mb-3">
-                                        <label className="flex-align-center gap-2 mb-2"><Car size={16} /> Passenger Vehicle</label>
-                                        <select
-                                            value={selectedVehicleId}
-                                            onChange={(e) => setSelectedVehicleId(e.target.value)}
-                                            className="form-input"
-                                        >
-                                            <option value="">None</option>
-                                            {vehicles.map(v => (
-                                                <option key={v.id} value={v.id}>{v.brand} {v.model} ({v.plateNumber})</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="input-group mb-4">
-                                        <label className="flex-align-center gap-2 mb-2"><Truck size={16} /> Cargo Vehicle</label>
-                                        <select
-                                            value={selectedCargoVehicleId}
-                                            onChange={(e) => setSelectedCargoVehicleId(e.target.value)}
-                                            className="form-input"
-                                        >
-                                            <option value="">None</option>
-                                            {cargoVehicles.map(v => (
-                                                <option key={v.id} value={v.id}>{v.brand} {v.model} ({v.licensePlate})</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                <div className="v-assignment-form flex flex-col gap-4">
+                                    <select
+                                        value={selectedVehicleId}
+                                        onChange={(e) => setSelectedVehicleId(e.target.value)}
+                                        className="v-premium-select w-full"
+                                    >
+                                        <option value="">-- Maşın seçilməyib / Boşdadır --</option>
+                                        {vehicles.map(v => (
+                                            <option key={v.id} value={v.id}>
+                                                {v.brand} {v.model} • [{v.plateNumber}]
+                                            </option>
+                                        ))}
+                                    </select>
 
                                     <button
-                                        className="btn-primary w-full"
+                                        className={`v-btn-primary w-full py-3 shadow-md ${isAssigning ? 'opacity-70' : ''}`}
                                         onClick={handleAssign}
-                                        disabled={assigning || (!selectedVehicleId && !selectedCargoVehicleId)}
+                                        disabled={isAssigning}
                                     >
-                                        {assigning ? 'Assigning...' : 'Save Assignment'}
+                                        {isAssigning ? 'Yadda Saxlanılır...' : 'Təyinatı Təsdiqlə'}
                                     </button>
                                 </div>
                             )}

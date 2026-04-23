@@ -1,0 +1,139 @@
+paths:
+  /api/v1/transport/vehicles:
+    post:
+      tags:
+        - "[Passenger] Vehicles"
+      summary: Add a new Transport Vehicle (Vendor/Admin)
+      description: Allows a vendor to add a new car to the platform, specifying seats, category, and pricing metrics to be used in transport booking calculations.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - brand
+                - model
+                - year
+                - color
+                - plateNumber
+                - category
+                - seats
+                - luggage
+                - basePrice
+                - pricePerKm
+              properties:
+                brand:
+                  type: string
+                model:
+                  type: string
+                year:
+                  type: integer
+                color:
+                  type: string
+                plateNumber:
+                  type: string
+                category:
+                  type: string
+                  enum: [Economy, Business, Premium, Minivan, Bus]
+                seats:
+                  type: integer
+                luggage:
+                  type: integer
+                description:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                basePrice:
+                  type: number
+                pricePerKm:
+                  type: number
+                status:
+                  type: string
+                  enum: [Active, Inactive, Maintenance]
+      responses:
+        '201':
+          description: Vehicle created
+
+    get:
+      tags:
+        - "[Passenger] Vehicles"
+      summary: Retrieve list of vehicles
+      description: Vendors get their own vehicles, Admins get all.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of vehicles
+
+  /api/v1/transport/vehicles/{id}:
+    get:
+      tags:
+        - "[Passenger] Vehicles"
+      summary: Get details of a single vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vehicle details object
+
+    put:
+      tags:
+        - "[Passenger] Vehicles"
+      summary: Update vehicle properties (Including Pricing)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                  enum: [Economy, Business, Premium, Minivan, Bus]
+                seats:
+                  type: integer
+                basePrice:
+                  type: number
+                pricePerKm:
+                  type: number
+                status:
+                  type: string
+                  enum: [Active, Inactive, Maintenance]
+      responses:
+        '200':
+          description: Vehicle updated
+
+    delete:
+      tags:
+        - "[Passenger] Vehicles"
+      summary: Delete a vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted vehicle

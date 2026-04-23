@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: Transport Module API
+  version: 1.0.0
+  description: API for managing Vehicles, Taxis, Cargo, Drivers and Pricing.
+  
+paths:
+  /transport/rides/search:
+    $ref: './passenger/transfer/transfer.yaml#/paths/~1api~1v1~1transport~1rides~1search'
+  
+  /transport/price/calculate:
+    $ref: './passenger/pricing/pricing.yaml#/paths/~1api~1v1~1transport~1price~1calculate'
+
+  /transport/passenger/location/search:
+    $ref: './passenger/location/location.yaml#/paths/~1api~1v1~1transport~1passenger~1location~1search'
+  
+  /transport/drivers/register:
+    $ref: './driver/driver.yaml#/paths/~1api~1v1~1transport~1drivers~1register'
+  
+  /transport/cargo/shipments:
+    $ref: './cargo/shipment/shipment.yaml#/paths/~1api~1v1~1transport~1cargo~1shipments'
+
+  /transport/tracking/websocket-info:
+    $ref: './tracking/tracking.yaml#/paths/~1api~1v1~1transport~1tracking~1websocket-info'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

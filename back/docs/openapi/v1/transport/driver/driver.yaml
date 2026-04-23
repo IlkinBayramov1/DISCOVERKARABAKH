@@ -1,0 +1,130 @@
+paths:
+  /api/v1/transport/drivers/vendors:
+    get:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Get transport vendors list
+      description: Returns a list of companies/vendors managing transport services so drivers can pick a vendor to apply to during registration.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of vendor companies
+
+  /api/v1/transport/drivers/register:
+    post:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Register as a Driver
+      description: Standard API for drivers to apply. Creates a Pending profile. Note that vehicles are NOT assigned here anymore; vendors will assign vehicles to drivers via dashboard later.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - phone
+                - licenseNumber
+                - driverType
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phone:
+                  type: string
+                licenseNumber:
+                  type: string
+                driverType:
+                  type: string
+                  enum: [passenger, cargo]
+                managedById:
+                  type: string
+                  description: UUID of the vendor who will manage this driver.
+                licenseImages:
+                  type: array
+                  items:
+                    type: string
+                idCardImages:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Driver profile created and is currently Pending
+
+  /api/v1/transport/drivers/me:
+    get:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Get my driver profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Driver details object
+
+  /api/v1/transport/drivers:
+    get:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Get all drivers
+      description: Vendors only see drivers managed by them. Admins see all.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of drivers
+
+  /api/v1/transport/drivers/{id}/approve:
+    patch:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Approve a driver
+      description: Allows a Vendor or Admin to approve a Pending driver so they can start receiving assigned rides.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Driver approved
+
+  /api/v1/transport/drivers/{id}/status:
+    patch:
+      tags:
+        - "[Shared] Transport Drivers"
+      summary: Update driver availability status
+      description: Drivers can switch themselves Online, Offline, or Busy.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [Online, Offline, Busy]
+      responses:
+        '200':
+          description: Driver status updated

@@ -1,222 +1,361 @@
-.attractions-page {
-    min-height: 100vh;
-    background: #0B0F19;
-    padding-bottom: 4rem;
-    color: #F8FAFC;
+/* ROOT VARIABLES */
+:root {
+    --primary-blue: #1d4ed8;
+    --primary-blue-hover: #1e3a8a;
+    --dk-primary: #6a28c7;
+    --dk-accent: #9d65eb;
+    --bg-color: #f6f8fb;
+    --text-dark: #111827;
+    --text-muted: #6b7280;
+    --border-light: #e5e7eb;
+    --white: #ffffff;
+    --dk-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Glassmorphism Utility */
-.glass {
-    background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+body {
+    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
 }
 
+.attractions-search-page {
+    width: 100%;
+}
+
+.container {
+    max-width: 1320px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* HERO SECTION */
 .attractions-hero {
     position: relative;
-    background: url('https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=2000') center/cover;
-    padding: 8rem 2rem 6rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 260px;
+    border-radius: 26px;
+    /* Gormeli yerlere uygun ferqli bir shekil */
+    background-image: url('https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=1920');
+    background-size: cover;
+    background-position: center 30%;
     overflow: hidden;
 }
 
-.hero-overlay {
+.attractions-hero::before {
+    content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to bottom,
-        rgba(11, 15, 25, 0.5),
-        #0B0F19
-    );
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
 }
 
-.hero-content {
+.attractions-hero-overlay {
+    position: absolute;
+    bottom: 32px;
+    left: 36px;
+    color: #fff;
+    z-index: 2;
+}
+
+.attractions-hero-overlay h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.attractions-hero-overlay p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* SEARCH SECTION (Eyni Tour dizayni) */
+.search-bar {
     position: relative;
-    z-index: 10;
-    max-width: 800px;
-    text-align: center;
-}
-
-.hero-content h1 {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    color: white;
-    margin: 0 0 1.5rem 0;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    background: linear-gradient(to right, #fff, #94a3b8);    
-    -webkit-text-fill-color: transparent;
-}
-
-.hero-content p {
-    font-size: 1.25rem;
-    color: #94a3b8;
-    max-width: 600px;
-    margin: 0 auto 3rem;
-}
-
-/* Search Container */
-.search-container {
-    max-width: 650px;
-    margin: 0 auto;
-}
-
-.search-input-wrapper {
     display: flex;
+    flex-direction: row !important;
     align-items: center;
-    padding: 6px 6px 6px 20px;
-    border-radius: 100px;
-    transition: all 0.3s ease;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 999px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+    margin-top: 28px;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: nowrap !important;
 }
 
-.search-input-wrapper:focus-within {
-    border-color: rgba(59, 130, 246, 0.5);
-    background: rgba(30, 41, 59, 0.6);
-    transform: scale(1.02);
-}
-
-.search-icon {
-    color: #64748b;
-    margin-right: 12px;
-}
-
-.search-input-wrapper input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.1rem;
-    padding: 12px 0;
-    outline: none;
-}
-
-.search-btn {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 100px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.search-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-/* Container */
-.attractions-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 3rem;
-    align-items: start;
-    margin-top: -2rem; /* Pull up into hero a bit */
-    position: relative;
-    z-index: 20;
-}
-
-/* Sidebar */
-.attractions-sidebar {
-    padding: 2rem;
-    border-radius: 24px;
-    position: sticky;
-    top: 100px;
-}
-
-.sidebar-header {
+.search-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    cursor: text;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.sidebar-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+.search-item:hover {
+    background: rgba(106, 40, 199, 0.03);
+    border-radius: 16px;
 }
 
-.sidebar-header svg {
-    color: #3b82f6;
+.tour-name-item {
+    flex: 1.5;
+    min-width: 200px;
 }
 
-/* Main Content */
-.attractions-main {
+.location-item {
+    flex: 1;
+    min-width: 150px;
+    border-left: 1px solid #f1f5f9;
+}
+
+.search-item svg {
+    color: var(--dk-primary);
+    width: 22px;
+    height: 22px;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.search-item label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.search-value {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.search-input-naked {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 0;
+    letter-spacing: -0.02em;
+}
+
+.search-input-naked::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 15px;
+    font-weight: 700;
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s var(--dk-ease-bounce);
+    box-shadow: 0 10px 20px rgba(106, 40, 199, 0.2);
+    flex-shrink: 0;
+    margin-left: 10px;
 }
 
-.attractions-header {
+.search-btn:hover:not(:disabled) {
+    transform: scale(1.03);
+    box-shadow: 0 12px 25px rgba(106, 40, 199, 0.3);
+}
+
+.search-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.search-btn-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 3px;
+}
+
+.loading-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* RESULTS SECTION */
+.results-bar {
+    margin: 28px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.header-info {
+.actions {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
-.header-info h2 {
-    color: white;
-    font-size: 1.75rem;
-    font-weight: 700;
+.ghost-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.inline-sort-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-dark);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* OFF-CANVAS SIDEBAR */
+.sidebar-overlay {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.tours-offcanvas-sidebar {
+    position: fixed;
+    top: 80px;
+    right: -380px;
+    width: 360px;
+    height: calc(100vh - 80px);
+    background: #ffffff;
+    z-index: 85;
+    box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.05);
+    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f1f5f9;
+}
+
+.tours-offcanvas-sidebar.active {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 10;
+}
+
+.sidebar-header h2 {
     margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
 }
 
-.active-filter {
+.sidebar-close {
+    background: #f8fafc;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 20px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: #3b82f6;
-    font-weight: 500;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
 }
 
-@media (max-width: 1024px) {
-    .attractions-container {
-        grid-template-columns: 1fr;
-        margin-top: 2rem;
-    }
-    
-    .attractions-sidebar {
-        position: static;
-    }
-
-    .hero-content h1 {
-        font-size: 2.5rem;
-    }
+.sidebar-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    transform: rotate(90deg);
 }
 
-@media (max-width: 640px) {
-    .search-input-wrapper {
+.sidebar-content {
+    padding: 30px 24px;
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 900px) {
+    .search-bar {
+        flex-direction: column !important;
+        align-items: stretch;
         border-radius: 20px;
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
+        padding: 15px;
+    }
+
+    .search-item {
+        flex: 100%;
+        border-radius: 12px;
+        border-left: none !important;
+        border-bottom: 1px solid #f1f5f9;
     }
 
     .search-btn {
         width: 100%;
+        justify-content: center;
+        border-radius: 12px;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .attractions-hero-overlay h1 {
+        font-size: 32px;
     }
 
-    .header-info {
+    .results-bar {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 15px;
     }
 }

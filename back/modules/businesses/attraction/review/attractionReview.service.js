@@ -19,7 +19,8 @@ class AttractionReviewService {
             comment: reviewData.comment,
             images: reviewData.images, // Array of strings (Json field in Prisma)
             userId,
-            attractionId
+            attractionId,
+            status: 'approved'
         };
 
         const review = await attractionReviewRepository.create(data);

@@ -16,84 +16,17 @@ try {
 
 class DriverService {
     async registerDriver(userId, data) {
-        // Check if profile exists
         const existing = await driverRepository.findByUserId(userId);
         if (existing) throw ApiError.badRequest('Driver profile already exists');
 
-        const { 
-            driverType,
-            vehicleBrand, 
-            vehicleModel, 
-            vehicleColor, 
-            vehiclePlateNumber, 
-            
-            // Passenger specific
-            vehicleSeats,
-            vehicleCategory, 
+        const { driverType, ...driverData } = data;
 
-            // Cargo specific
-            maxWeightKg,
-            maxVolumeM3,
-            cargoType,
-
-            ...driverData 
-        } = data;
-
-        // Start Transaction to create Driver and Vehicle
-        return await prisma.$transaction(async (tx) => {
-            // Create Profile
-            let driver = await tx.driverProfile.create({
-                data: {
-                    userId,
-                    status: 'Pending',
-                    ...driverData
-                }
-            });
-
-            const vehicleVendorId = driverData.managedById || userId;
-
-            if (driverType === 'passenger') {
-                const vehicle = await tx.vehicle.create({
-                    data: {
-                        vendorId: vehicleVendorId,
-                        brand: vehicleBrand,
-                        model: vehicleModel,
-                        color: vehicleColor,
-                        plateNumber: vehiclePlateNumber,
-                        category: vehicleCategory,
-                        year: new Date().getFullYear(), // Default
-                        seats: vehicleSeats,
-                        luggage: 2, // Default MVP
-                        status: 'Active'
-                    }
-                });
-
-                driver = await tx.driverProfile.update({
-                    where: { id: driver.id },
-                    data: { currentVehicleId: vehicle.id }
-                });
-            } else if (driverType === 'cargo') {
-                const cargoVehicle = await tx.cargoVehicle.create({
-                    data: {
-                        vendorId: vehicleVendorId,
-                        brand: vehicleBrand,
-                        model: vehicleModel,
-                        licensePlate: vehiclePlateNumber, // Note: CargoVehicle uses licensePlate not plateNumber
-                        cargoType: cargoType,
-                        maxWeightKg: maxWeightKg,
-                        maxVolumeM3: maxVolumeM3,
-                        year: new Date().getFullYear(),
-                        status: 'Available'
-                    }
-                });
-
-                driver = await tx.driverProfile.update({
-                    where: { id: driver.id },
-                    data: { currentCargoVehicleId: cargoVehicle.id }
-                });
-            }
-
-            return driver;
+        // Simply create Driver Profile (without a vehicle). 
+        // Vehicle will be assigned later by Vendor Dashboard.
+        return await driverRepository.create({
+            userId,
+            status: 'Pending',
+            ...driverData
         });
     }
 
@@ -177,6 +110,26 @@ class DriverService {
         return updated;
     }
 
+    async assignVehicle(driverId, vendorId, role, payload) {
+        const driver = await driverRepository.findById(driverId);
+        if (!driver) throw ApiError.notFound('Driver not found');
+
+        if (role !== 'admin' && driver.managedById !== vendorId) {
+            throw ApiError.forbidden('You cannot manage this driver');
+        }
+
+        const dataToUpdate = {};
+        if (payload.vehicleId !== undefined) {
+            dataToUpdate.currentVehicleId = payload.vehicleId === null ? null : payload.vehicleId;
+        }
+        if (payload.cargoVehicleId !== undefined) {
+            dataToUpdate.currentCargoVehicleId = payload.cargoVehicleId === null ? null : payload.cargoVehicleId;
+        }
+
+        const updatedDriver = await driverRepository.update(driverId, dataToUpdate);
+        return updatedDriver;
+    }
+
     async updateStatus(driverId, userId, status, lat = null, lng = null) {
         // Driver updating own status (Online/Offline)
         const driver = await driverRepository.findByUserId(userId);
@@ -240,6 +193,41 @@ class DriverService {
             console.error("Redis GEOSEARCH Error:", error);
             return [];
         }
+    }
+
+    async getFleetLocations(vendorId) {
+        // Find all drivers managed by this vendor
+        const drivers = await driverRepository.findAll({ managedById: vendorId }, 0, 1000);
+        
+        if (!drivers || drivers.length === 0) return [];
+        
+        const mapped = drivers.map(d => ({
+            driverId: d.id,
+            firstName: d.firstName,
+            lastName: d.lastName,
+            status: d.status,
+            location: null // default
+        }));
+
+        if (redisClient && redisClient.isOpen) {
+            try {
+                // Get coords from Redis active_drivers via GEOPOS
+                const driverIds = mapped.map(d => d.driverId);
+                const positions = await redisClient.geoPos('active_drivers', driverIds);
+                
+                positions.forEach((pos, idx) => {
+                    if (pos) { // [longitude, latitude]
+                        mapped[idx].location = {
+                            lat: pos.latitude,
+                            lng: pos.longitude
+                        };
+                    }
+                });
+            } catch (err) {
+                console.error("Error reading GEOPOS for fleet map:", err);
+            }
+        }
+        return mapped;
     }
 }
 

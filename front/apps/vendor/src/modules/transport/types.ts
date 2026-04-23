@@ -4,7 +4,7 @@ export interface IVehicle {
     model: string;
     plateNumber: string;
     category: 'Economy' | 'Business' | 'Premium' | 'Minivan' | 'Bus';
-    capacity: number;
+    seats: number;
     year?: number;
     color?: string;
     status: 'Active' | 'UnderMaintenance' | 'Inactive';
@@ -97,4 +97,5 @@ export interface ITransportLocation {
     type: 'Hotel' | 'Airport' | 'Attraction' | 'Custom';
     vendorId?: string | null;
     popularity?: number;
+    seats?: number;
 }

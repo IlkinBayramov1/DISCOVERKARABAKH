@@ -1,0 +1,36 @@
+paths:
+  /api/v1/transport/tracking/websocket-info:
+    get:
+      tags:
+        - "[Shared] Tracking (WebSocket)"
+      summary: WebSocket Connection API Info
+      description: |
+        Real-time tracking is handled via Socket.io, not REST HTTP. 
+        **Connect to BASE_URL with standard Socket.IO client.**
+
+        **Authentication:** Provide the user's JWT token via `socket.handshake.auth.token`.
+
+        **Events to Emit (Client -> Server):**
+        1. `joinRoom`
+          - **Payload:** `"ride_<RIDE_ID>"`
+          - **Action:** Subscribes the client to updates for that specific ride.
+        2. `updateLocation` (Drivers Only)
+          - **Payload:** `{ "lat": number, "lng": number, "rideId": string }`
+          - **Action:** Updates global Redis index for drivers and broadcasts `driverLocation` to the specific ride room.
+
+        **Events to Listen For (Server -> Client):**
+        1. `driverLocation`
+          - **Payload:** `{ "driverId": string, "location": { lat, lng }, "timestamp": date }`
+          - **Action:** Triggers map UI to move the car pin.
+        2. `ride_update`
+          - **Payload:** `{ "rideId": string, "updateType": string, "ride": Object }`
+          - **Action:** Fired when a ride's status changes (e.g., driver_accepted, arrived, started).
+
+      responses:
+        '200':
+          description: Developer documentation for WebSockets.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Use Socket.io client to connect to Root URL"

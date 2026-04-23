@@ -363,6 +363,9 @@ model Vehicle {
   description String? @db.Text
   images      Json?
 
+  basePrice   Float?
+  pricePerKm  Float?
+
   status VehicleStatus @default(Active)
 
   currentDriver DriverProfile?
@@ -376,6 +379,9 @@ model Vehicle {
 
 model Ride {
   id String @id @default(uuid())
+
+  scheduledAt   DateTime?
+  bookingNumber String?   @unique
 
   passengerId String
   passenger   User   @relation("PassengerRides", fields: [passengerId], references: [id])
@@ -459,6 +465,8 @@ model Booking {
   tourId    String?
   Event     Event?            @relation(fields: [eventId], references: [id])
   eventId   String?
+  attraction Attraction?       @relation(fields: [attractionId], references: [id])
+  attractionId String?
 
   @@index([userId])
   @@index([vendorId])
@@ -1237,6 +1245,7 @@ model Attraction {
   workingHours AttractionWorkingHour[]
   nearbyHotels   HotelPOI[]
   hourlyStats    AttractionHourlyStat[]
+  bookings       Booking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

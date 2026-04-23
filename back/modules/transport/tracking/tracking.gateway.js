@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { env } from '../../../config/index.js';
+import { driverService } from '../driver/driver.service.js';
 
 let io;
 
@@ -32,31 +33,54 @@ export const initSocket = (server) => {
     io.on('connection', (socket) => {
         console.log(`✅ User connected: ${socket.user.id} (${socket.user.role})`);
 
+        if (socket.user.role === 'driver') {
+            socket.join(`driver_${socket.user.id}`);
+            console.log(`📡 Driver ${socket.user.id} joined personal receive channel`);
+        }
+
         // Join a specific ride room to listen for updates or send them
         socket.on('joinRoom', (room) => {
-            socket.join(room); // e.g., "ride_123"
+            socket.join(room); // e.g., "ride_123" or "vendor_456"
             console.log(`User ${socket.user.id} joined room: ${room}`);
             socket.emit('joined', { room, message: `Joined room ${room}` });
         });
 
         // Driver sending location updates
-        socket.on('updateLocation', (data) => {
+        socket.on('updateLocation', async (data) => {
             // data: { lat, lng, rideId }
             if (socket.user.role !== 'driver' && socket.user.role !== 'admin') {
-                // Strictly, only drivers should update, but for testing maybe relaxed?
-                // Let's enforce role.
-                // console.warn(`Non-driver ${socket.user.id} tried to update location`);
-                // return; 
+                return; 
             }
 
-            console.log(`📍 Location update from ${socket.user.id} for ride ${data.rideId}:`, data.lat, data.lng);
+            // Update global redis index for this driver's location (Passive / Active)
+            try {
+                const driver = await driverService.updateStatus(socket.user.id, socket.user.id, 'Online', data.lat, data.lng);
+                
+                // Broadcast to Vendor boss if managed
+                if (driver && driver.managedById) {
+                    io.to(`vendor_${driver.managedById}`).emit('fleet_driver_location', {
+                        driverId: socket.user.id,
+                        firstName: driver.firstName,
+                        lastName: driver.lastName,
+                        location: { lat: data.lat, lng: data.lng },
+                        status: driver.status,
+                        timestamp: new Date()
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to update driver spatial location", err.message);
+            }
 
-            // Broadcast to everyone in the ride room (Passenger + Driver themselves)
-            io.to(`ride_${data.rideId}`).emit('driverLocation', {
-                driverId: socket.user.id,
-                location: { lat: data.lat, lng: data.lng },
-                timestamp: new Date()
-            });
+            if (data.rideId) {
+                console.log(`📍 Location update from ${socket.user.id} for ride ${data.rideId}:`, data.lat, data.lng);
+
+                // Broadcast to everyone in the ride room (Passenger + Driver themselves)
+                io.to(`ride_${data.rideId}`).emit('driverLocation', {
+                    driverId: socket.user.id,
+                    location: { lat: data.lat, lng: data.lng },
+                    timestamp: new Date()
+                });
+            }
         });
 
         socket.on('disconnect', () => {

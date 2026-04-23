@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-    Plus, X, UploadCloud, MapPin, 
-    Info, Camera, Compass
+import {
+    Plus, X, UploadCloud, MapPin, Clock,
+    Camera, Save, RefreshCw, DollarSign, Map as MapIcon, Shield
 } from 'lucide-react';
 import { vendorAttractionApi } from '../../api/attraction.api';
 import { useUpload } from '../../../hotel/hooks/useUpload';
@@ -17,11 +17,9 @@ export default function ManageAttractionPage() {
     const navigate = useNavigate();
     const isEditing = !!id;
 
-    // Data Fetching Hooks
     const { categories } = useAttractionCategories();
     const { uploadImages, uploading } = useUpload();
 
-    // Form State
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -40,10 +38,26 @@ export default function ManageAttractionPage() {
     });
 
     const [images, setImages] = useState<Partial<AttractionImage>[]>([]);
+
     const [keywords, setKeywords] = useState<string[]>([]);
     const [keywordInput, setKeywordInput] = useState('');
-    
-    // Media Upload Local State
+
+    const handleWorkingHourChange = (dayOfWeek: number, field: string, value: any) => {
+        setWorkingHours(prev => prev.map(h =>
+            h.dayOfWeek === dayOfWeek ? { ...h, [field]: value } : h
+        ));
+    };
+
+    // Day 0 is Sunday, 1 is Monday ... 6 is Saturday
+    const [workingHours, setWorkingHours] = useState<any[]>(
+        Array.from({ length: 7 }, (_, i) => ({
+            dayOfWeek: i,
+            openTime: '09:00',
+            closeTime: '18:00',
+            isClosed: false
+        }))
+    );
+
     const [localFiles, setLocalFiles] = useState<File[]>([]);
     const [newImageUrl, setNewImageUrl] = useState('');
 
@@ -74,6 +88,15 @@ export default function ManageAttractionPage() {
                 });
                 setImages(attr.images || []);
                 setKeywords(attr.searchKeywords ? attr.searchKeywords.split(',').filter(k => k.trim()) : []);
+
+                if (attr.workingHours && attr.workingHours.length > 0) {
+                    // Merge with defaults to ensure all 7 days are present
+                    const merged = Array.from({ length: 7 }, (_, i) => {
+                        const existing = attr.workingHours?.find((h: any) => h.dayOfWeek === i);
+                        return existing || { dayOfWeek: i, openTime: '09:00', closeTime: '18:00', isClosed: true };
+                    });
+                    setWorkingHours(merged);
+                }
             }
         } catch (error) {
             console.error('Failed to load attraction', error);
@@ -130,13 +153,11 @@ export default function ManageAttractionPage() {
         setIsLoading(true);
 
         try {
-            // 1. Upload new files if any
             let uploadedUrls: string[] = [];
             if (localFiles.length > 0) {
                 uploadedUrls = await uploadImages(localFiles);
             }
 
-            // 2. Combine with existing and map to AttractionImage structure
             const newImages: Partial<AttractionImage>[] = uploadedUrls.map(url => ({
                 url,
                 type: 'image',
@@ -144,15 +165,20 @@ export default function ManageAttractionPage() {
             }));
 
             const finalImages = [...images, ...newImages];
-            
-            // 3. Construct Payload
+
             const payload = {
                 ...formData,
                 price: formData.entryType === 'free' ? 0 : parseFloat(formData.price || '0'),
                 latitude: parseFloat(formData.latitude),
                 longitude: parseFloat(formData.longitude),
                 searchKeywords: keywords.join(','),
-                images: finalImages
+                images: finalImages,
+                workingHours: workingHours.map(h => ({
+                    dayOfWeek: h.dayOfWeek,
+                    openTime: h.isClosed ? null : h.openTime,
+                    closeTime: h.isClosed ? null : h.closeTime,
+                    isClosed: h.isClosed
+                }))
             };
 
             if (isEditing) {
@@ -161,7 +187,8 @@ export default function ManageAttractionPage() {
                 await vendorAttractionApi.createAttraction(payload as any);
             }
 
-            navigate('/vendor/attractions');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => navigate('/vendor/attractions'), 800);
         } catch (error: any) {
             alert(`Xəta baş verdi: ${error.message}`);
         } finally {
@@ -176,206 +203,298 @@ export default function ManageAttractionPage() {
         return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
     };
 
-    return (
-        <div className="manage-attraction-page">
-            <header className="page-header">
-                <div>
-                    <h1>{isEditing ? 'Məkanı Redaktə Et' : 'Yeni Məkan Yarat'}</h1>
-                    <p>Turistlər üçün cəlbedici və dəqiq məlumatlar daxil edin.</p>
-                </div>
-                <button className="btn-action" onClick={() => navigate('/vendor/attractions')}>Ləğv Et</button>
-            </header>
+    if (isLoading && isEditing && !formData.name) {
+        return (
+            <div className="dk-ma-loading-screen">
+                <RefreshCw size={48} className="spin-icon" />
+                <p>Məkan məlumatları yüklənir...</p>
+            </div>
+        );
+    }
 
-            <form className="attraction-form-container" onSubmit={handleSubmit}>
-                {/* 1. Basic Info */}
-                <section className="form-section">
-                    <h3><Info size={18} /> Əsas Məlumatlar</h3>
-                    <div className="form-group">
-                        <label>Məkanın Adı</label>
-                        <input 
-                            required name="name" value={formData.name} onChange={handleChange}
-                            placeholder="Məsələn: Şuşa Qalası" 
-                        />
-                    </div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Kateqoriya</label>
-                            <select required name="categoryId" value={formData.categoryId} onChange={handleChange}>
-                                <option value="">Seçin...</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>İnsan Sıxlığı</label>
-                            <select name="crowdLevel" value={formData.crowdLevel} onChange={handleChange}>
-                                <option value="low">Aşşağı (Sakit)</option>
-                                <option value="medium">Orta</option>
-                                <option value="high">Yüksək (Sıx)</option>
-                            </select>
+    return (
+        <div className="dk-ma-layout">
+            <div className="dk-ma-container">
+
+                {/* HEADER */}
+                <header className="dk-ma-header">
+                    <button onClick={() => navigate('/vendor/attractions')} className="dk-btn-back">
+                        İdarəetmə Panelinə Qayıt
+                    </button>
+                    <div className="header-title-row">
+                        <div>
+                            <h1>{isEditing ? 'Məkanı Redaktə Et' : 'Yeni Məkan Yarat'}</h1>
+                            <p>Turistlər üçün cəlbedici və dəqiq məlumatlar daxil edin.</p>
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label>Təsvir (Ətraflı məlumat)</label>
-                        <textarea 
-                            required name="description" value={formData.description} onChange={handleChange}
-                            placeholder="Məkan haqqında maraqlı faktlar, tarixi və s." rows={5}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Açar Sözlər (Axtarış üçün)</label>
-                        <div className="keywords-input-wrapper">
-                            {keywords.map((k, idx) => (
-                                <span key={idx} className="keyword-tag">
-                                    {k} <button type="button" onClick={() => removeKeyword(idx)}><X size={12} /></button>
-                                </span>
-                            ))}
-                            <input 
-                                placeholder="Söz yazıb Enter basın..."
-                                value={keywordInput}
-                                onChange={(e) => setKeywordInput(e.target.value)}
-                                onKeyDown={handleAddKeyword}
+                </header>
+
+                <form onSubmit={handleSubmit} className="dk-ma-form">
+
+                    {/* SECTION 1: IDENTITY */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><MapIcon size={18} /> Əsas Məlumatlar</h2>
+
+                        <div className="dk-input-group">
+                            <label>Məkanın Adı</label>
+                            <input
+                                name="name" className="dk-input main-input"
+                                value={formData.name} onChange={handleChange}
+                                required placeholder="Məsələn: Şuşa Qalası"
                             />
                         </div>
-                        <p className="field-hint">Məsələn: qala, tarixi, panorama, karabağ</p>
-                    </div>
-                </section>
 
-                {/* 2. Media & Virtual Tour */}
-                <section className="form-section">
-                    <h3><Camera size={18} /> Media və Virtual Tur</h3>
-                    <div className="image-management">
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Şəkil Linki (URL)</label>
-                                <div className="input-with-button">
-                                    <input 
-                                        placeholder="https://..." 
-                                        value={newImageUrl} 
-                                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        <div className="dk-grid-2">
+                            <div className="dk-input-group">
+                                <label>Kateqoriya</label>
+                                <select required name="categoryId" className="dk-input" value={formData.categoryId} onChange={handleChange}>
+                                    <option value="">Seçin...</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="dk-input-group">
+                                <label>İnsan Sıxlığı (Mövsümi)</label>
+                                <select name="crowdLevel" className="dk-input" value={formData.crowdLevel} onChange={handleChange}>
+                                    <option value="low">Aşşağı (Sakit)</option>
+                                    <option value="medium">Orta</option>
+                                    <option value="high">Yüksək (Sıx)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="dk-input-group mt-5">
+                            <label>Təsvir (Ətraflı məlumat)</label>
+                            <textarea
+                                name="description" className="dk-input textarea"
+                                value={formData.description} onChange={handleChange}
+                                required rows={4} placeholder="Məkan haqqında maraqlı faktlar, tarixi və s."
+                            />
+                        </div>
+
+                        <div className="dk-input-group mt-5">
+                            <label>Axtarış Açar Sözləri</label>
+                            <div className="dk-tag-adder">
+                                <input
+                                    className="dk-input" placeholder="Açar sözü yazıb Enter basın (məs: qala, tarixi)..."
+                                    value={keywordInput} onChange={e => setKeywordInput(e.target.value)}
+                                    onKeyDown={handleAddKeyword}
+                                />
+                            </div>
+                            <div className="dk-tags-container mt-3">
+                                {keywords.map((k, idx) => (
+                                    <div key={idx} className="dk-tag-pill info">
+                                        <span>{k}</span>
+                                        <button type="button" onClick={() => removeKeyword(idx)}><X size={14} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 2: LOCATION & ACCESS */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><MapPin size={18} /> Məkan və Giriş</h2>
+
+                        <div className="dk-grid-2">
+                            <div className="dk-input-group">
+                                <label>Şəhər / Rayon</label>
+                                <select required name="city" className="dk-input" value={formData.city} onChange={handleChange}>
+                                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Dəqiq Ünvan</label>
+                                <input
+                                    name="address" className="dk-input"
+                                    value={formData.address} onChange={handleChange}
+                                    required placeholder="Məsələn: Qala küçəsi 12"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="dk-grid-2 mt-5">
+                            <div className="dk-input-group">
+                                <label>Giriş Növü</label>
+                                <select name="entryType" className="dk-input" value={formData.entryType} onChange={handleChange}>
+                                    <option value="free">Pulsuz (İctimai)</option>
+                                    <option value="paid">Ödənişli</option>
+                                    <option value="donation">İanə Əsaslı</option>
+                                </select>
+                            </div>
+                            {formData.entryType !== 'free' && (
+                                <div className="dk-input-group animate-fade-in">
+                                    <label className="text-emerald-600"><DollarSign size={14} /> Qiymət (AZN)</label>
+                                    <input
+                                        type="number" step="0.01" name="price" className="dk-input font-bold text-emerald-600"
+                                        value={formData.price} onChange={handleChange} placeholder="0.00"
                                     />
-                                    <button type="button" onClick={addImageUrl}><Plus size={18} /></button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="dk-grid-2 mt-5">
+                            <div className="dk-input-group">
+                                <label>Enlik (Latitude)</label>
+                                <input type="number" step="any" name="latitude" className="dk-input" value={formData.latitude} onChange={handleChange} />
+                            </div>
+                            <div className="dk-input-group">
+                                <label>Uzunluq (Longitude)</label>
+                                <input type="number" step="any" name="longitude" className="dk-input" value={formData.longitude} onChange={handleChange} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 2.5: WORKING HOURS */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><Clock size={18} /> İş Saatları (Visiting Hours)</h2>
+                        <p className="card-subtitle-inner">Həftəlik iş qrafikini və istirahət günlərini qeyd edin.</p>
+
+                        <div className="dk-working-hours-list">
+                            {[1, 2, 3, 4, 5, 6, 0].map(dayIdx => {
+                                const dayName = ['Bazar', 'Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 'Cümə axşamı', 'Cümə', 'Şənbə'][dayIdx];
+                                const h = workingHours.find(wh => wh.dayOfWeek === dayIdx) || { dayOfWeek: dayIdx, openTime: '09:00', closeTime: '18:00', isClosed: false };
+
+                                return (
+                                    <div key={dayIdx} className={`dk-wh-row ${h.isClosed ? 'is-closed' : ''}`}>
+                                        <div className="day-name">{dayName}</div>
+
+                                        <div className="wh-controls">
+                                            <label className="dk-checkbox-wrap">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={h.isClosed}
+                                                    onChange={(e) => handleWorkingHourChange(dayIdx, 'isClosed', e.target.checked)}
+                                                />
+                                                <span>Bağlıdır</span>
+                                            </label>
+
+                                            {!h.isClosed && (
+                                                <div className="time-inputs animate-fade-in">
+                                                    <input
+                                                        type="time" className="dk-input-small"
+                                                        value={h.openTime}
+                                                        onChange={(e) => handleWorkingHourChange(dayIdx, 'openTime', e.target.value)}
+                                                    />
+                                                    <span className="dash">-</span>
+                                                    <input
+                                                        type="time" className="dk-input-small"
+                                                        value={h.closeTime}
+                                                        onChange={(e) => handleWorkingHourChange(dayIdx, 'closeTime', e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* SECTION 3: MEDIA & VR */}
+                    <div className="dk-form-card">
+                        <h2 className="card-title"><Camera size={18} /> Visual Media & Virtual Tur</h2>
+
+                        <div className="dk-input-group mb-6">
+                            <label>Xarici VR Tur Linki (Matterport, YouTube 360 və s.)</label>
+                            <input
+                                name="virtualTourUrl" className="dk-input"
+                                value={formData.virtualTourUrl} onChange={handleChange}
+                                placeholder="https://matterport.com/..."
+                            />
+                        </div>
+
+                        <div className="dk-media-uploader-row">
+                            <div className="dk-input-group flex-1">
+                                <label>Şəkil Linki Əlavə Et (URL)</label>
+                                <div className="dk-input-action-wrap">
+                                    <input
+                                        className="dk-input" placeholder="https://..."
+                                        value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)}
+                                    />
+                                    <button type="button" className="btn-inline-add" onClick={addImageUrl}><Plus size={18} /></button>
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>Kompüterdən Yüklə</label>
-                                <label className="btn-action" style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}>
-                                    <UploadCloud size={18} style={{ marginRight: 8 }} /> Şəkilləri Seçin
-                                    <input type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileSelect} />
-                                </label>
-                            </div>
+
+                            <label className="dk-file-dropzone-small">
+                                <UploadCloud size={24} className="text-blue-500 mb-1" />
+                                <span>Kompüterdən Yüklə</span>
+                                <input type="file" multiple accept="image/*" onChange={handleFileSelect} disabled={uploading} hidden />
+                            </label>
                         </div>
 
-                        {/* External VR link */}
-                        <div className="form-group">
-                            <label>Xarici VR Tur Linki (Matterport, YouTube 360 və s.)</label>
-                            <input 
-                                name="virtualTourUrl" value={formData.virtualTourUrl} onChange={handleChange}
-                                placeholder="https://matterport.com/..." 
-                            />
-                        </div>
-
-                        <div className="image-grid">
+                        <div className="dk-media-grid mt-6">
                             {images.map((img, idx) => (
-                                <div key={idx} className={`image-item ${img.isCover ? 'is-cover' : ''}`}>
-                                    <img src={getFullImageUrl(img.url!)} alt="Preview" />
-                                    <div className="image-overlay">
-                                        <button type="button" className="btn-cover" onClick={() => setAsCover(idx)}>Cover</button>
-                                        <button type="button" className="btn-remove" onClick={() => removeImage(idx)}><X size={14} /></button>
+                                <div key={`exist-${idx}`} className={`dk-media-item ${img.isCover ? 'is-cover' : ''}`}>
+                                    <img src={getFullImageUrl(img.url!)} alt={`Preview ${idx}`} />
+
+                                    <div className="media-top-actions">
+                                        {img.isCover && <span className="badge-cover">COVER</span>}
+                                        {img.type === '360_image' && <span className="badge-360">360°</span>}
+                                        {img.type === 'vr_tour' && <span className="badge-vr">VR</span>}
+                                        <button type="button" className="btn-remove-media" onClick={() => removeImage(idx)}><X size={14} strokeWidth={3} /></button>
                                     </div>
-                                    <div className="image-type-selector">
-                                        <select 
-                                            value={img.type} 
+
+                                    <div className="media-bottom-controls">
+                                        <button type="button" className="btn-set-cover" onClick={() => setAsCover(idx)}>Kaver Et</button>
+                                        <select
+                                            className="select-media-type"
+                                            value={img.type}
                                             onChange={(e) => updateImageType(idx, e.target.value as AttractionImageType)}
                                         >
-                                            <option value="image">Normal Şəkil</option>
-                                            <option value="360_image">360° Şəkil</option>
-                                            <option value="vr_tour">VR Tur</option>
+                                            <option value="image">Normal</option>
+                                            <option value="360_image">360°</option>
+                                            <option value="vr_tour">VR</option>
                                         </select>
                                     </div>
-                                    {img.isCover && <span className="cover-badge">KAVER</span>}
-                                    {img.type === '360_image' && <span className="cover-badge" style={{ left: 'auto', right: 8, background: '#8b5cf6' }}>360</span>}
-                                    {img.type === 'vr_tour' && <span className="cover-badge" style={{ left: 'auto', right: 8, background: '#ec4899' }}>VR</span>}
                                 </div>
                             ))}
+
                             {localFiles.map((file, idx) => (
-                                <div key={`local-${idx}`} className="image-item" style={{ opacity: 0.6 }}>
-                                    <img src={URL.createObjectURL(file)} alt="Local" />
-                                    <div className="image-overlay">
-                                        <button type="button" className="btn-remove" onClick={() => setLocalFiles(prev => prev.filter((_, i) => i !== idx))}><X size={14} /></button>
+                                <div key={`local-${idx}`} className="dk-media-item local">
+                                    <img src={URL.createObjectURL(file)} alt="Local preview" />
+                                    <div className="media-top-actions">
+                                        <button type="button" className="btn-remove-media" onClick={() => setLocalFiles(prev => prev.filter((_, i) => i !== idx))}><X size={14} strokeWidth={3} /></button>
                                     </div>
-                                    <span className="cover-badge" style={{ background: '#64748b' }}>YÜKLƏNİR</span>
+                                    <div className="media-overlay-loading">
+                                        <UploadCloud size={20} className="animate-pulse text-white" />
+                                        <span>Gözləyir</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                </section>
 
-                {/* 3. Location */}
-                <section className="form-section">
-                    <h3><MapPin size={18} /> Məkan və Giriş</h3>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Şəhər / Rayon</label>
-                            <select required name="city" value={formData.city} onChange={handleChange}>
-                                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {/* SECTION 4: STATUS */}
+                    <div className="dk-form-card mb-10">
+                        <h2 className="card-title"><Shield size={18} /> Vəziyyət / İdarəetmə</h2>
+                        <div className="dk-input-group max-w-sm">
+                            <label>Məkanın Platformadakı Statusu</label>
+                            <select name="status" className="dk-input font-bold" value={formData.status} onChange={handleChange}>
+                                <option value="active">Aktiv (Siyahıda görünür)</option>
+                                <option value="closed">Müvəqqəti Qapalı</option>
+                                <option value="maintenance">Təmirdə</option>
                             </select>
                         </div>
-                        <div className="form-group">
-                            <label>Dəqiq Ünvan</label>
-                            <input required name="address" value={formData.address} onChange={handleChange} placeholder="Məsələn: Qala küçəsi 12" />
-                        </div>
                     </div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Giriş Növü</label>
-                            <select name="entryType" value={formData.entryType} onChange={handleChange}>
-                                <option value="free">Pulsuz</option>
-                                <option value="paid">Ödənişli</option>
-                                <option value="donation">İanə</option>
-                            </select>
-                        </div>
-                        {formData.entryType !== 'free' && (
-                            <div className="form-group">
-                                <label>Qiymət (AZN)</label>
-                                <input type="number" step="0.01" name="price" value={formData.price} onChange={handleChange} placeholder="0.00" />
-                            </div>
-                        )}
-                    </div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Enlik (Latitude)</label>
-                            <input type="number" step="any" name="latitude" value={formData.latitude} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Uzunluq (Longitude)</label>
-                            <input type="number" step="any" name="longitude" value={formData.longitude} onChange={handleChange} />
-                        </div>
-                    </div>
-                </section>
 
-                {/* 4. Status */}
-                <section className="form-section">
-                    <h3><Compass size={18} /> Vəziyyət</h3>
-                    <div className="form-group">
-                        <label>Məkanın Statusu</label>
-                        <select name="status" value={formData.status} onChange={handleChange}>
-                            <option value="active">Aktiv (Siyahıda görünür)</option>
-                            <option value="closed">Müvəqqəti Qapalı</option>
-                            <option value="maintenance">Təmirdə</option>
-                        </select>
+                    {/* STICKY FOOTER */}
+                    <div className="dk-form-footer">
+                        <button type="button" onClick={() => navigate('/vendor/attractions')} className="dk-btn-ghost">
+                            Ləğv Et
+                        </button>
+                        <button type="submit" className="dk-btn-submit" disabled={isLoading || uploading}>
+                            {uploading || isLoading ? (
+                                <><RefreshCw size={20} className="spin-icon" /> Gözləyin...</>
+                            ) : (
+                                <><Save size={20} /> {isEditing ? 'Dəyişiklikləri Saxla' : 'Məkanı Təsdiqlə'}</>
+                            )}
+                        </button>
                     </div>
-                </section>
 
-                {/* Sticky Actions */}
-                <div className="form-actions">
-                    <button type="button" className="btn-action" onClick={() => navigate('/vendor/attractions')}>Ləğv Et</button>
-                    <button type="submit" className="btn-submit" disabled={isLoading || uploading}>
-                        {uploading ? 'Media Yüklənir...' : (isLoading ? 'Yadda Saxlanılır...' : (isEditing ? 'Yadda Saxla' : 'Məkanı Yarat'))}
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }

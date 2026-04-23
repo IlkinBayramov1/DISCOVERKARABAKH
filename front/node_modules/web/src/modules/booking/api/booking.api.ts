@@ -5,6 +5,7 @@ export interface BookingPreviewParams {
     entityId: string;
     participants?: number;
     tourDate?: string;
+    visitDate?: string;
     items: Array<{
         roomTypeId?: string;
         ratePlanId?: string;
@@ -12,7 +13,9 @@ export interface BookingPreviewParams {
         checkOut: string;
         adults: number;
         children: number;
+        price?: number;
     }>;
+    extraData?: any;
 }
 
 export interface CreateBookingParams extends BookingPreviewParams {

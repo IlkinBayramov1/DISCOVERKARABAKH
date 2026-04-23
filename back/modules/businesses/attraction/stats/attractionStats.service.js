@@ -74,6 +74,10 @@ class AttractionStatsService {
                 }
             });
         } catch (error) {
+            if (error.code === 'P2002') {
+                // High concurrency race condition in Prisma upsert. Ignore it for telemetry.
+                return;
+            }
             console.error('[AttractionStats] Failed to increment View metrics:', error);
         }
     }

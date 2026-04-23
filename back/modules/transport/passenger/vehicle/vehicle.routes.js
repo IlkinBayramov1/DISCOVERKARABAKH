@@ -11,7 +11,7 @@ router.use(authMiddleware);
 // Only Admins and Vendors (Transport) can manage vehicles
 router.post('/', authorize('admin', 'vendor'), validate(createVehicleSchema), createVehicle);
 router.get('/', authorize('admin', 'vendor'), getVehicles);
-router.get('/:id', authorize('admin', 'vendor'), getVehicle);
+router.get('/:id', authorize('admin', 'vendor', 'rider', 'tourist'), getVehicle);
 router.put('/:id', authorize('admin', 'vendor'), validate(updateVehicleSchema), updateVehicle);
 router.delete('/:id', authorize('admin', 'vendor'), deleteVehicle);
 

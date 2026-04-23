@@ -53,7 +53,7 @@
     color: #FCD34D;
 }
 
-.star:hover ~ .star {
+.star:hover~.star {
     color: rgba(255, 255, 255, 0.2);
 }
 

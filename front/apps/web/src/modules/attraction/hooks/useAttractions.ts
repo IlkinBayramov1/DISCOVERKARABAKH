@@ -10,6 +10,7 @@ interface UseAttractionsProps {
         status?: string;
         page?: number;
         limit?: number;
+        sort?: string;
     };
 }
 

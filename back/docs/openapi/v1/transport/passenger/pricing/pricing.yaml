@@ -1,0 +1,149 @@
+paths:
+  /api/v1/transport/price/calculate:
+    post:
+      tags:
+        - "[Passenger] Pricing"
+      summary: Calculate theoretical price for a ride (Pre-booking)
+      description: Quickly calculates a price estimation based on distances or static inputs before actually checking available cars.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - category
+              properties:
+                category:
+                  type: string
+                  enum: [Economy, Business, Premium, Minivan, Bus]
+                distanceKm:
+                  type: number
+                durationMin:
+                  type: number
+                pickupLocation:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+                dropoffLocation:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+      responses:
+        '200':
+          description: Price calculation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      price:
+                        type: number
+
+  /api/v1/transport/pricing:
+    get:
+      tags:
+        - "[Passenger] Pricing"
+      summary: Retrieve all pricing rules
+      description: Returns pricing bounds or rules set by the Vendor or Global Admin.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of pricing rules
+    post:
+      tags:
+        - "[Passenger] Pricing"
+      summary: Create a new generalized Pricing Rule
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - basePrice
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [Fixed, PerKm, Hourly]
+                basePrice:
+                  type: number
+                pricePerKm:
+                  type: number
+                pricePerMin:
+                  type: number
+                config:
+                  type: object
+      responses:
+        '201':
+          description: Successfully created Pricing Rule
+
+  /api/v1/transport/pricing/{id}:
+    put:
+      tags:
+        - "[Passenger] Pricing"
+      summary: Update a Pricing Rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [Fixed, PerKm, Hourly]
+                basePrice:
+                  type: number
+                pricePerKm:
+                  type: number
+                pricePerMin:
+                  type: number
+                config:
+                  type: object
+      responses:
+        '200':
+          description: Successfully updated Pricing Rule
+    delete:
+      tags:
+        - "[Passenger] Pricing"
+      summary: Delete a Pricing Rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted Pricing Rule

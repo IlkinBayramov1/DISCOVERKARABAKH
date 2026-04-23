@@ -29,6 +29,14 @@ class TransferRepository {
         if (filter.status) where.status = filter.status;
         if (filter.passengerId) where.passengerId = filter.passengerId;
         if (filter.driverId) where.driverId = filter.driverId;
+        
+        // Security filter for vendors to only see their own drivers' or vehicles' rides
+        if (filter.vendorId) {
+            where.OR = [
+                { driver: { managedById: filter.vendorId } },
+                { vehicle: { vendorId: filter.vendorId } }
+            ];
+        }
 
         const count = await prisma.ride.count({ where });
         const rides = await prisma.ride.findMany({

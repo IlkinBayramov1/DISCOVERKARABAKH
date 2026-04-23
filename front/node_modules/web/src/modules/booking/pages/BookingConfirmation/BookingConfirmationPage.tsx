@@ -109,17 +109,69 @@ export const BookingConfirmationPage: React.FC = () => {
         hotel, 
         Tour,
         tour,
+        attraction,
+        Event,
         items = [], 
         guests = [] 
     } = booking;
   
-    const isTour = bookingType === 'tour';
     const primaryItem = items.length > 0 ? items[0] : null;
     const primaryGuest = guests.length > 0 ? guests[0] : null;
-    const details = isTour ? (Tour || tour) : hotel;
-
     const totalPax = primaryItem ? (primaryItem.adults + (primaryItem.children || 0)) : 0;
     const guestInitial = primaryGuest?.firstName?.[0] || primaryGuest?.email?.[0]?.toUpperCase() || 'G';
+
+    let details: any = null;
+    let sectionTitle = 'Stay Overview';
+    let itemName = 'Your Reservation';
+    let locationName = 'Address not provided';
+    let dateLabel = 'Date';
+    let exploreLink = '/';
+    let exploreLinkText = 'properties';
+    let participantLabel = 'Participants';
+
+    if (bookingType === 'hotel') {
+        details = hotel;
+        sectionTitle = 'Stay Overview';
+        itemName = details?.name || 'Your Hotel';
+        locationName = details?.address || details?.city || 'Address not provided';
+        dateLabel = 'Check-in';
+        exploreLink = '/hotels';
+        exploreLinkText = 'properties';
+    } else if (bookingType === 'tour') {
+        details = Tour || tour;
+        sectionTitle = 'Adventure Overview';
+        itemName = details?.name || 'Your Tour';
+        locationName = details?.address || details?.city || 'Address not provided';
+        dateLabel = 'Expedition Date';
+        exploreLink = '/tours';
+        exploreLinkText = 'adventures';
+        participantLabel = 'Explorers Selected';
+    } else if (bookingType === 'attraction') {
+        details = attraction;
+        sectionTitle = 'Attraction Overview';
+        itemName = details?.name || 'Your Attraction';
+        locationName = details?.address || details?.city || 'Address not provided';
+        dateLabel = 'Visit Date';
+        exploreLink = '/attractions';
+        exploreLinkText = 'destinations';
+        participantLabel = 'Visitors';
+    } else if (bookingType === 'event') {
+        details = Event;
+        sectionTitle = 'Event Overview';
+        itemName = details?.title || 'Your Event';
+        locationName = details?.location || details?.city || 'Address not provided';
+        dateLabel = 'Event Date';
+        exploreLink = '/events';
+        exploreLinkText = 'events';
+        participantLabel = 'Attendees';
+    } else if (bookingType === 'transfer') {
+        sectionTitle = 'Transfer Overview';
+        itemName = 'Professional Transfer';
+        dateLabel = 'Pickup Time';
+        exploreLink = '/transport/passenger';
+        exploreLinkText = 'rides';
+        participantLabel = 'Passengers';
+    }
 
     return (
         <div className="dk-bc-layout">
@@ -165,35 +217,37 @@ export const BookingConfirmationPage: React.FC = () => {
                     {/* OVERVIEW SECTION */}
                     <div className="dk-bc-section">
                         <h2 className="section-title">
-                            {isTour ? 'Adventure Overview' : 'Stay Overview'}
+                            {sectionTitle}
                         </h2>
                         
                         <div className="dk-bc-overview-grid">
                             <div className="property-info">
-                                <h3>{details?.name || (isTour ? 'Your Tour' : 'Your Hotel')}</h3>
+                                <h3>{itemName}</h3>
                                 <p className="location-text">
                                     <MapPin size={16} />
-                                    {details?.address || details?.city || 'Address not provided'}
+                                    {locationName}
                                 </p>
-                                {!isTour && primaryItem?.roomType && (
+                                {bookingType === 'hotel' && primaryItem?.roomType && (
                                     <p className="room-text">
                                         <Home size={14}/> Room: {primaryItem.roomType.name}
                                     </p>
                                 )}
-                                {isTour && primaryItem && (
+                                {bookingType !== 'hotel' && primaryItem && (
                                     <p className="room-text">
-                                        <Users size={14}/> {totalPax} Explorers Selected
+                                        <Users size={14}/> {totalPax} {participantLabel}
                                     </p>
                                 )}
                             </div>
                             
                             <div className="dk-bc-date-box">
                                 <div className="date-col">
-                                    <span className="date-label">{isTour ? 'Expedition Date' : 'Check-in'}</span>
-                                    <span className="date-value">{primaryItem ? new Date(primaryItem.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : 'N/A'}</span>
-                                    <span className="time-text"><Clock size={12}/> {details?.checkInTime || '09:00'}</span>
+                                    <span className="date-label">{dateLabel}</span>
+                                    <span className="date-value">{primaryItem?.checkIn ? new Date(primaryItem.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : 'N/A'}</span>
+                                    {bookingType === 'hotel' && (
+                                        <span className="time-text"><Clock size={12}/> {details?.checkInTime || '14:00'}</span>
+                                    )}
                                 </div>
-                                {!isTour && primaryItem && (
+                                {bookingType === 'hotel' && primaryItem?.checkOut && (
                                     <>
                                         <div className="date-divider"></div>
                                         <div className="date-col">
@@ -264,8 +318,8 @@ export const BookingConfirmationPage: React.FC = () => {
 
                 {/* BOTTOM ACTIONS (Hidden in PDF) */}
                 <div className="dk-bc-bottom-actions no-print">
-                    <button onClick={() => navigate(isTour ? '/tours' : '/hotels')} className="dk-btn-ghost">
-                        Explore more {isTour ? 'adventures' : 'properties'}
+                    <button onClick={() => navigate(exploreLink)} className="dk-btn-ghost">
+                        Explore more {exploreLinkText}
                     </button>
                     <button onClick={() => navigate('/account/trips')} className="dk-btn-dark">
                         View My Itineraries

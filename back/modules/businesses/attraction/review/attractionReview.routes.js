@@ -7,30 +7,27 @@ import { authMiddleware, authorize } from '../../../../middlewares/auth.middlewa
 
 const router = Router({ mergeParams: true });
 
-// GET /api/v1/attractions/:id/reviews
+// GET /api/v1/attractions/:id/reviews - PUBLIC
 router.get('/', attractionReviewController.getByAttractionId);
 
-// Protected routes
-router.use(authMiddleware);
+// POST /api/v1/attractions/:id/reviews - PROTECTED
+router.post('/', authMiddleware, validate(attractionValidation.review), attractionReviewController.create);
 
-// POST /api/v1/attractions/:id/reviews
-router.post('/', validate(attractionValidation.review), attractionReviewController.create);
+// PUT /api/v1/attractions/:id/reviews/:reviewId - PROTECTED
+router.put('/:reviewId', authMiddleware, attractionReviewController.update);
 
-// PUT /api/v1/attractions/:id/reviews/:reviewId
-router.put('/:reviewId', attractionReviewController.update);
-
-// DELETE /api/v1/attractions/:id/reviews/:reviewId
-router.delete('/:reviewId', attractionReviewController.delete);
+// DELETE /api/v1/attractions/:id/reviews/:reviewId - PROTECTED
+router.delete('/:reviewId', authMiddleware, attractionReviewController.delete);
 
 // --- Reporting System ---
 
 // POST /api/v1/attractions/:id/reviews/:reviewId/report
-router.post('/:reviewId/report', attractionReviewReportController.createReport);
+router.post('/:reviewId/report', authMiddleware, attractionReviewReportController.createReport);
 
 // Admin-only: GET all reports
-router.get('/reports', authorize('admin'), attractionReviewReportController.getReports);
+router.get('/reports', authMiddleware, authorize('admin'), attractionReviewReportController.getReports);
 
 // Admin-only: PATCH status of a report
-router.patch('/reports/:reportId', authorize('admin'), attractionReviewReportController.updateStatus);
+router.patch('/reports/:reportId', authMiddleware, authorize('admin'), attractionReviewReportController.updateStatus);
 
 export default router;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { registerDriver, getMyDriverProfile, getDrivers, approveDriver, updateDriverStatus, getTransportVendors } from './driver.controller.js';
-import { registerDriverSchema, updateStatusSchema } from './driver.validation.js';
+import { registerDriver, getMyDriverProfile, getDrivers, approveDriver, updateDriverStatus, getTransportVendors, assignDriverVehicle } from './driver.controller.js';
+import { registerDriverSchema, updateStatusSchema, assignDriverVehicleSchema } from './driver.validation.js';
 import { validate } from '../../../middlewares/validate.middleware.js';
 import { authMiddleware, authorize } from '../../../middlewares/auth.middleware.js';
 
@@ -16,6 +16,7 @@ router.get('/me', getMyDriverProfile);
 // Management (Admin/Vendor)
 router.get('/', authorize('admin', 'vendor'), getDrivers);
 router.patch('/:id/approve', authorize('admin', 'vendor'), approveDriver);
+router.patch('/:id/assign', authorize('admin', 'vendor'), validate(assignDriverVehicleSchema), assignDriverVehicle);
 
 // Driver Actions
 router.patch('/:id/status', authorize('driver'), validate(updateStatusSchema), updateDriverStatus);

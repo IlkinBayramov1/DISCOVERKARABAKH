@@ -4,6 +4,7 @@ import prisma from '../../../../config/db.js';
 import { createClient } from 'redis';
 import crypto from 'crypto';
 import { calculateDistance } from '../../../../core/utils/distance.util.js';
+import { trackingService } from '../../tracking/tracking.service.js';
 
 let redisClient;
 try {
@@ -28,10 +29,12 @@ const RIDE_STATES = {
 };
 
 class TransferService {
-    async createTransfer(userId, data) {
-        let { pickupLocation, dropoffLocation, waypoints, distanceKm, durationMin, vehicleCategory } = data;
+    async searchTaxis(data) {
+        let { pickupLocation, dropoffLocation, paxCount: rawPaxCount, scheduledAt } = data;
+        const paxCount = parseInt(rawPaxCount) || 1;
 
         // Fallback Haversine Calculation if DistanceKm is not provided by Frontend OSRM Router
+        let distanceKm = data.distanceKm;
         if (!distanceKm && pickupLocation && dropoffLocation) {
             distanceKm = calculateDistance(
                 pickupLocation.lat, pickupLocation.lng,
@@ -39,47 +42,49 @@ class TransferService {
             );
         }
 
-        const basePrice = 5;
-        const ratePerKm = 1.5;
-        let price = basePrice + ((distanceKm || 0) * ratePerKm);
-
-        // Surge Pricing Core Logic (mock multiplier mapped for standard demand)
-        let demandMultiplier = 1.0;
-        if (redisClient && redisClient.isOpen) {
-            // Future enhancement: Fetch active_drivers count vs rides within radius 
-            // to dynamically push demandMultiplier up (e.g., 1.5x, 2.0x).
-        }
-        price = parseFloat((price * demandMultiplier).toFixed(2));
-
-        // Generate Idempotency Key to prevent duplicate queue submissions
-        const idempotencyKey = crypto.randomUUID();
-
-        // Initialize ride securely
-        const ride = await transferRepository.create({
-            passengerId: userId,
-            pickupLocation: pickupLocation,
-            dropoffLocation: dropoffLocation,
-            waypoints: waypoints,
-            distanceKm: distanceKm,
-            durationMin: durationMin,
-            price: data.price || price,
-            status: RIDE_STATES.REQUESTED
+        // Find active Vendor Vehicles that can fit paxCount
+        // Booking strategy will handle strict clash detection later
+        const vehicles = await prisma.vehicle.findMany({
+            where: {
+                status: 'Active',
+                seats: { gte: paxCount || 1 },
+                category: data.vehicleCategory || undefined // Optional filter
+            },
+            include: {
+                owner: { select: { vendorProfile: { select: { companyName: true } } } }
+            }
         });
 
-        // Event Payload intended for Message Queues (BullMQ/RabbitMQ)
-        const dispatchEvent = {
-            eventId: `dispatch-${ride.id}`,
-            idempotencyKey,
-            rideId: ride.id,
-            pickupLocation,
-            requiredCategory: vehicleCategory,
-            timestamp: new Date().toISOString()
-        };
+        // Calculate specific price for each vehicle based on its Vendor's basePrice and pricePerKm
+        const availableTaxis = vehicles.map(vehicle => {
+            const basePrice = vehicle.basePrice || 5.0; // Fallbacks if vendor hasn't set
+            const ratePerKm = vehicle.pricePerKm || 1.5;
+            let totalPrice = basePrice + ((distanceKm || 0) * ratePerKm);
+            
+            return {
+                vehicle: {
+                    id: vehicle.id,
+                    brand: vehicle.brand,
+                    model: vehicle.model,
+                    category: vehicle.category,
+                    seats: vehicle.seats,
+                    images: vehicle.images,
+                    vendorCompany: vehicle.owner?.vendorProfile?.companyName || 'Standard Taxi'
+                },
+                pricing: {
+                    basePrice,
+                    pricePerKm: ratePerKm,
+                    distanceKm: parseFloat((distanceKm || 0).toFixed(2)),
+                    totalPrice: parseFloat(totalPrice.toFixed(2)),
+                    currency: 'AZN'
+                }
+            };
+        });
 
-        // Note: For actual Production, we push this payload to a Queue layer.
-        console.log(`[Queue Stub] Triggered Ride ${ride.id}. Emitting dispatch payload:`, dispatchEvent);
+        // Sort from cheap to expensive
+        availableTaxis.sort((a, b) => a.pricing.totalPrice - b.pricing.totalPrice);
 
-        return ride;
+        return availableTaxis;
     }
 
     async getTransferById(id) {
@@ -96,8 +101,12 @@ class TransferService {
         return transferRepository.findAll({ ...query, driverId });
     }
 
-    async getAllTransfers(query) {
-        return transferRepository.findAll(query);
+    async getAllTransfers(userId, role, query) {
+        let filter = { ...query };
+        if (role === 'vendor') {
+            filter.vendorId = userId; // Secure isolation
+        }
+        return transferRepository.findAll(filter);
     }
 
     async updateStatus(id, status, userId) {
@@ -151,15 +160,59 @@ class TransferService {
                 status: RIDE_STATES.DRIVER_ASSIGNED
             });
 
-            // QUEUE DRIVER TIMEOUT (Reassignment Stub)
-            // In a message queue like BullMQ, we add a delayed job here:
-            // await reassignQueue.add('check-accept', { rideId, driverId }, { delay: 15000 });
-
             return updatedRide;
         } finally {
             // Release the Mutex Lock
             await redisClient.del(lockKey);
         }
+    }
+
+    async acceptRide(rideId, driverProfileId) {
+        const transfer = await this.getTransferById(rideId);
+        
+        if (transfer.status !== RIDE_STATES.DRIVER_ASSIGNED || transfer.driverId !== driverProfileId) {
+            throw ApiError.badRequest('Ride is no longer available or was unassigned.');
+        }
+
+        // Update to accepted
+        const updated = await this.updateStatus(rideId, RIDE_STATES.DRIVER_ACCEPTED, null);
+        
+        // Broadcast to Passenger that Driver is coming
+        trackingService.broadcastRideUpdate(rideId, 'driver_accepted', updated);
+        
+        return updated;
+    }
+
+    async rejectRide(rideId, driverProfileId, pickupLocation, requiredSeats, requiredCategory) {
+        const transfer = await this.getTransferById(rideId);
+        
+        if (transfer.status === RIDE_STATES.DRIVER_ASSIGNED && transfer.driverId === driverProfileId) {
+            console.log(`❌ [Platform] Driver ${driverProfileId} rejected assigned Ride ${rideId}`);
+            
+            // Revert status so vendor can re-assign
+            await transferRepository.update(rideId, { driverId: null, status: RIDE_STATES.MATCHING });
+        }
+        return { success: true };
+    }
+
+    async updateLifecycle(rideId, driverProfileId, nextState) {
+        const transfer = await this.getTransferById(rideId);
+        
+        if (transfer.driverId !== driverProfileId && driverProfileId !== 'admin') {
+            throw ApiError.forbidden('Only the assigned driver can update this ride');
+        }
+
+        const validLifecycleStates = [RIDE_STATES.ARRIVED, RIDE_STATES.STARTED, RIDE_STATES.COMPLETED];
+        if (!validLifecycleStates.includes(nextState)) {
+            throw ApiError.badRequest('Invalid lifecycle state');
+        }
+
+        const updated = await this.updateStatus(rideId, nextState, null);
+        
+        // Notify Passenger
+        trackingService.broadcastRideUpdate(rideId, nextState.toLowerCase(), updated);
+
+        return updated;
     }
 }
 

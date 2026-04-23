@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { createTransfer, getTransfer, getMyTransfers, updateTransferStatus, getAllTransfers, getDriverRides } from './passenger/transfer/transfer.controller.js';
+import { searchTaxis, getTransfer, getMyTransfers, updateTransferStatus, getAllTransfers, getDriverRides, acceptRide, rejectRide, arriveAtPickup, startRide, completeRide } from './passenger/transfer/transfer.controller.js';
 import { authMiddleware } from '../../middlewares/auth.middleware.js';
 import vehicleRoutes from './passenger/vehicle/vehicle.routes.js';
 import driverRoutes from './driver/driver.routes.js';
 import passengerLocationRoutes from './passenger/location/location.routes.js';
+import trackingRoutes from './tracking/tracking.routes.js';
 
 // Cargo imports
 import cargoVehicleRoutes from './cargo/vehicle/cargoVehicle.routes.js';
@@ -27,13 +28,22 @@ router.use('/passenger/location', passengerLocationRoutes);
 // --- Protected Routes ---
 router.use(authMiddleware);
 
+// Public Taxi Search (Now Protected)
+router.post('/rides/search', searchTaxis);
+
 // Rides (Protected by Transport Ban)
-router.post('/rides', transportBanMiddleware, createTransfer);
 router.get('/rides', getMyTransfers);
 router.get('/rides/me', authorize('driver'), getDriverRides);
 router.get('/rides/all', authorize('admin', 'vendor'), getAllTransfers);
 router.get('/rides/:id', getTransfer);
 router.patch('/rides/:id/status', updateTransferStatus);
+
+// Driver Lifecycle Actions
+router.post('/rides/:id/accept', authorize('driver'), acceptRide);
+router.post('/rides/:id/reject', authorize('driver'), rejectRide);
+router.post('/rides/:id/arrive', authorize('driver'), arriveAtPickup);
+router.post('/rides/:id/start', authorize('driver'), startRide);
+router.post('/rides/:id/complete', authorize('driver'), completeRide);
 
 // --- Admin / Vendor Routes ---
 router.get('/pricing', authorize('admin', 'vendor'), getPricingRules);
@@ -48,5 +58,8 @@ router.use('/drivers', driverRoutes);
 // --- Cargo Logistics (Restricted to non-tourists) ---
 router.use('/cargo/vehicles', cargoRoleMiddleware, cargoVehicleRoutes);
 router.use('/cargo/shipments', cargoRoleMiddleware, shipmentRoutes);
+
+// Tracking (Websocket info docs, and REST Maps for vendors)
+router.use('/tracking', trackingRoutes);
 
 export default router;

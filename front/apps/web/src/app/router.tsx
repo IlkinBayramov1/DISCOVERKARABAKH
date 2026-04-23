@@ -25,7 +25,8 @@ import { HotelSearchPage } from '../modules/hotel/pages/HotelSearch';
 import { HotelDetailPage } from '../modules/hotel/pages/HotelDetail';
 import { ReservationPage } from '../modules/hotel/pages/Reservation';
 import { BookingConfirmationPage } from '../modules/booking/pages/BookingConfirmation';
-import { PassengerTransportPage } from '../modules/transport/pages/passenger/PassengerTransportPage';
+import { PassengerTransportPage, TransportDetailsPage } from '../modules/transport/pages/passenger';
+import { TransportReservationPage } from '../modules/transport/pages/passenger/TransportReservationPage';
 import { CargoTransportPage } from '../modules/transport/pages/cargo/CargoTransportPage';
 import { DriverTransportPage } from '../modules/transport/pages/driver/DriverTransportPage';
 import { ToursPage } from '../modules/tour/pages/ToursPage/ToursPage';
@@ -33,6 +34,7 @@ import { TourDetailsPage } from '../modules/tour/pages/TourDetailsPage/TourDetai
 import { TourReservationPage } from '../modules/tour/pages/TourReservationPage/TourReservationPage';
 import { AttractionsPage } from '../modules/attraction/pages/AttractionsPage/AttractionsPage';
 import { AttractionDetailsPage } from '../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage';
+import { AttractionReservationPage } from '../modules/attraction/pages/AttractionReservationPage/AttractionReservationPage';
 
 import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
 import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
@@ -189,6 +191,10 @@ const router = createBrowserRouter([
                         element: <AttractionDetailsPage />,
                     },
                     {
+                        path: 'attraction-checkout',
+                        element: <AttractionReservationPage />,
+                    },
+                    {
                         path: 'things-to-do/attractions',
                         element: <AttractionsPage />,
                     },
@@ -199,6 +205,14 @@ const router = createBrowserRouter([
                     {
                         path: 'transport/passenger',
                         element: <PassengerTransportPage />,
+                    },
+                    {
+                        path: 'transport/details/:id',
+                        element: <TransportDetailsPage />,
+                    },
+                    {
+                        path: 'transport-checkout',
+                        element: <TransportReservationPage />,
                     },
                     {
                         path: 'transport/driver',

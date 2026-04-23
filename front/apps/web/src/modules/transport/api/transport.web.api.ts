@@ -6,13 +6,33 @@ export interface LocationData {
     address: string;
 }
 
-export interface CalculatePricePayload {
+export interface SearchTaxisPayload {
     pickupLocation?: LocationData;
     dropoffLocation?: LocationData;
     waypoints?: LocationData[];
     distanceKm?: number;
-    durationMin?: number;
-    category: string;
+    paxCount?: number;
+    vehicleCategory?: string;
+    scheduledAt?: string;
+}
+
+export interface TaxiSearchResult {
+    vehicle: {
+        id: string;
+        brand: string;
+        model: string;
+        category: string;
+        seats: number;
+        images?: string[];
+        vendorCompany: string;
+    };
+    pricing: {
+        basePrice: number;
+        pricePerKm: number;
+        distanceKm: number;
+        totalPrice: number;
+        currency: string;
+    };
 }
 
 export interface DriverRegistrationPayload {
@@ -40,14 +60,7 @@ export interface DriverRegistrationPayload {
     cargoType?: string;
 }
 
-export interface CreateRidePayload {
-    pickupLocation: LocationData;
-    dropoffLocation: LocationData;
-    waypoints?: LocationData[];
-    distanceKm?: number;
-    durationMin?: number;
-    vehicleCategory: string;
-}
+// Removed legacy dispatch payload
 
 export interface CreateShipmentPayload {
     pickupLocation: LocationData;
@@ -67,13 +80,9 @@ export interface CreateShipmentPayload {
 }
 
 export const transportApi = {
-    calculatePrice: async (payload: CalculatePricePayload) => {
-        const response = await httpClient.post('/transport/price/calculate', payload);
-        return response.data;
-    },
-    createRide: async (payload: CreateRidePayload) => {
-        const response = await httpClient.post('/transport/rides', payload);
-        return response.data;
+    searchTaxis: async (payload: SearchTaxisPayload) => {
+        const response = await httpClient.post('/transport/rides/search', payload);
+        return response.data as { count: number; data: TaxiSearchResult[] };
     },
     createShipment: async (payload: CreateShipmentPayload) => {
         const response = await httpClient.post('/transport/cargo/shipments', payload);
@@ -90,6 +99,10 @@ export const transportApi = {
     },
     registerDriver: async (payload: DriverRegistrationPayload) => {
         const response = await httpClient.post('/transport/drivers/register', payload);
+        return response.data;
+    },
+    getVehicleById: async (id: string) => {
+        const response = await httpClient.get(`/transport/vehicles/${id}`);
         return response.data;
     }
 };

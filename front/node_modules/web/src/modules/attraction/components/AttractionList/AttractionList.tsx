@@ -10,46 +10,36 @@ interface AttractionListProps {
 }
 
 export const AttractionList: React.FC<AttractionListProps> = ({ attractions, isLoading, error }) => {
+    
+    // ERROR STATE
     if (error) {
         return (
-            <div className="attraction-message error">
-                <span className="icon">⚠️</span>
-                <p>{error}</p>
+            <div className="error-premium">
+                <span>{error}</span>
             </div>
         );
     }
 
-    if (isLoading) {
+    // EMPTY STATE
+    if (!isLoading && attractions.length === 0) {
         return (
-            <div className="attraction-list-grid">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="attraction-card skeleton">
-                        <div className="skeleton-img"></div>
-                        <div className="skeleton-content">
-                            <div className="skeleton-title"></div>
-                            <div className="skeleton-text line-1"></div>
-                            <div className="skeleton-text line-2"></div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-
-    if (attractions.length === 0) {
-        return (
-            <div className="attraction-message empty">
-                <span className="icon">🏛️</span>
-                <p>No attractions found matching your criteria.</p>
+            <div className="empty-state-premium">
+                <h3 className="empty-title">No attractions found</h3>
+                <p className="empty-text">Try adjusting your search criteria or clear some filters.</p>
             </div>
         );
     }
 
     return (
-        <div className="attraction-list-grid">
-            {attractions.map(attraction => (
-                <AttractionCard key={attraction.id} attraction={attraction} />
-            ))}
-        </div>
+        <section className="tour-grid">
+            {isLoading ? (
+                // SKELETON LOADER
+                [1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="skeleton-tour"></div>)
+            ) : (
+                attractions.map((attraction) => (
+                    <AttractionCard key={attraction.id} attraction={attraction} />
+                ))
+            )}
+        </section>
     );
 };

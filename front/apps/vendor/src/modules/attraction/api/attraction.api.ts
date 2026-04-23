@@ -70,4 +70,8 @@ export const vendorAttractionApi = {
             method: 'POST',
             body: JSON.stringify({ reply })
         }),
+
+    // Get all bookings for this vendor
+    getBookings: () => 
+        httpClient<{ success: boolean; data: any[] }>('/bookings/vendor'),
 };

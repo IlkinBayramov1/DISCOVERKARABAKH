@@ -36,6 +36,7 @@ import VendorAttractionDashboard from '../modules/attraction/pages/dashboard/Ven
 import ManageAttractionPage from '../modules/attraction/pages/manage/ManageAttractionPage';
 import AttractionReviews from '../modules/attraction/pages/reviews/AttractionReviews';
 import AttractionAnalyticsPage from '../modules/attraction/pages/analytics/AttractionAnalyticsPage';
+import AttractionBookingsPage from '../modules/attraction/pages/bookings/AttractionBookingsPage';
 
 import DashRedirect from './DashRedirect';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
@@ -188,6 +189,10 @@ export const router = createBrowserRouter([
             {
                 path: 'attractions/analytics',
                 element: <AttractionAnalyticsPage />
+            },
+            {
+                path: 'attractions/bookings',
+                element: <AttractionBookingsPage />
             },
             {
                 path: 'attractions/analytics/:id',
