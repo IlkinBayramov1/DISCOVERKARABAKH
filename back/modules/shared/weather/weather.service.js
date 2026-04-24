@@ -41,14 +41,25 @@ class WeatherService {
 
             const data = await response.json();
 
+            // Helper to convert wind degrees to direction
+            const getWindDirection = (deg) => {
+                const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+                const index = Math.round(deg / 45) % 8;
+                return directions[index];
+            };
+
             const weatherData = {
                 temp: data.main.temp,
                 feelsLike: data.main.feels_like,
                 humidity: data.main.humidity,
+                pressure: data.main.pressure,
+                visibility: (data.visibility / 1000).toFixed(1), // Convert to km
                 condition: data.weather[0].main,
                 description: data.weather[0].description,
                 icon: `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`,
                 windSpeed: data.wind.speed,
+                windDeg: data.wind.deg,
+                windDirection: getWindDirection(data.wind.deg),
                 updatedAt: new Date()
             };
 
@@ -100,14 +111,25 @@ class WeatherService {
 
             const data = await response.json();
 
+            // Helper to convert wind degrees to direction
+            const getWindDirection = (deg) => {
+                const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+                const index = Math.round(deg / 45) % 8;
+                return directions[index];
+            };
+
             const weatherData = {
                 temp: data.main.temp,
                 feelsLike: data.main.feels_like,
                 humidity: data.main.humidity,
+                pressure: data.main.pressure,
+                visibility: (data.visibility / 1000).toFixed(1), // Convert to km
                 condition: data.weather[0].main,
                 description: data.weather[0].description,
                 icon: `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`,
                 windSpeed: data.wind.speed,
+                windDeg: data.wind.deg,
+                windDirection: getWindDirection(data.wind.deg),
                 updatedAt: new Date()
             };
 

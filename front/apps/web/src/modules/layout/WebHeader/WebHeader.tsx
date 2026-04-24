@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { User, LogOut, Briefcase } from 'lucide-react';
+import { WebHeaderWeather } from './WebHeaderWeather';
 import './WebHeader.css';
 
 export default function WebHeader() {
@@ -9,6 +10,7 @@ export default function WebHeader() {
 
     return (
         <header className="web-header">
+            <WebHeaderWeather />
             <div className="web-header__actions">
                 {isAuthenticated ? (
                     <div className="user-profile-menu">

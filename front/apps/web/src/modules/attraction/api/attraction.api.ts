@@ -40,6 +40,11 @@ export const attractionApi = {
         return response.data;
     },
 
+    getWeatherByCity: async (city: string) => {
+        const response = await axios.get(`${API_URL}/attractions/weather`, { params: { city } });
+        return response.data;
+    },
+
     reportReview: async (attractionId: string, reviewId: string, data: { reason: string; customNote?: string }, token: string) => {
         const response = await axios.post(
             `${API_URL}/attractions/${attractionId}/reviews/${reviewId}/report`,

@@ -1,0 +1,247 @@
+/* ============================================
+   WEB HEADER WEATHER - PREMIUM STYLES
+   ============================================ */
+
+.header-weather {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    padding: 8px 20px;
+    border-radius: 16px;
+    color: #1e293b;
+    font-size: 13px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e2e8f0;
+    box-shadow: 
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-weather::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.header-weather:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+    border-color: #c7d2fe;
+    box-shadow: 
+        0 4px 12px rgba(99, 102, 241, 0.08),
+        0 8px 24px rgba(99, 102, 241, 0.04);
+    transform: translateY(-1px);
+}
+
+.header-weather:hover::before {
+    opacity: 1;
+}
+
+/* ============================================
+   WEATHER SUMMARY (LEFT SIDE)
+   ============================================ */
+
+.weather-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-right: 1px solid #e2e8f0;
+    padding-right: 18px;
+    position: relative;
+}
+
+.weather-summary::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 20%;
+    bottom: 20%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #c7d2fe, transparent);
+}
+
+.city-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6366f1;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10px;
+}
+
+.city-info svg {
+    color: #8b5cf6;
+    transition: transform 0.3s ease;
+}
+
+.header-weather:hover .city-info svg {
+    transform: rotate(-15deg) scale(1.1);
+}
+
+.temp-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.temp-info > svg {
+    color: #f59e0b;
+    filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2));
+    animation: weatherFloat 3s ease-in-out infinite;
+}
+
+@keyframes weatherFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.temp {
+    font-weight: 900;
+    font-size: 18px;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ============================================
+   WEATHER STATS (RIGHT SIDE)
+   ============================================ */
+
+.weather-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 0;
+}
+
+.stat-item:hover {
+    color: #4338ca;
+    transform: translateY(-2px);
+}
+
+.stat-item:hover::before {
+    opacity: 1;
+}
+
+.stat-item svg {
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover svg {
+    transform: scale(1.15);
+    filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
+}
+
+.stat-item span {
+    white-space: nowrap;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+    font-size: 12px;
+}
+
+/* Stat icons colors */
+.stat-item[title="Wind"] svg { color: #06b6d4; }
+.stat-item[title="Humidity"] svg { color: #3b82f6; }
+.stat-item[title="Visibility"] svg { color: #8b5cf6; }
+.stat-item[title="Pressure"] svg { color: #ec4899; }
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.header-weather.loading {
+    opacity: 0.6;
+    animation: weatherPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes weatherPulse {
+    0%, 100% { 
+        opacity: 0.6; 
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+    50% { 
+        opacity: 0.3; 
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.05);
+    }
+}
+
+.header-weather.loading .weather-summary,
+.header-weather.loading .weather-stats {
+    filter: blur(1px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 992px) {
+    .weather-stats {
+        display: none;
+    }
+    
+    .weather-summary {
+        border-right: none;
+        padding-right: 0;
+    }
+    
+    .weather-summary::after {
+        display: none;
+    }
+    
+    .header-weather {
+        padding: 6px 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-weather {
+        gap: 12px;
+        padding: 6px 12px;
+        border-radius: 12px;
+    }
+    
+    .temp {
+        font-size: 16px;
+    }
+    
+    .city-info {
+        font-size: 9px;
+    }
+}
