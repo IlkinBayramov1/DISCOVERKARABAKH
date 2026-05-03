@@ -1,13 +1,15 @@
 import React from 'react';
 import type { IHotel } from '../../types';
+import { FavoriteButton } from '../../../../shared/components/FavoriteButton/FavoriteButton';
 import './HotelCard.css';
 
 interface HotelCardProps {
     hotel: IHotel;
     onClick?: (id: string) => void;
+    isFavorited?: boolean;
 }
 
-export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick }) => {
+export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorited }) => {
     const imageUrl = hotel.images && hotel.images.length > 0 
         ? hotel.images[0].url 
         : 'https://placehold.co/400x300?text=No+Image';
@@ -27,11 +29,14 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick }) => {
 
     const getDisplayPrice = () => {
         const h = hotel as any;
+        // Prioritize the pre-calculated startingPrice from backend (which checks all room types and daily prices)
+        if (h.startingPrice && h.startingPrice !== 0) return h.startingPrice;
+        
         if (h.roomTypes && h.roomTypes.length > 0) {
-            const prices = h.roomTypes.map((room: any) => room.basePrice).filter((p: any) => p != null);
+            const prices = h.roomTypes.map((room: any) => room.basePrice).filter((p: any) => p != null && p > 0);
             if (prices.length > 0) return Math.min(...prices);
         }
-        return h.startingPrice || h.lowestPrice || '---';
+        return h.lowestPrice || '---';
     };
 
     const finalPrice = getDisplayPrice();
@@ -46,9 +51,11 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick }) => {
                         <span>{hotel.starRating.toFixed(1)}</span>
                     </div>
                 )}
-                <button className="wishlist-btn" onClick={(e) => e.stopPropagation()}>
-                    <i className="fa-regular fa-heart"></i>
-                </button>
+                <FavoriteButton 
+                    targetId={hotel.id} 
+                    type="hotel" 
+                    initialIsFavorited={isFavorited} 
+                />
             </div>
 
             <div className="card-info-section">

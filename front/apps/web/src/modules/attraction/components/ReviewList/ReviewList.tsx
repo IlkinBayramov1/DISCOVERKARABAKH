@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Flag } from 'lucide-react';
+import { Star, Flag, MessageCircle } from 'lucide-react';
 import type { AttractionReview } from '../../types';
 import './ReviewList.css';
 
@@ -58,6 +58,16 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews, isLoading, onRe
                             {review.images.map((img, i) => (
                                 <img key={i} src={img} alt="User review" className="glass-hover" />
                             ))}
+                        </div>
+                    )}
+                    
+                    {review.vendorReply && (
+                        <div className="vendor-reply-box glass mt-4">
+                            <div className="reply-header">
+                                <MessageCircle size={14} className="reply-icon" />
+                                <span>Vendor's Message</span>
+                            </div>
+                            <p className="reply-text">{review.vendorReply}</p>
                         </div>
                     )}
                 </div>

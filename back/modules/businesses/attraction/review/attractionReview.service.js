@@ -62,6 +62,21 @@ class AttractionReviewService {
     async moderateReview(reviewId, status) {
         return await attractionReviewRepository.update(reviewId, { status });
     }
+
+    async replyToReview(vendorId, reviewId, reply) {
+        const review = await attractionReviewRepository.findById(reviewId);
+        if (!review) throw ApiError.notFound('Review not found');
+
+        // Verify that this vendor owns the attraction the review is for
+        const { attractionService } = await import('../attraction/attraction.service.js');
+        const attraction = await attractionService.getAttractionById(review.attractionId);
+        
+        if (attraction.vendorId !== vendorId) {
+            throw ApiError.forbidden('You can only reply to reviews for your own attractions');
+        }
+
+        return await attractionReviewRepository.update(reviewId, { vendorReply: reply });
+    }
 }
 
 export const attractionReviewService = new AttractionReviewService();

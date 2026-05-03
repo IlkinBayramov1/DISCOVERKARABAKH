@@ -83,7 +83,17 @@ class WeatherService {
         const apiKey = process.env.OPENWEATHER_API_KEY;
         if (!apiKey) throw new Error('Weather API key is missing');
 
-        const cacheKey = `${this.CACHE_PREFIX}city:${city.toLowerCase().trim()}`;
+        const normalizedCity = city.toLowerCase().trim();
+        const cacheKey = `${this.CACHE_PREFIX}city:${normalizedCity}`;
+
+        // Karabakh Cities Coordinates Mapping for better reliability
+        const CITY_COORDINATES = {
+            'shusha': { lat: 39.76, lon: 46.75 },
+            'lachin': { lat: 39.64, lon: 46.55 },
+            'khankendi': { lat: 39.83, lon: 46.75 },
+            'aghdam': { lat: 39.99, lon: 46.93 },
+            'agdam': { lat: 39.99, lon: 46.93 }
+        };
 
         // 1. Try Cache
         if (redisClient.isReady()) {
@@ -98,7 +108,16 @@ class WeatherService {
         // 2. Fetch from API
         try {
             const url = new URL(this.BASE_URL);
-            url.searchParams.append('q', city);
+            
+            // Check if we have predefined coordinates for this city
+            const coords = CITY_COORDINATES[normalizedCity];
+            if (coords) {
+                url.searchParams.append('lat', coords.lat);
+                url.searchParams.append('lon', coords.lon);
+            } else {
+                url.searchParams.append('q', city);
+            }
+
             url.searchParams.append('appid', apiKey);
             url.searchParams.append('units', 'metric');
             url.searchParams.append('lang', 'az');

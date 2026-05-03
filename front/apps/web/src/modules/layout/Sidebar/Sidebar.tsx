@@ -3,8 +3,6 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     Hotel,
     Map as MapIcon,
-    CalendarDays,
-    Utensils,
     FerrisWheel,
     Car,
     Package,
@@ -47,8 +45,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     };
 
     const buildLink = (path: string) => {
-        if (!currentCity) return path;
-        return `${path}?city=${currentCity}`;
+        const params = new URLSearchParams(location.search);
+        // We keep the existing city if it's there, but the buildLink might be called 
+        // for paths that should inherit all current search params
+        return `${path}?${params.toString()}`;
     };
 
     const toggleTransport = (e: React.MouseEvent) => {
@@ -124,22 +124,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to={buildLink("/events")} className={({ isActive }) => 
-                                isActive && location.pathname.includes('/events') ? 'nav-link active' : 'nav-link'
-                            }>
-                                <CalendarDays size={20} />
-                                <span>Events</span>
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to={buildLink("/restaurants")} className={({ isActive }) => 
-                                isActive && location.pathname.includes('/restaurants') ? 'nav-link active' : 'nav-link'
-                            }>
-                                <Utensils size={20} />
-                                <span>Restaurants</span>
-                            </NavLink>
-                        </li>
-                        <li>
                             <NavLink to={buildLink("/attractions")} className={({ isActive }) => 
                                 isActive && location.pathname.includes('/attractions') ? 'nav-link active' : 'nav-link'
                             }>
@@ -174,7 +158,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                         isActive && location.pathname.includes('/transport/passenger') ? 'sub-nav-link active' : 'sub-nav-link'
                                     }>
                                         <Users size={18} />
-                                        <span>Sərnişin (Passenger)</span>
+                                        <span>VIP Transfer</span>
                                     </NavLink>
                                 </li>
                                 <li>

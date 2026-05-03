@@ -39,6 +39,10 @@ export interface ITour {
     isApproved: boolean;
     isFeatured: boolean;
     availableSlots?: number;
+    meetingAddress?: string;
+    meetingPoint?: string;
+    mapLink?: string;
+    destinationLink?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -50,6 +54,8 @@ export interface ITourAvailabilityResponse {
     bookedCount: number;
     remainingSeats: number;
     isFull: boolean;
+    isStopped: boolean;
+    price: number;
 }
 
 export interface ITourFilters {

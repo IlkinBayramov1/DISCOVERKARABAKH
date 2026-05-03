@@ -1,13 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Attraction } from '../../types';
+import { FavoriteButton } from '../../../../shared/components/FavoriteButton/FavoriteButton';
 import './AttractionCard.css';
 
 interface AttractionCardProps {
     attraction: Attraction;
+    isFavorited?: boolean;
 }
 
-export const AttractionCard: React.FC<AttractionCardProps> = ({ attraction }) => {
+export const AttractionCard: React.FC<AttractionCardProps> = ({ attraction, isFavorited }) => {
     const navigate = useNavigate();
     const defaultImage = 'https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=800';
     const coverImage = attraction.images?.find(img => img.isCover)?.url || attraction.images?.[0]?.url || defaultImage;
@@ -23,9 +25,11 @@ export const AttractionCard: React.FC<AttractionCardProps> = ({ attraction }) =>
                     </div>
                 )}
                 
-                <button className="wishlist-btn" onClick={(e) => e.stopPropagation()}>
-                    <i className="fa-regular fa-heart"></i>
-                </button>
+                <FavoriteButton 
+                    targetId={attraction.id} 
+                    type="attraction" 
+                    initialIsFavorited={isFavorited} 
+                />
             </div>
 
             <div className="card-info-section">

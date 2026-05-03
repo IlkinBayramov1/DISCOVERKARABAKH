@@ -92,10 +92,10 @@ export default function RoomManagement() {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (roomId: string, name: string) => {
+    const handleDelete = async (roomId: string, name: string, ownerHotelId: string) => {
         if (window.confirm(`Are you sure you want to delete "${name}"? This will permanently remove all associated physical room inventory.`)) {
             try {
-                await removeRoomType(roomId);
+                await removeRoomType(roomId, ownerHotelId);
             } catch (err) {
                 console.error(err);
             }
@@ -105,9 +105,11 @@ export default function RoomManagement() {
     const handleSave = async (payload: IRoomTypePayload) => {
         try {
             if (editingRoom) {
-                await editRoomType(editingRoom.id, payload);
+                // Use the room's specific hotelId if we are in global view
+                await editRoomType(editingRoom.id, payload, editingRoom.hotelId);
             } else {
-                await addRoomType(payload);
+                // Use the currently selected hotelId (or auto-picked one)
+                await addRoomType(payload, hotelId || hotels?.[0]?.id);
             }
             setIsModalOpen(false);
         } catch (err) {
@@ -127,10 +129,10 @@ export default function RoomManagement() {
             {/* DASHBOARD HEADER */}
             <header className="rm-header">
                 <div className="rm-header-left">
-                    <h1 className="rm-page-title">{isGlobalView ? 'Room Management' : 'Room Management'}</h1>
+                    <h1 className="rm-page-title">Room Management</h1>
                     <div className="rm-subtitle">
                         {isGlobalView ? (
-                            <span><Layers size={14} /> Add or Edit your room types.</span>
+                            <span><Layers size={14} /> {hotels && hotels.length > 0 ? `Managing ${rooms.length} categories across ${hotels.length} properties` : 'Add or Edit your room types.'}</span>
                         ) : (
                             <>
                                 <MapPin size={14} />
@@ -139,7 +141,7 @@ export default function RoomManagement() {
                         )}
                     </div>
                 </div>
-                {!isGlobalView && (
+                {(hotelId || (hotels && hotels.length > 0)) && (
                     <button className="rm-btn-primary" onClick={handleOpenCreate}>
                         <Plus size={18} /> New Category
                     </button>
@@ -179,7 +181,7 @@ export default function RoomManagement() {
                         </div>
                         <h3>No Categories Match</h3>
                         <p>We couldn't find any room types matching your current filters or property.</p>
-                        {!isGlobalView && (
+                        {(hotelId || (hotels && hotels.length > 0)) && (
                             <button className="rm-btn-primary mt-4" onClick={handleOpenCreate}>
                                 Create First Category
                             </button>
@@ -209,7 +211,7 @@ export default function RoomManagement() {
                                             <button className="rm-icon-btn" title="View Reviews" onClick={() => navigate(`/rooms/reviews?roomId=${room.id}&hotelId=${hotelId}`)}>
                                                 <MessageSquare size={16} />
                                             </button>
-                                            <button className="rm-icon-btn danger" title="Delete Category" onClick={() => handleDelete(room.id, room.name)}>
+                                            <button className="rm-icon-btn danger" title="Delete Category" onClick={() => handleDelete(room.id, room.name, room.hotelId)}>
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -220,38 +222,35 @@ export default function RoomManagement() {
                                     </p>
 
                                     <div className="rm-specs-pills">
-                                        <span className="rm-spec-pill">
-                                            <Users size={14} /> {room.maxAdults}A, {room.maxChildren}C
+                                        <span className="rm-spec-pill" title="Capacity">
+                                            <Users size={14} /> {room.maxAdults} Adults {room.maxChildren > 0 && `+ ${room.maxChildren} Children`}
                                         </span>
-                                        <span className="rm-spec-pill">
+                                        <span className="rm-spec-pill" title="Room Size">
                                             <Maximize size={14} /> {room.roomSizeM2 || 0} m²
                                         </span>
                                         <span className="rm-spec-pill bed">
-                                            <BedDouble size={14} /> {room.bedType}
+                                            <BedDouble size={14} /> {room.bedType || 'Standard Bed'}
                                         </span>
                                     </div>
 
-                                    {/* Mini Amenities View */}
+                                    {/* Mini Amenities View - Showing All now */}
                                     {room.roomAmenities && room.roomAmenities.length > 0 && (
-                                        <div className="rm-mini-amenities">
-                                            {room.roomAmenities.slice(0, 4).map((am, idx) => (
+                                        <div className="rm-mini-amenities flex-wrap h-auto gap-y-1">
+                                            {room.roomAmenities.map((am, idx) => (
                                                 <span key={idx} className="rm-mini-am-item">
-                                                    <Check size={12} className="check-icon" />
+                                                    <Check size={12} className="check-icon text-green-500" />
                                                     {am.amenityName}
                                                 </span>
                                             ))}
-                                            {room.roomAmenities.length > 4 && (
-                                                <span className="rm-mini-am-item more">+{room.roomAmenities.length - 4} more</span>
-                                            )}
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Footer (Price & Main Action) */}
-                                <div className="rm-card-footer">
+                                <div className="rm-card-footer border-t border-slate-50 pt-4">
                                     <div className="rm-price-block">
-                                        <span className="price-label">Standard Rate</span>
-                                        <div className="price-value">
+                                        <span className="price-label font-bold text-slate-400">Standard Rate</span>
+                                        <div className="price-value text-indigo-600">
                                             <span className="currency">₼</span>{room.basePrice || 0}
                                             <span className="period">/night</span>
                                         </div>

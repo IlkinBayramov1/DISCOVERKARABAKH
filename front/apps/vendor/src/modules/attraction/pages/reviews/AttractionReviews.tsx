@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
     Star, MessageSquare, Flag, Send, X, 
     Image as ImageIcon, CheckCircle2, AlertCircle, RefreshCw
@@ -53,9 +53,9 @@ export default function AttractionReviews() {
         loadAttractions();
     }, []);
 
-    const handleReply = async (reviewId: string) => {
+    const handleReply = async (review: AttractionReview) => {
         if (!replyText.trim()) return;
-        const success = await submitReply(reviewId, replyText);
+        const success = await submitReply(review.id, replyText, review.attractionId);
         if (success) {
             setReplyingTo(null);
             setReplyText('');
@@ -245,6 +245,17 @@ export default function AttractionReviews() {
                                     )}
                                 </div>
 
+                                {/* VENDOR REPLY DISPLAY */}
+                                {review.vendorReply && (
+                                    <div className="dk-vendor-reply-display">
+                                        <div className="reply-header">
+                                            <MessageSquare size={14} />
+                                            <span>Sizin Cavabınız:</span>
+                                        </div>
+                                        <p>{review.vendorReply}</p>
+                                    </div>
+                                )}
+
                                 {/* REPLY BOX */}
                                 {replyingTo === review.id && (
                                     <div className="dk-reply-box animate-slide-down">
@@ -269,7 +280,7 @@ export default function AttractionReviews() {
                                             <button className="dk-btn-ghost small" onClick={() => setReplyingTo(null)}>Ləğv et</button>
                                             <button 
                                                 className="dk-btn-primary small" 
-                                                onClick={() => handleReply(review.id)}
+                                                onClick={() => handleReply(review)}
                                             >
                                                 <Send size={14} /> Cavabı Göndər
                                             </button>

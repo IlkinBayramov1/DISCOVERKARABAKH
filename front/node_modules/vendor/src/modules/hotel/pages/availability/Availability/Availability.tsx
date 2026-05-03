@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useHotels } from '../../../hooks/useHotels';
 import { useRooms } from '../../../hooks/useRooms';
 import { useCalendar } from '../../../hooks/useCalendar';
@@ -19,8 +20,11 @@ import {
 import './Availability.css';
 
 export default function Availability() {
+    const [searchParams] = useSearchParams();
+    const urlHotelId = searchParams.get('hotelId');
+    
     const { data: hotels, loading: hotelsLoading } = useHotels(true);
-    const [selectedHotelId, setSelectedHotelId] = useState<string>('');
+    const [selectedHotelId, setSelectedHotelId] = useState<string>(urlHotelId || '');
     const [selectedRoomId, setSelectedRoomId] = useState<string>('all');
     const [isBulkOpen, setIsBulkOpen] = useState(false);
 
@@ -29,9 +33,9 @@ export default function Availability() {
 
     useEffect(() => {
         if (hotels && hotels.length > 0 && !selectedHotelId) {
-            setSelectedHotelId(hotels[0].id);
+            setSelectedHotelId(urlHotelId || hotels[0].id);
         }
-    }, [hotels, selectedHotelId]);
+    }, [hotels, selectedHotelId, urlHotelId]);
 
     const { rooms } = useRooms(selectedHotelId || undefined);
     const { calendarData, loading, error, fetchCalendar, bulkUpdate } = useCalendar(selectedHotelId);
@@ -114,6 +118,8 @@ export default function Availability() {
             alert('Calendar updated successfully!');
             fetchCalendar(startDate, endDate);
             return true;
+        } else {
+            alert('Failed to update calendar. Please check your data and try again.');
         }
         return false;
     };

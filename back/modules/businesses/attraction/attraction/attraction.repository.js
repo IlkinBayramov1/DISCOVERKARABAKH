@@ -5,7 +5,6 @@ class AttractionRepository {
         return await prisma.attraction.create({
             data,
             include: { 
-                category: true,
                 images: true,
                 stats: true
             }
@@ -17,7 +16,6 @@ class AttractionRepository {
         return await prisma.attraction.findUnique({
             where: { id },
             include: {
-                category: true,
                 images: { orderBy: { order: 'asc' } },
                 stats: true,
                 workingHours: true
@@ -29,7 +27,6 @@ class AttractionRepository {
         return await prisma.attraction.findUnique({
             where: { slug },
             include: {
-                category: true,
                 images: { orderBy: { order: 'asc' } },
                 stats: true,
                 workingHours: true
@@ -41,35 +38,45 @@ class AttractionRepository {
         // High-velocity Composite Index lookup parameters (categoryId, status, isFeatured)
         const whereClause = {};
 
-        if (filters.categoryId) whereClause.categoryId = filters.categoryId;
+        if (filters.category) whereClause.category = filters.category;
         if (filters.status) whereClause.status = filters.status;
         if (filters.city) whereClause.city = filters.city;
+        if (filters.vendorId) whereClause.vendorId = filters.vendorId;
         if (filters.isFeatured !== undefined) whereClause.isFeatured = filters.isFeatured;
 
-        // Optional Location Bounding Logic (Mocked slightly here, actual PostGIS logic requires raw queries)
+        // Optional Location Bounding Logic
         if (filters.entryType) whereClause.entryType = filters.entryType;
 
-        // Multilingual Full-text search (MySQL FullText Index)
-        if (filters.q) {
+        // Search Logic
+        const keyword = filters.keyword || filters.q;
+        if (keyword) {
             whereClause.OR = [
-                { name: { search: filters.q } },
-                { description: { search: filters.q } },
-                { searchKeywords: { search: filters.q } }
+                { name: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+                { searchKeywords: { contains: keyword, mode: 'insensitive' } }
             ];
         }
 
         const totalItems = await prisma.attraction.count({ where: whereClause });
 
+        let orderBy = { isFeatured: 'desc' };
+        if (filters.sort === 'rating_desc') {
+            orderBy = { stats: { averageRating: 'desc' } };
+        } else if (filters.sort === 'price_asc') {
+            orderBy = { price: 'asc' };
+        } else if (filters.sort === 'price_desc') {
+            orderBy = { price: 'desc' };
+        } else if (filters.sort === 'newest') {
+            orderBy = { createdAt: 'desc' };
+        }
+
         const data = await prisma.attraction.findMany({
             where: whereClause,
             include: {
-                category: true,
                 images: { orderBy: { order: 'asc' } },
                 stats: true
             },
-            orderBy: {
-                isFeatured: 'desc'
-            },
+            orderBy,
             skip: pagination.skip,
             take: pagination.take
         });
@@ -82,7 +89,6 @@ class AttractionRepository {
             where: { id },
             data,
             include: { 
-                category: true,
                 images: true,
                 stats: true
             }

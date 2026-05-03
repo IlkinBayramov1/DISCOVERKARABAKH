@@ -49,6 +49,17 @@ export class AttractionReviewController {
             next(error);
         }
     }
+
+    async reply(req, res, next) {
+        try {
+            const { reviewId } = req.params;
+            const { reply } = req.body;
+            const result = await attractionReviewService.replyToReview(req.user.id, reviewId, reply);
+            return successResponse(res, result, { message: 'Reply submitted successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const attractionReviewController = new AttractionReviewController();

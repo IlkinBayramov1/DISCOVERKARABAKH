@@ -94,7 +94,26 @@ export default function PricingRuleModal({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await onSave(formData);
+        
+        // Sanitize data before sending to API
+        const payload: IPricingRulePayload = { ...formData };
+        if (!payload.startDate) payload.startDate = undefined; // Backend will handle empty/missing as null
+        if (!payload.endDate) payload.endDate = undefined;
+        if (!payload.roomTypeId) payload.roomTypeId = null;
+
+        // Reset irrelevant fields based on type
+        if (payload.type !== 'SEASONAL' && payload.type !== 'HOLIDAY') {
+            payload.startDate = undefined;
+            payload.endDate = undefined;
+        }
+        if (payload.type !== 'WEEKEND') {
+            payload.daysOfWeek = '';
+        }
+        if (payload.type !== 'OCCUPANCY_BASED') {
+            payload.occupancyThreshold = 0;
+        }
+
+        const success = await onSave(payload);
         if (success) onClose();
     };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-    ShieldCheck, Info, Users, CreditCard, 
+import {
+    ShieldCheck, Info, Users, CreditCard,
     ChevronLeft, MapPin, Calendar, Navigation,
     Car, Wallet
 } from 'lucide-react';
@@ -12,14 +12,14 @@ import './TransportReservationPage.css';
 export const TransportReservationPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Retrieve trip details passed through navigation state
     const tripData = location.state || {};
-    const { 
-        pickupLocation, 
-        dropoffLocation, 
-        waypoints, 
-        paxCount, 
+    const {
+        pickupLocation,
+        dropoffLocation,
+        waypoints,
+        paxCount,
         bookingDate,
         vehicleId,
         vehicleBrand,
@@ -35,7 +35,7 @@ export const TransportReservationPage: React.FC = () => {
     const [paymentMethod, setPaymentMethod] = useState('card');
 
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
-    const { profile, loading: profileLoading } = useProfile();
+    const { profile } = useProfile();
 
     useEffect(() => {
         if (profile) {
@@ -108,7 +108,7 @@ export const TransportReservationPage: React.FC = () => {
                 <button onClick={() => navigate(-1)} className="btn-back-link">
                     <ChevronLeft size={20} /> Detallara qayıt
                 </button>
-                
+
                 <div className="pt-checkout-layout">
                     {/* Sol tərəf - Form */}
                     <div className="pt-checkout-main">
@@ -128,37 +128,37 @@ export const TransportReservationPage: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Ad</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-input-checkout" 
-                                        placeholder="Məs: Əli" 
+                                    <input
+                                        type="text"
+                                        className="form-input-checkout"
+                                        placeholder="Məs: Əli"
                                         value={firstName} onChange={e => setFirstName(e.target.value)}
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Soyad</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-input-checkout" 
+                                    <input
+                                        type="text"
+                                        className="form-input-checkout"
                                         placeholder="Məs: Məmmədov"
-                                        value={lastName} onChange={e => setLastName(e.target.value)} 
+                                        value={lastName} onChange={e => setLastName(e.target.value)}
                                     />
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
-                                    <input 
-                                        type="email" 
-                                        className="form-input-checkout" 
-                                        placeholder="ali@example.com" 
+                                    <input
+                                        type="email"
+                                        className="form-input-checkout"
+                                        placeholder="ali@example.com"
                                         value={email} onChange={e => setEmail(e.target.value)}
                                     />
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Telefon</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-input-checkout" 
-                                        placeholder="e.g. +994 50 123 45 67" 
+                                    <input
+                                        type="text"
+                                        className="form-input-checkout"
+                                        placeholder="e.g. +994 50 123 45 67"
                                         value={phone} onChange={e => setPhone(e.target.value)}
                                     />
                                 </div>
@@ -171,13 +171,13 @@ export const TransportReservationPage: React.FC = () => {
                                 <CreditCard size={22} className="text-indigo-600" /> Ödəmə Metodu
                             </h2>
                             <p className="text-sm text-gray-500 mb-6">Ödəniş üsulunu seçin.</p>
-                            
+
                             <div className="space-y-4">
                                 <label className={`payment-option ${paymentMethod === 'card' ? 'active' : ''}`}>
-                                    <input 
-                                        type="radio" 
-                                        name="payment" 
-                                        checked={paymentMethod === 'card'} 
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        checked={paymentMethod === 'card'}
                                         onChange={() => setPaymentMethod('card')}
                                     />
                                     <div className="flex-1">
@@ -189,12 +189,12 @@ export const TransportReservationPage: React.FC = () => {
                                         <span className="card-badge">MC</span>
                                     </div>
                                 </label>
-                                
+
                                 <label className={`payment-option ${paymentMethod === 'cash' ? 'active' : ''}`}>
-                                    <input 
-                                        type="radio" 
-                                        name="payment" 
-                                        checked={paymentMethod === 'cash'} 
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        checked={paymentMethod === 'cash'}
                                         onChange={() => setPaymentMethod('cash')}
                                     />
                                     <div className="flex-1">
@@ -219,7 +219,7 @@ export const TransportReservationPage: React.FC = () => {
                                     <p className="text-gray-500 text-sm">Qarabağ Daxili Transfer</p>
                                 </div>
                             </div>
-                            
+
                             <div className="summary-info-box mb-6">
                                 <div className="si-row">
                                     <MapPin size={16} />
@@ -263,7 +263,7 @@ export const TransportReservationPage: React.FC = () => {
                                     </>
                                 )}
                             </button>
-                            
+
                             <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400 font-medium text-center">
                                 <Info size={14} />
                                 Seçdiyiniz üsula görə ödəmə baş tutacaq

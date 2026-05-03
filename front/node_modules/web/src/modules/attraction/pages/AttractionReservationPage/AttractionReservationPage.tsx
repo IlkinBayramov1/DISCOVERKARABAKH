@@ -71,7 +71,7 @@ export const AttractionReservationPage: React.FC = () => {
             return;
         }
 
-        const totalPrice = (attraction.price || 0) * (adults + children);
+
 
         try {
             const data = await submitBooking({

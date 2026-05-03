@@ -15,8 +15,18 @@ class RoomController {
     async getRoomsByHotel(req, res, next) {
         try {
             const { hotelId } = req.params;
-            const rooms = await roomService.getRoomsByHotel(hotelId);
+            const rooms = await roomService.getRoomsByHotel(hotelId, req.query);
             return successResponse(res, rooms, { count: rooms.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getRoomById(req, res, next) {
+        try {
+            const { hotelId, roomId } = req.params;
+            const room = await roomService.getRoomById(hotelId, roomId, req.query);
+            return successResponse(res, room);
         } catch (error) {
             next(error);
         }

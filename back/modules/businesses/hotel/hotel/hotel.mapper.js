@@ -20,7 +20,11 @@ class HotelMapper {
         let startingPrice = 0;
         if (hotel.roomTypes && hotel.roomTypes.length > 0) {
             const prices = hotel.roomTypes
-                .map(rt => (rt.pricingList && rt.pricingList.length > 0 ? rt.pricingList[0].basePrice : Infinity))
+                .map(rt => {
+                    const dailyPrice = (rt.pricingList && rt.pricingList.length > 0) ? rt.pricingList[0].basePrice : Infinity;
+                    const fallbackPrice = rt.basePrice || Infinity;
+                    return Math.min(dailyPrice, fallbackPrice);
+                })
                 .filter(p => p !== Infinity);
             
             if (prices.length > 0) {
@@ -70,7 +74,9 @@ class HotelMapper {
                 maxAdults: rt.maxAdults,
                 maxChildren: rt.maxChildren,
                 totalInventory: rt.totalInventory,
-                basePrice: rt.basePrice || (rt.pricingList?.[0]?.basePrice) || null
+                basePrice: Math.min(rt.basePrice || Infinity, rt.pricingList?.[0]?.basePrice || Infinity) === Infinity 
+                    ? null 
+                    : Math.min(rt.basePrice || Infinity, rt.pricingList?.[0]?.basePrice || Infinity)
             })) : [],
             createdAt: hotel.createdAt,
             updatedAt: hotel.updatedAt

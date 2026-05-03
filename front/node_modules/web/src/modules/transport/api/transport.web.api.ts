@@ -23,6 +23,8 @@ export interface TaxiSearchResult {
         model: string;
         category: string;
         seats: number;
+        luggage: number;
+        description?: string;
         images?: string[];
         vendorCompany: string;
     };

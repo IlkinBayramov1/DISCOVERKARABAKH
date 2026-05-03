@@ -35,6 +35,8 @@ export interface NearbyEvent {
     endDate: string;
 }
 
+export type AttractionCategoryType = 'Muzey' | 'Park' | 'Tarixi_Mekan' | 'Tebiet_Abidesi' | 'Memorial_Kompleks' | 'Idman_Eylence';
+
 export interface Attraction {
     id: string;
     name: string;
@@ -52,8 +54,7 @@ export interface Attraction {
     searchKeywords?: string | null;
     isFeatured: boolean;
     status: string;
-    categoryId: string;
-    category?: AttractionCategory;
+    category: AttractionCategoryType;
     images: AttractionImage[];
     stats?: AttractionStat;
     workingHours: AttractionWorkingHour[];
@@ -74,6 +75,7 @@ export interface AttractionReview {
     rating: number;
     comment?: string;
     images?: string[];
+    vendorReply?: string;
     status: 'approved' | 'under_review' | 'rejected';
     createdAt: string;
 }

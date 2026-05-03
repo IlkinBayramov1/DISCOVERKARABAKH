@@ -31,6 +31,7 @@ export default function PhysicalRooms() {
     const { 
         physicalRooms, 
         loading, 
+        error,
         fetchPhysicalRooms, 
         bulkAddRooms, 
         addPhysicalRoom, 
@@ -86,13 +87,21 @@ export default function PhysicalRooms() {
     const handleBulkSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const success = await bulkAddRooms(bulkForm);
-        if (success) setIsBulkModalOpen(false);
+        if (success) {
+            setIsBulkModalOpen(false);
+        } else {
+            alert('Failed to generate rooms. A room with this number might already exist.');
+        }
     };
 
     const handleSingleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const success = await addPhysicalRoom(singleForm);
-        if (success) setIsSingleModalOpen(false);
+        if (success) {
+            setIsSingleModalOpen(false);
+        } else {
+            alert('Failed to add room. Please verify room number is unique.');
+        }
     };
 
     const handleDelete = async (roomId: string, num: string) => {
@@ -169,6 +178,14 @@ export default function PhysicalRooms() {
 
     return (
         <div className="room-inventory-container">
+            {/* ERROR DISPLAY */}
+            {error && (
+                <div className="dk-alert-error mb-6 flex items-center gap-2">
+                    <AlertCircle size={18} />
+                    <span>{error}</span>
+                </div>
+            )}
+
             {/* HEADER */}
             <div className="dashboard-header mb-8 overflow-visible">
                 <div>

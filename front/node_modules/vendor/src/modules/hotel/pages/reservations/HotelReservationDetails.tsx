@@ -78,7 +78,7 @@ export const HotelReservationDetails: React.FC<Props> = ({ booking, onClose, onS
                             {mainGuest?.firstName?.[0] || booking.user?.email?.[0]?.toUpperCase() || 'G'}
                         </div>
                         <div className="guest-primary-info">
-                            <h3>{mainGuest ? `${mainGuest.firstName} ${mainGuest.lastName}` : 'Guest User'}</h3>
+                            <h3>{mainGuest ? `${mainGuest.firstName} ${mainGuest.lastName}` : (booking.user?.firstName ? `${booking.user.firstName} ${booking.user.lastName || ''}` : 'Guest User')}</h3>
                             <span>Primary Guest Portfolio</span>
                         </div>
                     </div>
@@ -94,7 +94,7 @@ export const HotelReservationDetails: React.FC<Props> = ({ booking, onClose, onS
                             <div className="contact-icon"><Phone size={14} /></div>
                             <div className="contact-data">
                                 <label>Verified Phone</label>
-                                <span>{mainGuest?.phone || 'N/A'}</span>
+                                <span>{mainGuest?.phone || booking.user?.phone || 'N/A'}</span>
                             </div>
                         </div>
                     </div>

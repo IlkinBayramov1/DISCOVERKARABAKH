@@ -19,6 +19,7 @@ export interface IUser {
     role: 'tourist' | 'resident' | 'driver' | 'admin';
     name?: string;
     avatar?: string;
+    balance?: number;
 }
 
 export interface IAuthResponse {

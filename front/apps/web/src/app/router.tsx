@@ -23,6 +23,7 @@ import WebLogin from '../modules/auth/pages/WebLogin';
 import WebRegister from '../modules/auth/pages/WebRegister';
 import { HotelSearchPage } from '../modules/hotel/pages/HotelSearch';
 import { HotelDetailPage } from '../modules/hotel/pages/HotelDetail';
+import { RoomDetailPage } from '../modules/hotel/pages/RoomDetail/RoomDetailPage';
 import { ReservationPage } from '../modules/hotel/pages/Reservation';
 import { BookingConfirmationPage } from '../modules/booking/pages/BookingConfirmation';
 import { PassengerTransportPage, TransportDetailsPage } from '../modules/transport/pages/passenger';
@@ -38,6 +39,7 @@ import { AttractionReservationPage } from '../modules/attraction/pages/Attractio
 
 import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
 import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
+import { FavoritesPage } from '../modules/account/pages/FavoritesPage/FavoritesPage';
 
 // ─── Driver Portal ────────────────────────────────────────────────────────────
 import DriverLayout from '../modules/driver/components/DriverLayout';
@@ -155,6 +157,10 @@ const router = createBrowserRouter([
                         element: <HotelDetailPage />,
                     },
                     {
+                        path: 'hotels/:hotelId/rooms/:roomId',
+                        element: <RoomDetailPage />,
+                    },
+                    {
                         path: 'checkout',
                         element: <ReservationPage />,
                     },
@@ -225,6 +231,10 @@ const router = createBrowserRouter([
                     {
                         path: 'account/trips',
                         element: <TripsPage />,
+                    },
+                    {
+                        path: 'account/favorites',
+                        element: <FavoritesPage />,
                     },
                     {
                         path: 'auth/login',

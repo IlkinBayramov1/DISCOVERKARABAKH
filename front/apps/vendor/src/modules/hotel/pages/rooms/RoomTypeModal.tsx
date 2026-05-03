@@ -36,10 +36,18 @@ const COMMON_ROOM_AMENITIES = [
     { name: 'Mini Bar', icon: <Layers size={16} /> },
     { name: 'Coffee Machine', icon: <Coffee size={16} /> },
     { name: 'Private Safe', icon: <Shield size={16} /> },
-    { name: '1 King Bed', icon: <BedDouble size={16} /> },
-    { name: '2 Twin Beds', icon: <BedDouble size={16} /> },
     { name: 'Luxury Bath', icon: <Info size={16} /> },
     { name: 'Work Desk', icon: <Info size={16} /> }
+];
+
+const BED_TYPES = [
+    '1 King Bed',
+    '2 Twin Beds',
+    '1 Queen Bed',
+    '1 Double Bed',
+    '2 Queen Beds',
+    'Studio / Sofa Bed',
+    'Triple Room Setup'
 ];
 
 export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, isSaving }: RoomTypeModalProps) {
@@ -53,12 +61,14 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
         roomSizeM2: 25,
         totalInventory: 1,
         basePrice: 0,
+        category: 'Standard',
         images: [],
         amenities: []
     });
 
     const [localFiles, setLocalFiles] = useState<File[]>([]);
     const { uploadImages, uploading, uploadError } = useUpload();
+    const [formError, setFormError] = useState<string | null>(null);
 
     useEffect(() => {
         if (editingRoom) {
@@ -72,6 +82,7 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                 roomSizeM2: editingRoom.roomSizeM2 || 0,
                 totalInventory: editingRoom.totalInventory,
                 basePrice: editingRoom.basePrice || 0,
+                category: editingRoom.category || 'Standard',
                 images: editingRoom.images ? editingRoom.images.map(img => (typeof img === 'string' ? img : img.url)) : [],
                 amenities: editingRoom.roomAmenities ? editingRoom.roomAmenities.map(a => a.amenityName) : []
             });
@@ -86,6 +97,7 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                 roomSizeM2: 25,
                 totalInventory: 1,
                 basePrice: 0,
+                category: 'Standard',
                 images: [],
                 amenities: []
             });
@@ -129,6 +141,7 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(null);
         try {
             let uploadedUrls: string[] = [];
             if (localFiles.length > 0) {
@@ -142,8 +155,8 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
             };
 
             await onSave(payload);
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            setFormError(err.message || 'An unexpected error occurred while saving.');
         }
     };
 
@@ -174,18 +187,35 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                                 <Info size={14} />
                                 Category Identity
                             </div>
-                            <div className="dk-rt-field">
-                                <label className="dk-rt-label">Room Category Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder="e.g. Presidential Ocean Suite"
-                                    className="dk-rt-input"
-                                    style={{fontSize: '18px', fontWeight: 800}}
-                                    required
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="dk-rt-field">
+                                    <label className="dk-rt-label">Room Name / Label</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Ocean View Room"
+                                        className="dk-rt-input"
+                                        style={{fontSize: '16px', fontWeight: 700}}
+                                        required
+                                    />
+                                </div>
+                                <div className="dk-rt-field">
+                                    <label className="dk-rt-label">Otaq Kateqoriyası</label>
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleChange}
+                                        className="dk-rt-input appearance-none"
+                                        style={{fontSize: '16px', fontWeight: 700}}
+                                    >
+                                        <option value="Standard">Standard</option>
+                                        <option value="Suite">Suite</option>
+                                        <option value="Family">Family</option>
+                                        <option value="Deluxe">Deluxe</option>
+                                    </select>
+                                </div>
                             </div>
                             <div className="dk-rt-field">
                                 <label className="dk-rt-label">Detailed Description</label>
@@ -245,11 +275,28 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                                         <input type="number" name="maxChildren" value={formData.maxChildren} onChange={handleChange} className="dk-rt-input" />
                                     </div>
                                 </div>
-                                <div className="dk-rt-field mt-4 mb-0">
+                                <div className="dk-rt-field mt-4">
                                     <label className="dk-rt-label">Room Size (m²)</label>
                                     <div className="relative">
                                         <Maximize size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input type="number" name="roomSizeM2" value={formData.roomSizeM2} onChange={handleChange} className="dk-rt-input pl-12" />
+                                    </div>
+                                </div>
+                                <div className="dk-rt-field mt-4 mb-0">
+                                    <label className="dk-rt-label">Bed Configuration</label>
+                                    <div className="relative">
+                                        <BedDouble size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        <select 
+                                            name="bedType" 
+                                            value={formData.bedType} 
+                                            onChange={handleChange} 
+                                            className="dk-rt-input pl-12 appearance-none"
+                                        >
+                                            {BED_TYPES.map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                            <option value="Other">Other / Custom</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -276,6 +323,63 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                                             {formData.amenities.includes(item.name) && <Check size={10} strokeWidth={4} />}
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* CUSTOM AMENITY INPUT */}
+                            <div className="dk-rt-custom-amenity-box mt-4">
+                                <label className="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">Custom Amenities</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        id="custom-amenity-field"
+                                        placeholder="Add custom feature (e.g. Garden View, Kitchenette)" 
+                                        className="dk-rt-input flex-1"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const input = e.currentTarget;
+                                                const val = input.value.trim();
+                                                if (val && !formData.amenities.includes(val)) {
+                                                    setFormData({ ...formData, amenities: [...formData.amenities, val] });
+                                                    input.value = '';
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="dk-rt-add-btn bg-slate-100 p-2 rounded-lg hover:bg-slate-200 text-slate-600 transition-colors"
+                                        onClick={() => {
+                                            const input = document.getElementById('custom-amenity-field') as HTMLInputElement;
+                                            const val = input.value.trim();
+                                            if (val && !formData.amenities.includes(val)) {
+                                                setFormData({ ...formData, amenities: [...formData.amenities, val] });
+                                                input.value = '';
+                                            }
+                                        }}
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* SELECTED CUSTOM AMENITIES */}
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {formData.amenities.filter((name: string) => !COMMON_ROOM_AMENITIES.find(a => a.name === name)).map((name: string) => (
+                                    <span key={name} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-100 group">
+                                        {name}
+                                        <button 
+                                            type="button" 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAmenityToggle(name);
+                                            }}
+                                            className="text-blue-400 hover:text-blue-600"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </span>
                                 ))}
                             </div>
                         </div>
@@ -322,9 +426,15 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                             </div>
                             {uploadError && <p className="text-xs text-red-500 font-bold mt-2">{uploadError}</p>}
                         </div>
-
                     </form>
                 </div>
+
+                {formError && (
+                    <div className="dk-rt-form-error">
+                        <Info size={16} />
+                        <span>{formError}</span>
+                    </div>
+                )}
 
                 <div className="dk-rt-modal-footer">
                     <button 

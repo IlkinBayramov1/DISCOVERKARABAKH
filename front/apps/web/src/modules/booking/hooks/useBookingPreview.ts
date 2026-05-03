@@ -11,8 +11,8 @@ export const useBookingPreview = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await bookingApi.previewPrice(params);
-            setPreviewData(data);
+            const res = await bookingApi.previewPrice(params);
+            setPreviewData(res.data || res);
         } catch (err: any) {
             setError(err.message || 'Failed to calculate pricing');
             setPreviewData(null);

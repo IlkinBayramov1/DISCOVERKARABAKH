@@ -1,0 +1,476 @@
+.room-detail-wrapper {
+    background-color: #fcfcfd;
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.room-hero-gallery {
+    height: 550px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.room-hero-thumbnails {
+    display: flex;
+    gap: 15px;
+    margin-top: -60px;
+    position: relative;
+    z-index: 10;
+    overflow-x: auto;
+}
+
+.thumb-card {
+    width: 140px;
+    height: 90px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    flex-shrink: 0;
+}
+
+.thumb-card.active {
+    border-color: #6a28c7;
+}
+
+.thumb-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.room-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 60px;
+    margin-top: 40px;
+}
+
+.room-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+.room-specs-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 30px 0px;
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.spec-item label {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.am-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #475569;
+    font-size: 15px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.am-item:hover {
+    background: #f1f5f9;
+}
+
+.am-item i {
+    color: #6a28c7;
+    width: 20px;
+    text-align: center;
+}
+
+.booking-sticky-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 32px;
+    position: sticky;
+    top: 100px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.booking-sticky-card .card-header {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tax-notice {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.price-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-tag .amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a1a;
+}
+
+.price-tag .period {
+    font-size: 14px;
+    color: #666;
+    margin-left: 4px;
+}
+
+/* Daily Breakdown Styles */
+.daily-breakdown {
+    width: 100%;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    padding-right: 4px;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #444;
+    padding: 4px 0;
+    border-bottom: 1px dashed #ddd;
+}
+
+.breakdown-item:last-child {
+    border-bottom: none;
+}
+
+.day-date {
+    font-weight: 500;
+}
+
+.day-price {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.total-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 2px solid #eee;
+}
+
+.total-summary .label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.total-summary .amount {
+    font-size: 22px;
+    color: #6a28c7;
+}
+
+/* Map Card Styles */
+.map-wrapper-card {
+    margin-top: 24px;
+    padding: 16px !important;
+}
+
+.map-embed {
+    height: 200px;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f4f8;
+}
+
+.map-overlay-btn {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    z-index: 10;
+}
+
+.map-overlay-btn:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    background: #f8f9fa;
+}
+
+.map-text-info {
+    margin-top: 14px;
+}
+
+.map-text-info strong {
+    display: block;
+    font-size: 14px;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.map-text-info span {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Fix for sticky sidebar overlapping */
+.room-booking-sidebar {
+    position: relative;
+}
+
+.booking-sticky-card {
+    position: sticky;
+    top: 24px;
+    z-index: 5;
+    margin-bottom: 24px;
+}
+
+.preview-loading-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f0f7ff;
+    border-radius: 8px;
+    color: #0056b3;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.preview-error-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #fff5f5;
+    border-radius: 8px;
+    color: #c53030;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.preview-hint {
+    font-size: 12px;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.booking-dates-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border: 1px solid #f1f5f9;
+}
+
+.date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.date-field label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.date-field input {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+}
+
+.booking-guests-selector {
+    padding: 16px 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.guest-selector-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.guest-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.guest-label i {
+    color: #6a28c7;
+    width: 16px;
+    text-align: center;
+}
+
+.guest-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8fafc;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.guest-controls button {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    color: #6a28c7;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.guest-controls button:hover:not(:disabled) {
+    background: #6a28c7;
+    color: white;
+}
+
+.guest-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.guest-controls span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    min-width: 20px;
+    text-align: center;
+}
+
+.booking-guests-display {
+    padding: 16px 0;
+    border-top: 1px solid #f1f5f9;
+    margin-bottom: 24px;
+}
+
+.guest-info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.guest-info-row i {
+    color: #6a28c7;
+    font-size: 16px;
+}
+
+.reserve-btn-primary {
+    width: 100%;
+    padding: 18px;
+    background: #6a28c7;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.reserve-btn-primary:hover {
+    background: #5a20aa;
+    transform: translateY(-2px);
+}

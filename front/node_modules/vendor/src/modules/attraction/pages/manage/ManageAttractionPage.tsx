@@ -26,7 +26,7 @@ export default function ManageAttractionPage() {
         city: 'Shusha',
         address: '',
         description: '',
-        categoryId: '',
+        category: '',
         entryType: 'free' as 'free' | 'paid' | 'donation',
         price: '',
         crowdLevel: 'medium' as 'low' | 'medium' | 'high',
@@ -76,7 +76,7 @@ export default function ManageAttractionPage() {
                     city: attr.city || 'Shusha',
                     address: attr.address || '',
                     description: attr.description || '',
-                    categoryId: attr.categoryId || '',
+                    category: attr.category || '',
                     entryType: attr.entryType || 'free',
                     price: attr.price?.toString() || '',
                     crowdLevel: attr.crowdLevel || 'medium',
@@ -188,7 +188,7 @@ export default function ManageAttractionPage() {
             }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => navigate('/vendor/attractions'), 800);
+            setTimeout(() => navigate('/attractions'), 800);
         } catch (error: any) {
             alert(`Xəta baş verdi: ${error.message}`);
         } finally {
@@ -218,7 +218,7 @@ export default function ManageAttractionPage() {
 
                 {/* HEADER */}
                 <header className="dk-ma-header">
-                    <button onClick={() => navigate('/vendor/attractions')} className="dk-btn-back">
+                    <button onClick={() => navigate('/attractions')} className="dk-btn-back">
                         İdarəetmə Panelinə Qayıt
                     </button>
                     <div className="header-title-row">
@@ -247,7 +247,7 @@ export default function ManageAttractionPage() {
                         <div className="dk-grid-2">
                             <div className="dk-input-group">
                                 <label>Kateqoriya</label>
-                                <select required name="categoryId" className="dk-input" value={formData.categoryId} onChange={handleChange}>
+                                <select required name="category" className="dk-input" value={formData.category} onChange={handleChange}>
                                     <option value="">Seçin...</option>
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -481,7 +481,7 @@ export default function ManageAttractionPage() {
 
                     {/* STICKY FOOTER */}
                     <div className="dk-form-footer">
-                        <button type="button" onClick={() => navigate('/vendor/attractions')} className="dk-btn-ghost">
+                        <button type="button" onClick={() => navigate('/attractions')} className="dk-btn-ghost">
                             Ləğv Et
                         </button>
                         <button type="submit" className="dk-btn-submit" disabled={isLoading || uploading}>

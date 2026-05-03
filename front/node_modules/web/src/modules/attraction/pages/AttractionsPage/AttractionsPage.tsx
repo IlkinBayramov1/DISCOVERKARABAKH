@@ -10,7 +10,6 @@ export const AttractionsPage: React.FC = () => {
     
     // UI States
     const [keywordInput, setKeywordInput] = useState(searchParams.get('q') || '');
-    const [cityInput, setCityInput] = useState(searchParams.get('city') || '');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const {
@@ -32,24 +31,18 @@ export const AttractionsPage: React.FC = () => {
     const onSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         handleSearch(keywordInput);
-        updateFilters({ city: cityInput || undefined });
         
         const newParams = new URLSearchParams(searchParams);
         if (keywordInput) newParams.set('q', keywordInput);
         else newParams.delete('q');
         
-        if (cityInput) newParams.set('city', cityInput);
-        else newParams.delete('city');
-        
         setSearchParams(newParams);
     };
 
     useEffect(() => {
-        const urlCity = searchParams.get('city') || '';
         const urlQ = searchParams.get('q') || '';
-        if (urlCity !== params.city) setCityInput(urlCity);
         if (urlQ !== params.q) setKeywordInput(urlQ);
-    }, [searchParams, params.city, params.q]);
+    }, [searchParams, params.q]);
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         updateFilters({ sort: e.target.value });
@@ -80,7 +73,7 @@ export const AttractionsPage: React.FC = () => {
                             <label>ATTRACTION NAME</label>
                             <input 
                                 type="text" 
-                                placeholder="Search places..."
+                                placeholder="Search by name, description or keywords..."
                                 value={keywordInput}
                                 onChange={(e) => setKeywordInput(e.target.value)}
                                 className="search-input-naked"
@@ -88,24 +81,16 @@ export const AttractionsPage: React.FC = () => {
                             />
                         </div>
                     </div>
-
-                    {/* LOCATION */}
-                    <div className="search-item location-item">
+                    {/* LOCATION (Read-only display of sidebar selection) */}
+                    <div className="search-item location-item" style={{ cursor: 'pointer' }} onClick={() => setSidebarOpen(true)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
                         <div>
                             <label>LOCATION</label>
-                            <div className="search-value">
-                                <input 
-                                    type="text" 
-                                    placeholder="Any City"
-                                    value={cityInput}
-                                    onChange={(e) => setCityInput(e.target.value)}
-                                    className="search-input-naked"
-                                    style={{ width: '120px', fontSize: '15px' }}
-                                />
+                            <div className="search-value" style={{ fontSize: '15px', color: params.city ? 'var(--dk-primary)' : '#666', fontWeight: params.city ? '600' : '400' }}>
+                                {params.city || 'Any City'}
                             </div>
                         </div>
                     </div>

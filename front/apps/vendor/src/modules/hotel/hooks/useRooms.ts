@@ -31,13 +31,14 @@ export function useRooms(hotelId: string | undefined, autoFetch = true) {
         }
     }, [autoFetch, hotelId, fetchRooms]);
 
-    const addRoomType = async (payload: IRoomTypePayload) => {
-        if (!hotelId) throw new Error("Hotel ID is required");
+    const addRoomType = async (payload: IRoomTypePayload, overrideHotelId?: string) => {
+        const effectiveHotelId = hotelId || overrideHotelId;
+        if (!effectiveHotelId) throw new Error("Hotel ID is required");
 
         setLoading(true);
         setError(null);
         try {
-            await roomApi.createRoomType(hotelId, payload);
+            await roomApi.createRoomType(effectiveHotelId, payload);
             await fetchRooms(); // Refetch
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -51,13 +52,14 @@ export function useRooms(hotelId: string | undefined, autoFetch = true) {
         }
     };
 
-    const editRoomType = async (roomId: string, payload: Partial<IRoomTypePayload>) => {
-        if (!hotelId) throw new Error("Hotel ID is required");
+    const editRoomType = async (roomId: string, payload: Partial<IRoomTypePayload>, overrideHotelId?: string) => {
+        const effectiveHotelId = hotelId || overrideHotelId;
+        if (!effectiveHotelId) throw new Error("Hotel ID is required to update room type");
 
         setLoading(true);
         setError(null);
         try {
-            await roomApi.updateRoomType(hotelId, roomId, payload);
+            await roomApi.updateRoomType(effectiveHotelId, roomId, payload);
             await fetchRooms(); // Refetch
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -71,13 +73,14 @@ export function useRooms(hotelId: string | undefined, autoFetch = true) {
         }
     };
 
-    const removeRoomType = async (roomId: string) => {
-        if (!hotelId) throw new Error("Hotel ID is required");
+    const removeRoomType = async (roomId: string, overrideHotelId?: string) => {
+        const effectiveHotelId = hotelId || overrideHotelId;
+        if (!effectiveHotelId) throw new Error("Hotel ID is required to delete room type");
 
         setLoading(true);
         setError(null);
         try {
-            await roomApi.deleteRoomType(hotelId, roomId);
+            await roomApi.deleteRoomType(effectiveHotelId, roomId);
             await fetchRooms(); // Refetch
         } catch (err: unknown) {
             if (err instanceof Error) {

@@ -171,8 +171,11 @@ class CalendarService {
             throw ApiError.notFound('Room Type not found for this hotel');
         }
 
+        // Ensure dates are at 00:00:00 UTC for consistent matching with @db.Date
         const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
         const end = new Date(endDate);
+        end.setUTCHours(0, 0, 0, 0);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             throw ApiError.badRequest('Invalid date range');
@@ -211,7 +214,8 @@ class CalendarService {
 
             // Apply Price Adjustment if specified
             if (priceAdjustment) {
-                const existing = currentPrices.find(p => p.date.getTime() === dateObj.getTime());
+                const dateKey = dateObj.toISOString().split('T')[0];
+                const existing = currentPrices.find(p => p.date.toISOString().split('T')[0] === dateKey);
                 const sourcePrice = existing ? existing.basePrice : (basePrice || 0);
 
                 if (priceAdjustment.type === 'percentage') {

@@ -24,6 +24,9 @@ router.delete('/:reviewId', authMiddleware, attractionReviewController.delete);
 // POST /api/v1/attractions/:id/reviews/:reviewId/report
 router.post('/:reviewId/report', authMiddleware, attractionReviewReportController.createReport);
 
+// POST /api/v1/attractions/:id/reviews/:reviewId/reply
+router.post('/:reviewId/reply', authMiddleware, attractionReviewController.reply);
+
 // Admin-only: GET all reports
 router.get('/reports', authMiddleware, authorize('admin'), attractionReviewReportController.getReports);
 

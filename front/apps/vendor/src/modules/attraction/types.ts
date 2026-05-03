@@ -40,6 +40,8 @@ export interface NearbyEvent {
     image?: string;
 }
 
+export type AttractionCategoryType = 'Muzey' | 'Park' | 'Tarixi_Mekan' | 'Tebiet_Abidesi' | 'Memorial_Kompleks' | 'Idman_Eylence';
+
 export interface Attraction {
     id: string;
     name: string;
@@ -57,8 +59,7 @@ export interface Attraction {
     searchKeywords?: string;
     isFeatured: boolean;
     status: 'active' | 'closed' | 'maintenance';
-    categoryId: string;
-    category?: AttractionCategory;
+    category: AttractionCategoryType;
     images: AttractionImage[];
     stats?: AttractionStat;
     workingHours: AttractionWorkingHour[];
@@ -80,6 +81,7 @@ export interface AttractionReview {
     comment?: string;
     status: 'approved' | 'under_review' | 'rejected';
     images?: string[];
+    vendorReply?: string;
     createdAt: string;
 }
 

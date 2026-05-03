@@ -110,14 +110,14 @@ export default function VendorAttractionDashboard() {
                     <div className="header-actions">
                         <button
                             className="dk-btn-ghost"
-                            onClick={() => navigate('/vendor/attractions/bookings')}
+                            onClick={() => navigate('/attractions/bookings')}
                             style={{ marginRight: '1rem' }}
                         >
                             <Ticket size={18} /> Rezervasiyalar
                         </button>
                         <button
                             className="dk-btn-primary"
-                            onClick={() => navigate('/vendor/attractions/create')}
+                            onClick={() => navigate('/attractions/create')}
                         >
                             <Plus size={18} /> Yeni Məkan
                         </button>
@@ -154,7 +154,7 @@ export default function VendorAttractionDashboard() {
                             <span className="stat-value">{attractions.length}</span>
                         </div>
                     </div>
-                    <div className="dk-stat-card cursor-pointer" onClick={() => navigate('/vendor/attractions/bookings')}>
+                    <div className="dk-stat-card cursor-pointer" onClick={() => navigate('/attractions/bookings')}>
                         <div className="stat-icon-wrap indigo"><Ticket size={22} /></div>
                         <div className="stat-info">
                             <span className="stat-label">Toplam Rezervasiya</span>

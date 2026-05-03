@@ -388,6 +388,17 @@
   font-weight: 600;
   color: var(--dk-td-text-muted);
   margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.dk-tour-location.clickable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.dk-tour-location.clickable:hover {
+  color: var(--dk-td-primary);
+  text-decoration: underline;
 }
 
 .dk-tour-desc {

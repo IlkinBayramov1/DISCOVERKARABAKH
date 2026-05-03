@@ -6,7 +6,7 @@ interface UseAttractionsProps {
     initialParams?: {
         q?: string;
         city?: string;
-        categoryId?: string;
+        category?: string;
         status?: string;
         page?: number;
         limit?: number;

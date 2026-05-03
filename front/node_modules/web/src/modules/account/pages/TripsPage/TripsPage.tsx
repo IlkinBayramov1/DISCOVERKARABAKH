@@ -3,7 +3,8 @@ import { bookingApi } from '../../../../modules/booking/api/booking.api';
 import { useNavigate } from 'react-router-dom';
 import { 
     Calendar, MapPin, Tag, ChevronRight, 
-    XCircle, Loader2, Plane, Compass, Building2, CreditCard 
+    XCircle, Loader2, Compass, Building2, CreditCard,
+    Car, Map
 } from 'lucide-react';
 import './TripsPage.css'; // Yeni DK CSS faylı
 
@@ -53,6 +54,16 @@ export const TripsPage: React.FC = () => {
         );
     }
 
+    const getTripIcon = (type: string) => {
+        switch (type) {
+            case 'hotel': return <Building2 size={16} />;
+            case 'tour': return <Tag size={16} />;
+            case 'attraction': return <Map size={16} />;
+            case 'transfer': return <Car size={16} />;
+            default: return <Compass size={16} />;
+        }
+    };
+
     return (
         <div className="dk-trips-layout">
             <div className="dk-trips-container">
@@ -63,12 +74,6 @@ export const TripsPage: React.FC = () => {
                         <h1 className="dk-title">My Trips</h1>
                         <p className="dk-subtitle">View and manage your upcoming and past adventures in Karabakh.</p>
                     </div>
-                    <button 
-                        onClick={() => navigate('/tours')} 
-                        className="dk-btn-primary"
-                    >
-                        <Plane size={18} /> Book New Adventure
-                    </button>
                 </header>
 
                 {/* CONTENT */}
@@ -86,10 +91,25 @@ export const TripsPage: React.FC = () => {
                 ) : (
                     <div className="dk-trips-list">
                         {bookings.map((booking) => {
-                            const isTour = booking.bookingType === 'tour';
-                            const details = isTour ? (booking.Tour || booking.tour) : booking.hotel;
+                            const details = booking.hotel || booking.Tour || booking.attraction || booking.vehicle || {};
                             const checkInDate = booking.items?.[0] ? new Date(booking.items[0].checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBA';
-                            const imgUrl = details?.images?.[0] || null;
+                            
+                            let title = details.name || details.title || 'Untitled Adventure';
+                            if (booking.bookingType === 'transfer' && details.brand) {
+                                title = `${details.brand} ${details.model}`;
+                            }
+
+                            // Resolve Image
+                            let imgUrl = null;
+                            if (details.images) {
+                                const images = Array.isArray(details.images) ? details.images : 
+                                             (typeof details.images === 'string' ? [details.images] : 
+                                             (typeof details.images === 'object' ? Object.values(details.images) : []));
+                                
+                                if (images.length > 0) {
+                                    imgUrl = typeof images[0] === 'string' ? images[0] : images[0]?.url;
+                                }
+                            }
 
                             return (
                                 <div 
@@ -101,12 +121,12 @@ export const TripsPage: React.FC = () => {
                                     {/* CARD IMAGE AREA */}
                                     <div className="dk-trip-image-box">
                                         {imgUrl ? (
-                                            <img src={imgUrl} alt={details?.name} className="trip-bg-img" />
+                                            <img src={imgUrl} alt={title} className="trip-bg-img" />
                                         ) : (
                                             <div className="trip-placeholder-bg" />
                                         )}
                                         <div className="trip-type-badge">
-                                            {isTour ? <Tag size={16} /> : <Building2 size={16} />}
+                                            {getTripIcon(booking.bookingType)}
                                         </div>
                                     </div>
 
@@ -115,9 +135,9 @@ export const TripsPage: React.FC = () => {
                                         
                                         <div className="trip-top-row">
                                             <div>
-                                                <h3 className="trip-title">{details?.name || 'Untitled Adventure'}</h3>
+                                                <h3 className="trip-title">{title}</h3>
                                                 <p className="trip-location">
-                                                    <MapPin size={14} /> {details?.address || details?.city || 'Karabakh Region'}
+                                                    <MapPin size={14} /> {details.address || details.city || details.vendorCompany || 'Karabakh Region'}
                                                 </p>
                                             </div>
                                             <span className={`dk-status-pill ${booking.status}`}>
@@ -135,7 +155,7 @@ export const TripsPage: React.FC = () => {
                                                 <span className="flex items-center gap-1"><Calendar size={14} className="text-blue-500"/> {checkInDate}</span>
                                             </div>
                                             <div className="meta-item">
-                                                <label>Total Yield</label>
+                                                <label>Total Price</label>
                                                 <span className="text-emerald-600 font-bold flex items-center gap-1">
                                                     <CreditCard size={14} /> {booking.totalPrice} {booking.currency || '₼'}
                                                 </span>
@@ -149,7 +169,7 @@ export const TripsPage: React.FC = () => {
                                         {/* ACTION ROW */}
                                         <div className="trip-action-row">
                                             <span className="view-details-text">
-                                                View Complete Protocol <ChevronRight size={16} />
+                                                View Details <ChevronRight size={16} />
                                             </span>
                                             
                                             {booking.status !== 'cancelled' && (

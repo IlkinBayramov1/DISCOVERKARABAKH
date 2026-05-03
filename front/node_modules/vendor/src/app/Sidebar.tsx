@@ -75,10 +75,9 @@ export default function Sidebar() {
                 ]
             },
             {
-                title: 'Əlaqə və Media',
+                title: 'Əlaqə və Feedback',
                 items: [
                     { path: '/reviews', name: 'Müştəri Rəyləri', icon: MessageSquare },
-                    { path: '/content', name: 'Media Mərkəzi', icon: ImageIcon },
                 ]
             }
         ],

@@ -139,6 +139,7 @@ model User {
   isBanned          Boolean @default(false)
   isTransportBanned Boolean @default(false)
   isApproved        Boolean @default(true)
+  balance           Float   @default(0.0)
   phone             String?
   firstName         String?
   lastName          String?
@@ -177,6 +178,9 @@ model User {
   Attraction         Attraction[]
   AttractionFavorite AttractionFavorite[]
   AttractionReview   AttractionReview[]
+  HotelFavorite      HotelFavorite[]
+  TourFavorite       TourFavorite[]
+  VehicleFavorite    VehicleFavorite[]
   locations          Location[]           @relation("VendorLocations")
   reports            ReviewReport[]       @relation("UserReports")
 }
@@ -338,6 +342,7 @@ model Hotel {
   nearbyPOIs    HotelPOI[]
   promotions    Promotion[]
   searchSnapshot HotelSearchSnapshot?
+  favorites      HotelFavorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -370,6 +375,8 @@ model Vehicle {
 
   currentDriver DriverProfile?
   rides         Ride[]
+  favorites     VehicleFavorite[]
+  bookings      Booking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -467,6 +474,8 @@ model Booking {
   eventId   String?
   attraction Attraction?       @relation(fields: [attractionId], references: [id])
   attractionId String?
+  vehicle   Vehicle?          @relation(fields: [vehicleId], references: [id])
+  vehicleId String?
 
   @@index([userId])
   @@index([vendorId])
@@ -520,12 +529,14 @@ model RoomType {
   name        String
   description String? @db.Text
   isActive    Boolean @default(true)
+  category    String  @default("Standard") // Standard, Suite, Family, Deluxe
 
   maxAdults     Int     @default(2)
   maxChildren   Int     @default(0)
   baseOccupancy Int     @default(2)
   bedType       String?
   roomSizeM2    Int?
+  basePrice     Float?
 
   totalInventory   Int @default(1)
   overbookingLimit Int @default(0)
@@ -561,6 +572,7 @@ model RoomReview {
   rating     Float
   comment    String?  @db.Text
   createdAt  DateTime @default(now())
+  vendorReply String?  @db.Text
 }
 
 model Room {
@@ -811,9 +823,13 @@ model Tour {
   description String  @db.Text
   city        String?
   address     String
-  phone       String?
-  email       String?
-  images      Json?
+  destinationLink String? @db.Text
+  meetingAddress  String? @db.Text
+  phone           String?
+  email           String?
+  images          Json?
+  meetingPoint    String? @db.Text
+  mapLink         String? @db.Text
 
   durationDays   Int
   durationNights Int
@@ -833,6 +849,7 @@ model Tour {
   reviews  Review[]
 
   availabilities TourAvailability[]
+  favorites      TourFavorite[]
   calendarNotes  TourCalendarNote[]
 
   createdAt DateTime @default(now())
@@ -1092,6 +1109,7 @@ model Review {
   attraction   Attraction? @relation(fields: [attractionId], references: [id], onDelete: Cascade)
 
   status String @default("pending") // pending, approved, rejected
+  vendorReply String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1203,12 +1221,13 @@ model ShipmentPricing {
 // 5. Attractions Subdomain
 // ---------------------------
 
-model AttractionCategory {
-  id          String       @id @default(uuid())
-  name        String
-  slug        String       @unique
-  description String?      @db.Text
-  attractions Attraction[]
+enum AttractionCategory {
+  Muzey
+  Park
+  Tarixi_Mekan
+  Tebiet_Abidesi
+  Memorial_Kompleks
+  Idman_Eylence
 }
 
 model Attraction {
@@ -1231,8 +1250,7 @@ model Attraction {
   virtualTourUrl  String?
   searchKeywords  String? @db.Text
 
-  categoryId String
-  category   AttractionCategory @relation(fields: [categoryId], references: [id])
+  category   AttractionCategory @default(Muzey)
 
   vendorId String?
   owner    User?   @relation(fields: [vendorId], references: [id])
@@ -1251,7 +1269,7 @@ model Attraction {
   updatedAt DateTime @updatedAt
 
   @@index([latitude, longitude])
-  @@index([categoryId, status, isFeatured])
+  @@index([category, status, isFeatured])
   @@fulltext([name, description, searchKeywords])
 }
 
@@ -1307,6 +1325,7 @@ model AttractionReview {
   comment      String?    @db.Text
   status       String     @default("approved")
   images       Json?
+  vendorReply  String?    @db.Text
   createdAt    DateTime   @default(now())
 
   @@unique([userId, attractionId])
@@ -1337,6 +1356,39 @@ model ReviewReport {
   reporter User @relation("UserReports", fields: [reporterId], references: [id])
 
   @@index([reviewId])
+}
+
+model HotelFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId])
+}
+
+model TourFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tourId    String
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tourId])
+}
+
+model VehicleFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, vehicleId])
 }
 
 model PaymentTransaction {

@@ -115,6 +115,38 @@ class HotelReviewService {
 
         return { reviews, total, page, totalPages: Math.ceil(total / limit) };
     }
+    async replyToReview(reviewId, vendorId, reply) {
+        // Try to find in general reviews first
+        let review = await prisma.review.findUnique({
+            where: { id: reviewId },
+            include: { hotel: true }
+        });
+
+        let model = 'review';
+
+        if (!review) {
+            // Try in room reviews
+            review = await prisma.roomReview.findUnique({
+                where: { id: reviewId },
+                include: { roomType: { include: { hotel: true } } }
+            });
+            model = 'roomReview';
+        }
+
+        if (!review) throw ApiError.notFound('Review not found');
+
+        // Authorization check
+        const hotel = model === 'review' ? review.hotel : review.roomType.hotel;
+        if (hotel.ownerId !== vendorId) {
+            throw ApiError.forbidden('You can only reply to reviews for your own hotels');
+        }
+
+        // Update the reply
+        return prisma[model].update({
+            where: { id: reviewId },
+            data: { vendorReply: reply }
+        });
+    }
 }
 
 export const hotelReviewService = new HotelReviewService();

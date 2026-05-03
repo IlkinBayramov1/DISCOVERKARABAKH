@@ -17,16 +17,25 @@ class TourRepository {
             minPrice,
             maxPrice,
             difficulty,
-            durationDays,
+            duration, // Frontend sends 'duration'
+            q,        // Keyword search
+            sortBy = 'recommended',
             limit = 10,
             page = 1
         } = query;
 
         const where = {};
-        if (city) where.city = city;
+        if (city) where.city = { contains: city };
         if (ownerId) where.ownerId = ownerId;
         if (difficulty) where.difficulty = difficulty;
-        if (durationDays) where.durationDays = parseInt(durationDays);
+        if (duration) where.durationDays = parseInt(duration);
+
+        if (q) {
+            where.OR = [
+                { name: { contains: q } },
+                { description: { contains: q } }
+            ];
+        }
 
         if (minPrice || maxPrice) {
             where.pricePerPerson = {};
@@ -34,17 +43,26 @@ class TourRepository {
             if (maxPrice) where.pricePerPerson.lte = parseFloat(maxPrice);
         }
 
-        return prisma.tour.findMany({
-            where,
-            include: {
-                owner: {
-                    select: { email: true, isApproved: true }
-                }
-            },
-            take: parseInt(limit),
-            skip: (parseInt(page) - 1) * parseInt(limit),
-            orderBy: { createdAt: 'desc' }
-        });
+        const orderBy = {};
+        if (sortBy === 'price_asc') orderBy.pricePerPerson = 'asc';
+        else if (sortBy === 'price_desc') orderBy.pricePerPerson = 'desc';
+        else if (sortBy === 'duration_asc') orderBy.durationDays = 'asc';
+        else orderBy.createdAt = 'desc';
+
+        const [tours, totalCount] = await prisma.$transaction([
+            prisma.tour.findMany({
+                where,
+                include: {
+                    owner: { select: { email: true, isApproved: true } }
+                },
+                take: parseInt(limit),
+                skip: (parseInt(page) - 1) * parseInt(limit),
+                orderBy
+            }),
+            prisma.tour.count({ where })
+        ]);
+
+        return { tours, totalCount };
     }
 
     async findById(id) {
@@ -53,6 +71,17 @@ class TourRepository {
             include: {
                 owner: {
                     select: { email: true, isApproved: true }
+                }
+            }
+        });
+    }
+
+    async findAvailabilityByDate(tourId, date) {
+        return prisma.tourAvailability.findUnique({
+            where: {
+                tourId_date: {
+                    tourId,
+                    date: new Date(date)
                 }
             }
         });

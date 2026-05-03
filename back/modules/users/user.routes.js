@@ -11,4 +11,9 @@ router.use(authMiddleware);
 router.get('/profile', getProfile);
 router.put('/profile', validate(updateProfileSchema), updateProfile);
 
+// Favorites
+import favoriteController from '../shared/favorite/favorite.controller.js';
+router.get('/favorites', favoriteController.getMyFavorites);
+router.post('/favorites/toggle', favoriteController.toggleFavorite);
+
 export default router;

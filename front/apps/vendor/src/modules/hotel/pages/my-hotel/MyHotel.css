@@ -405,6 +405,45 @@
     font-weight: 500;
 }
 
+.info-policies-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--dk-prop-border);
+}
+
+.policy-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--dk-prop-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.policy-item p {
+    font-size: 14px;
+    color: var(--dk-prop-text-main);
+    line-height: 1.5;
+    font-weight: 500;
+    margin: 0;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+@media (max-width: 640px) {
+    .info-policies-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* MANAGEMENT ACTIONS */
 .dk-prop-actions-panel h3 {
     font-size: 20px;

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Clock, Calendar, Eye, ArrowLeft, Activity, BarChart3 } from 'lucide-react';
+import { TrendingUp, Clock, Calendar, Eye, ArrowLeft, Activity, BarChart3, ChevronDown } from 'lucide-react';
 import { useAttractionAnalytics } from '../../hooks/useAttractionAnalytics';
+import { useAttractions } from '../../hooks/useAttractions';
 import './AttractionAnalyticsPage.css';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -27,9 +28,18 @@ export default function AttractionAnalyticsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [days, setDays] = useState(90);
-    const { data: analytics, loading, error } = useAttractionAnalytics(id!, days);
+    
+    const { data: attractions, loading: attractionsLoading } = useAttractions(true);
+    const { data: analytics, loading: analyticsLoading, error } = useAttractionAnalytics(id || '', days);
 
-    if (loading) {
+    // Auto-redirect if no ID and attractions are loaded
+    useEffect(() => {
+        if (!id && attractions.length > 0) {
+            navigate(`/attractions/analytics/${attractions[0].id}`, { replace: true });
+        }
+    }, [id, attractions, navigate]);
+
+    if (attractionsLoading || (analyticsLoading && id)) {
         return (
             <div className="dk-aa-loading-layout">
                 <div className="spin-loader"></div>
@@ -38,14 +48,31 @@ export default function AttractionAnalyticsPage() {
         );
     }
 
-    if (error) {
+    const currentAttraction = attractions.find(a => a.id === id);
+
+    if (!id && attractions.length === 0 && !attractionsLoading) {
+        return (
+            <div className="dk-aa-error-layout">
+                <div className="error-card">
+                    <div className="error-icon">!</div>
+                    <h2>Məkan tapılmadı</h2>
+                    <p>Hələ ki, heç bir məkanınız yoxdur. Analitikaya baxmaq üçün əvvəlcə məkan yaradın.</p>
+                    <button onClick={() => navigate('/attractions/create')} className="dk-btn-primary mt-4">
+                        Yeni Məkan Yarat
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (error && id) {
         return (
             <div className="dk-aa-error-layout">
                 <div className="error-card">
                     <div className="error-icon">!</div>
                     <h2>Məlumat tapılmadı</h2>
                     <p>{error}</p>
-                    <button onClick={() => navigate('/vendor/attractions')} className="dk-btn-primary mt-4">
+                    <button onClick={() => navigate('/attractions')} className="dk-btn-primary mt-4">
                         Geriyə Qayıt
                     </button>
                 </div>
@@ -61,15 +88,34 @@ export default function AttractionAnalyticsPage() {
                 
                 {/* HEADER */}
                 <header className="dk-aa-header">
-                    <button onClick={() => navigate('/vendor/attractions')} className="dk-btn-back">
-                        <ArrowLeft size={16} /> Panelinə Qayıt
-                    </button>
+                    <div className="header-top-nav">
+                        <button onClick={() => navigate('/attractions')} className="dk-btn-back">
+                            <ArrowLeft size={16} /> Panelinə Qayıt
+                        </button>
+
+                        <div className="dk-attraction-selector">
+                            <label>Məkan Seçin:</label>
+                            <div className="selector-wrapper">
+                                <select 
+                                    value={id || ''} 
+                                    onChange={(e) => navigate(`/attractions/analytics/${e.target.value}`)}
+                                    className="dk-select-minimal"
+                                >
+                                    <option value="" disabled>Seçin...</option>
+                                    {attractions.map(attr => (
+                                        <option key={attr.id} value={attr.id}>{attr.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={16} className="selector-chevron" />
+                            </div>
+                        </div>
+                    </div>
                     
                     <div className="header-main-row">
                         <div className="header-title">
                             <div className="icon-badge"><BarChart3 size={24} /></div>
                             <div>
-                                <h1>Məkan Analitikası</h1>
+                                <h1>{currentAttraction?.name || 'Məkan'} Analitikası</h1>
                                 <p>Ziyarətçi trendləri, populyarlıq və baxış göstəriciləri</p>
                             </div>
                         </div>

@@ -32,5 +32,13 @@ export const tourWebApi = {
     getTourAvailability: async (id: string, date: string) => {
         const response = await httpClient.get(`/tours/${id}/availability?date=${date}`);
         return response.data;
+    },
+
+    getTourSchedule: async (id: string, month: string) => {
+        // month should be in format YYYY-MM
+        const start = `${month}-01`;
+        const end = `${month}-31`; // Simplified, backend handles date range
+        const response = await httpClient.get(`/tours/${id}/monthly-availability?startDate=${start}&endDate=${end}`);
+        return response.data;
     }
 };

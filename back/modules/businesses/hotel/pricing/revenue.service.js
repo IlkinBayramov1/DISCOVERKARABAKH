@@ -3,24 +3,30 @@ import { ApiError } from '../../../../core/api.error.js';
 
 class RevenueService {
     async createRule(hotelId, data) {
+        const sanitized = this._sanitizeData(data);
         return prisma.pricingRule.create({
             data: {
-                ...data,
+                ...sanitized,
                 hotelId
             }
         });
     }
 
-    async getRules(hotelId, roomTypeId = null) {
+    async getRules(hotelId, roomTypeId = null, onlyActive = true) {
+        const where = {
+            hotelId,
+            OR: [
+                { roomTypeId: roomTypeId },
+                { roomTypeId: null }
+            ]
+        };
+
+        if (onlyActive) {
+            where.isActive = true;
+        }
+
         return prisma.pricingRule.findMany({
-            where: {
-                hotelId,
-                OR: [
-                    { roomTypeId: roomTypeId },
-                    { roomTypeId: null }
-                ],
-                isActive: true
-            },
+            where,
             orderBy: { priority: 'desc' }
         });
     }
@@ -29,9 +35,10 @@ class RevenueService {
         const rule = await prisma.pricingRule.findUnique({ where: { id: ruleId } });
         if (!rule || rule.hotelId !== hotelId) throw ApiError.notFound('Rule not found');
 
+        const sanitized = this._sanitizeData(data);
         return prisma.pricingRule.update({
             where: { id: ruleId },
-            data
+            data: sanitized
         });
     }
 
@@ -80,6 +87,20 @@ class RevenueService {
         }
 
         return adjustedPrice;
+    }
+    _sanitizeData(data) {
+        const sanitized = { ...data };
+        
+        // Convert empty strings to null for optional DateTime and Relation fields
+        if (sanitized.startDate === "" || sanitized.startDate === undefined) sanitized.startDate = null;
+        if (sanitized.endDate === "" || sanitized.endDate === undefined) sanitized.endDate = null;
+        if (sanitized.roomTypeId === "" || sanitized.roomTypeId === undefined) sanitized.roomTypeId = null;
+
+        // Ensure dates are valid ISO strings if present
+        if (sanitized.startDate) sanitized.startDate = new Date(sanitized.startDate);
+        if (sanitized.endDate) sanitized.endDate = new Date(sanitized.endDate);
+
+        return sanitized;
     }
 }
 

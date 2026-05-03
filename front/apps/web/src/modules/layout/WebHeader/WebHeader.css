@@ -1,41 +1,16 @@
-/* Header.css */
-/* Ultra Premium Light Theme Header */
-
 /* ============================================
-   CSS VARIABLES (Light Theme Header System)
+   ULTRA PREMIUM LIGHT THEME HEADER
    ============================================ */
 :root {
-  /* Primary Colors (Sidebar ilə eyni bənövşəyi tonlar) */
   --dk-primary: #6a28c7;
-  --dk-primary-light: #8b4ddb;
   --dk-accent: #9d65eb;
-  --dk-accent-light: #d6bdfa;
-
-  /* Header Background & Text (AĞ MÖVZU) */
   --dk-bg-header: #ffffff;
-  /* Ağ arxa fon */
   --dk-header-text: #0f172a;
-  /* Tünd slate (qara əvəzinə daha lüks tünd rəng) */
   --dk-header-muted: #64748b;
-  /* Orta boz/slate */
-
-  /* Borders & Shadows (Ağ fona uyğun tünd, lakin şəffaf) */
-  --dk-header-border: rgba(15, 23, 42, 0.08);
-  --dk-header-btn-border: rgba(15, 23, 42, 0.2);
-  --dk-header-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-  /* Çox zərif kölgə */
-  --dk-btn-shadow: 0 4px 12px rgba(106, 40, 199, 0.25);
-  --dk-btn-shadow-hover: 0 6px 16px rgba(106, 40, 199, 0.4);
-
-  /* Danger / Logout Colors */
-  --dk-danger: #ef4444;
-  --dk-danger-bg: rgba(239, 68, 68, 0.08);
-  --dk-danger-border: rgba(239, 68, 68, 0.15);
-  --dk-danger-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-
-  /* Transitions */
-  --dk-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --dk-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dk-header-border: #f1f5f9;
+  /* Subtle border */
+  --dk-header-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  /* Almost invisible shadow */
 }
 
 /* ============================================
@@ -49,11 +24,17 @@
   background: var(--dk-bg-header);
   border-bottom: 1px solid var(--dk-header-border);
   min-height: 80px;
-  /* Sidebar başlığı ilə eyni */
+  /* Matches sidebar header height perfectly */
   box-sizing: border-box;
   box-shadow: var(--dk-header-shadow);
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 90;
+}
+
+.web-header__left {
+  display: flex;
+  align-items: center;
 }
 
 .web-header__actions {
@@ -63,102 +44,196 @@
 }
 
 /* ============================================
-   NAVIGATION LINKS
-   ============================================ */
-.header-link {
-  color: var(--dk-header-muted);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  transition: all 0.3s var(--dk-ease-smooth);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-link:hover {
-  /* Hover olanda premium bənövşəyi rəngə keçid */
-  color: var(--dk-primary);
-  transform: translateY(-2px);
-}
-
-/* ============================================
-   PRIMARY BUTTON (Register)
-   ============================================ */
-.header-btn-primary {
-  background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
-  color: #ffffff;
-  /* Arxa fon qradient olduğu üçün mətn həmişə ağ qalmalıdır */
-  border: none;
-  padding: 10px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s var(--dk-ease-bounce);
-  box-shadow: var(--dk-btn-shadow);
-}
-
-.header-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--dk-btn-shadow-hover);
-  background: linear-gradient(135deg, var(--dk-primary-light) 0%, var(--dk-accent-light) 100%);
-}
-
-/* ============================================
-   OUTLINE BUTTON (Login)
-   ============================================ */
-.header-btn-outline {
-  background: transparent;
-  color: var(--dk-header-text);
-  /* Tünd mətn */
-  border: 1px solid var(--dk-header-btn-border);
-  /* Tünd çərçivə */
-  padding: 10px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s var(--dk-ease-smooth);
-}
-
-.header-btn-outline:hover {
-  /* Ağ fona uyğun zərif tündləşmə effekti */
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.3);
-  transform: translateY(-2px);
-}
-
-/* ============================================
-   USER PROFILE & LOGOUT
+   GHOST LINKS (Profile, My Trips)
    ============================================ */
 .user-profile-menu {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
+  /* Spacious layout from screenshot */
 }
 
-.logout-btn {
-  background: var(--dk-danger-bg);
-  border: 1px solid var(--dk-danger-border);
-  color: var(--dk-danger);
-  padding: 8px 16px;
-  border-radius: 10px;
+.header-link {
+  color: var(--dk-header-muted);
+  text-decoration: none;
   font-weight: 600;
-  cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s var(--dk-ease-smooth);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.logout-btn:hover {
-  background: var(--dk-danger);
+.header-link:hover {
+  color: var(--dk-primary);
+  transform: translateY(-1px);
+}
+
+.header-link svg {
+  opacity: 0.8;
+}
+
+/* ============================================
+   LOGOUT BUTTON (Soft Red Pill)
+   ============================================ */
+.header-logout-btn {
+  background: #fef2f2;
+  /* Soft red background */
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  /* Red text */
+  padding: 8px 16px;
+  border-radius: 12px;
+  /* Smooth rounded corners */
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-logout-btn:hover {
+  background: #ef4444;
   color: #ffffff;
-  /* Qırmızı arxa fona görə ağ yazı */
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* ============================================
+   AUTH BUTTONS (Login / Register)
+   ============================================ */
+.header-btn-primary {
+  background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(106, 40, 199, 0.2);
+}
+
+.header-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: var(--dk-danger-shadow);
+  box-shadow: 0 6px 16px rgba(106, 40, 199, 0.3);
+}
+
+.header-btn-outline {
+  background: transparent;
+  color: var(--dk-header-text);
+  border: 1px solid #cbd5e1;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.header-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   BALANCE & WALLET STYLES
+   ============================================ */
+.header-balance-card {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 4px 6px 4px 14px;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-balance-card:hover {
+  background: #ffffff;
+  border-color: var(--dk-primary);
+  box-shadow: 0 4px 15px rgba(106, 40, 199, 0.1);
+  transform: translateY(-1px);
+}
+
+.balance-icon {
+  color: var(--dk-primary);
+  opacity: 0.9;
+}
+
+.balance-amount {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--dk-header-text);
+  letter-spacing: -0.01em;
+}
+
+.deposit-btn {
+  background: var(--dk-primary);
+  color: #ffffff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deposit-btn:hover {
+  background: var(--dk-accent);
+  transform: scale(1.05);
+}
+
+/* ============================================
+   FAVORITES (Heart) STYLES
+   ============================================ */
+.fav-link:hover svg {
+  color: #ef4444;
+  fill: #fee2e2;
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.fav-link svg {
+  transition: all 0.3s ease;
+}
+
+/* Responsive Handling */
+@media (max-width: 768px) {
+  .web-header {
+    padding: 0 16px;
+    min-height: 64px;
+  }
+
+  .user-profile-menu {
+    gap: 16px;
+  }
+
+  .header-link span,
+  .balance-amount,
+  .deposit-btn {
+    display: none;
+    /* Hide text, show only icons on mobile */
+  }
+
+  .header-balance-card {
+    padding: 8px;
+    border-radius: 50%;
+  }
 }

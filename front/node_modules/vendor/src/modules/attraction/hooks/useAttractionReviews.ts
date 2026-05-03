@@ -31,12 +31,13 @@ export function useAttractionReviews(attractionId?: string, autoFetch = true) {
         }
     }, [autoFetch, fetchReviews]);
 
-    const replyToReview = async (reviewId: string, reply: string) => {
-        if (!attractionId) return false;
+    const replyToReview = async (reviewId: string, reply: string, manualAttractionId?: string) => {
+        const targetId = attractionId || manualAttractionId;
+        if (!targetId) return false;
         
         setLoading(true);
         try {
-            await vendorAttractionApi.replyToReview(attractionId, reviewId, reply);
+            await vendorAttractionApi.replyToReview(targetId, reviewId, reply);
             // Optimistic update or refetch
             setReviews(prev => prev.map(r => 
                 r.id === reviewId ? { ...r, status: 'approved' } : r

@@ -68,6 +68,10 @@ class HotelService {
             radiusKm = 10,
             amenityNames, // e.g. "Free WiFi,Pool"
             search,
+            q, // alias for search
+            adults,
+            children,
+            rooms,
             starRating,
             city,
             minPrice,
@@ -141,9 +145,30 @@ class HotelService {
             };
         }
 
-        if (search) {
-            whereClause.name = { contains: search };
-            // Note: In prod MySQL, we'd use fullTextSearch `search: search` but contains is safer for fallback
+        const effectiveSearch = (search || q || "").trim();
+        if (effectiveSearch) {
+            whereClause.OR = [
+                { name: { contains: effectiveSearch } },
+                { description: { contains: effectiveSearch } }
+            ];
+        }
+
+        // Occupancy filtering (Find hotels that have at least one room capable of hosting the requested count)
+        if (adults || children) {
+            const occupancyFilter = {
+                maxAdults: { gte: parseInt(adults) || 1 },
+                maxChildren: { gte: parseInt(children) || 0 }
+            };
+
+            if (whereClause.roomTypes?.some) {
+                // Merge with existing availability filter if present
+                whereClause.roomTypes.some = {
+                    ...whereClause.roomTypes.some,
+                    ...occupancyFilter
+                };
+            } else {
+                whereClause.roomTypes = { some: occupancyFilter };
+            }
         }
 
         if (starRating) {
@@ -258,7 +283,10 @@ class HotelService {
     }
 
     async findRoomsByVendor(vendorId) {
-        return prisma.roomType.findMany({
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const rooms = await prisma.roomType.findMany({
             where: {
                 hotel: {
                     ownerId: vendorId
@@ -269,25 +297,71 @@ class HotelService {
                 roomAmenities: true,
                 hotel: {
                     select: { name: true, id: true }
+                },
+                pricingList: {
+                    where: { date: { gte: today } },
+                    orderBy: { date: 'asc' },
+                    take: 1
                 }
             },
             orderBy: { name: 'asc' }
         });
+
+        return rooms.map(room => {
+            const currentPrice = room.pricingList && room.pricingList.length > 0
+                ? room.pricingList[0].basePrice
+                : (room.basePrice || null);
+
+            const { pricingList, ...rest } = room;
+            return {
+                ...rest,
+                basePrice: currentPrice
+            };
+        });
     }
 
     async findReviewsByVendor(vendorId) {
-        return prisma.review.findMany({
-            where: {
-                hotel: {
-                    ownerId: vendorId
-                }
-            },
-            include: {
-                user: { select: { email: true } },
-                hotel: { select: { name: true, id: true } }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        const [hotelReviews, roomReviews] = await Promise.all([
+            prisma.review.findMany({
+                where: {
+                    hotel: { ownerId: vendorId }
+                },
+                include: {
+                    user: { select: { email: true, firstName: true, lastName: true } },
+                    hotel: { select: { name: true, id: true } }
+                },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.roomReview.findMany({
+                where: {
+                    roomType: {
+                        hotel: { ownerId: vendorId }
+                    }
+                },
+                include: {
+                    user: { select: { email: true, firstName: true, lastName: true } },
+                    roomType: {
+                        include: {
+                            hotel: { select: { name: true, id: true } }
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+        ]);
+
+        // Standardize both types into a common format for the UI
+        const combined = [
+            ...hotelReviews.map(r => ({ ...r, type: 'general' })),
+            ...roomReviews.map(r => ({
+                ...r,
+                type: 'room',
+                hotel: r.roomType.hotel,
+                roomType: { id: r.roomType.id, name: r.roomType.name }
+            }))
+        ];
+
+        return combined.sort((a, b) => b.createdAt - a.createdAt);
     }
 
     async findById(hotelId) {

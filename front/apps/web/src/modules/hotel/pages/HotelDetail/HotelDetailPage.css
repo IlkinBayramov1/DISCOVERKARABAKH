@@ -223,7 +223,7 @@
   border: 1px solid var(--dk-border);
   margin-bottom: 40px;
 }
-.cs-item { display: flex; align-items: center; gap: 16px; flex: 1; }
+.cs-item { display: flex; align-items: center; gap: 16px; flex: 1; position: relative; }
 .cs-icon {
   width: 36px; height: 36px; border-radius: 50%;
   background: rgba(106, 40, 199, 0.08); color: var(--dk-primary);
@@ -235,6 +235,86 @@
 .cs-message {
   margin-left: auto; background: #f1f5f9; padding: 10px 20px; border-radius: 20px;
   font-size: 13px; font-weight: 600; color: var(--dk-text-muted);
+}
+
+/* INTERACTIVE VERSION */
+.contextual-search-bar.interactive {
+  padding: 8px 32px;
+  min-height: 80px;
+}
+
+.cs-item.clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 8px 16px;
+  border-radius: 16px;
+}
+
+.cs-item.clickable:hover {
+  background: rgba(106, 40, 199, 0.04);
+}
+
+.cs-date-input {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dk-text-dark);
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  width: 120px;
+}
+
+.cs-guest-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 150px; /* Adjust based on cs-message width */
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 0 0 1px var(--dk-border);
+  padding: 24px;
+  width: 280px;
+  z-index: 100;
+  animation: csFadeIn 0.3s ease;
+}
+
+@keyframes csFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cs-guest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--dk-border);
+}
+
+.cs-guest-row:last-child { border-bottom: none; }
+
+.cs-guest-title { font-size: 14px; font-weight: 700; color: var(--dk-text-dark); }
+.cs-guest-desc { font-size: 11px; color: var(--dk-text-muted); }
+
+.cs-guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cs-guest-controls button {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--dk-border); background: white;
+  color: var(--dk-text-dark); font-weight: 700; cursor: pointer;
+}
+
+.cs-guest-controls button:hover {
+  background: var(--dk-primary); color: white; border-color: var(--dk-primary);
+}
+
+.cs-guest-controls span {
+  font-size: 14px; font-weight: 700; width: 20px; text-align: center;
 }
 
 /* ============================================

@@ -16,7 +16,7 @@ class RevenueController {
         try {
             const { hotelId } = req.params;
             const { roomTypeId } = req.query;
-            const rules = await revenueService.getRules(hotelId, roomTypeId);
+            const rules = await revenueService.getRules(hotelId, roomTypeId, false);
             return successResponse(res, rules);
         } catch (error) {
             next(error);

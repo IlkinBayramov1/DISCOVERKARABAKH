@@ -11,7 +11,8 @@ export const errorMiddleware = (err, req, res, next) => {
   // Prisma Errors
   // P2002: Unique constraint failed
   if (err.code === 'P2002') {
-    const field = err.meta?.target ? err.meta.target.join(', ') : 'field';
+    const target = err.meta?.target;
+    const field = Array.isArray(target) ? target.join(', ') : (target || 'field');
     const message = `Duplicate value entered for ${field}.`;
     error = new ApiError(400, message);
   }

@@ -31,6 +31,16 @@ class HotelReviewController {
             next(error);
         }
     }
+    async reply(req, res, next) {
+        try {
+            const { reviewId } = req.params;
+            const { reply } = req.body;
+            const review = await hotelReviewService.replyToReview(reviewId, req.user.id, reply);
+            return successResponse(res, review, { message: 'Reply submitted successfully.' });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const hotelReviewController = new HotelReviewController();

@@ -3,14 +3,14 @@ import { httpClient } from '../../../shared/api/httpClient';
 export interface HotelSearchParams {
     city?: string;
     q?: string;
-    
+
     // Dates & Occupancy
     checkIn?: string;
     checkOut?: string;
     adults?: number;
     children?: number;
     rooms?: number;
-    
+
     // Temporary legacy format
     guests?: string;
 
@@ -23,7 +23,7 @@ export interface HotelSearchParams {
     maxPrice?: number;
     minRating?: number;
     sortBy?: string;
-    
+
     // Geographical filters
     lat?: number;
     lng?: number;
@@ -68,8 +68,23 @@ export const hotelWebApi = {
         return response.data;
     },
 
-    getHotelRooms: async (hotelId: string) => {
-        const response = await httpClient.get(`/hotels/${hotelId}/rooms`);
+    getHotelRooms: async (hotelId: string, params?: any) => {
+        const queryParams = new URLSearchParams();
+        if (params) {
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    queryParams.append(key, value.toString());
+                }
+            });
+        }
+        const queryStr = queryParams.toString();
+        const response = await httpClient.get(`/hotels/${hotelId}/rooms${queryStr ? '?' + queryStr : ''}`);
+        return response.data;
+    },
+
+    getRoomById: async (hotelId: string, roomId: string, params?: any) => {
+        const queryStr = params ? new URLSearchParams(params).toString() : '';
+        const response = await httpClient.get(`/hotels/${hotelId}/rooms/${roomId}${queryStr ? '?' + queryStr : ''}`);
         return response.data;
     },
 

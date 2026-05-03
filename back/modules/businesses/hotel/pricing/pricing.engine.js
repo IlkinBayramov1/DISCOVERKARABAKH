@@ -20,8 +20,8 @@ export class PricingEngine {
 
         // Iterate over requested cart items (Rooms)
         for (const item of data.items) {
-            const checkInDate = new Date(item.checkIn);
-            const checkOutDate = new Date(item.checkOut);
+            const checkInDate = new Date(item.checkIn + 'T00:00:00.000Z');
+            const checkOutDate = new Date(item.checkOut + 'T00:00:00.000Z');
 
             if (checkInDate >= checkOutDate) {
                 throw ApiError.badRequest('Check-Out must be strictly after Check-In');
@@ -78,14 +78,15 @@ export class PricingEngine {
                 }
 
                 if (i === 0 && dayRules.closedToArrival) {
-                    // Only the exact check-in date is evaluated for closedToArrival
-                    throw ApiError.badRequest(`Arrival is blocked on start date: ${dayRules.date}`);
+                    const dateStr = new Date(dayRules.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    throw ApiError.badRequest(`Check-in is not allowed on ${dateStr} (Closed to Arrival).`);
                 }
 
                 // Closed to departure evaluates only on the last *staying* night or the morning of checkout (depending on hotel policy)
                 // For now, we evaluate it on the last booked night index
                 if (i === pricingMatrix.length - 1 && dayRules.closedToDeparture) {
-                    throw ApiError.badRequest(`Departure is blocked on date: ${checkOutDate}`);
+                    const dateStr = new Date(checkOutDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    throw ApiError.badRequest(`Check-out is not allowed on ${dateStr} (Closed to Departure).`);
                 }
 
                 if (totalNights < dayRules.minStay) {

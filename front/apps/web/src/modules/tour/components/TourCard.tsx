@@ -1,13 +1,15 @@
 import React from 'react';
 import type { ITour } from '../types';
+import { FavoriteButton } from '../../../shared/components/FavoriteButton/FavoriteButton';
 import './TourCard.css';
 
 interface TourCardProps {
     tour: ITour;
     onClick?: (id: string) => void;
+    isFavorited?: boolean;
 }
 
-export const TourCard: React.FC<TourCardProps> = ({ tour, onClick }) => {
+export const TourCard: React.FC<TourCardProps> = ({ tour, onClick, isFavorited }) => {
     const imageUrl = tour.images && tour.images.length > 0 
         ? tour.images[0] 
         : 'https://placehold.co/400x300?text=No+Image';
@@ -22,9 +24,11 @@ export const TourCard: React.FC<TourCardProps> = ({ tour, onClick }) => {
                     <span>{tour.durationDays}D / {tour.durationNights}N</span>
                 </div>
                 
-                <button className="wishlist-btn" onClick={(e) => e.stopPropagation()}>
-                    <i className="fa-regular fa-heart"></i>
-                </button>
+                <FavoriteButton 
+                    targetId={tour.id} 
+                    type="tour" 
+                    initialIsFavorited={isFavorited} 
+                />
             </div>
 
             <div className="card-info-section">

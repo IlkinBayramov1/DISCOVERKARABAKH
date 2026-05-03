@@ -11,6 +11,7 @@ router.use('/:roomId/reviews', roomReviewRouter);
 
 // Public reading
 router.get('/', roomController.getRoomsByHotel);
+router.get('/:roomId', roomController.getRoomById);
 
 // Protected editing (Vendor/Admin)
 router.use(authMiddleware);

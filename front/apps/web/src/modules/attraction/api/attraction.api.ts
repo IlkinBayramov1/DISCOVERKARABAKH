@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4004/api/v1';
 
 export const attractionApi = {
     // PUBLIC //
-    getAttractions: async (params?: { q?: string; city?: string; categoryId?: string; status?: string; isFeatured?: boolean; entryType?: string; page?: number; limit?: number }) => {
+    getAttractions: async (params?: { q?: string; city?: string; category?: string; status?: string; isFeatured?: boolean; entryType?: string; page?: number; limit?: number; sort?: string }) => {
         const response = await axios.get(`${API_URL}/attractions`, { params });
         return response.data;
     },

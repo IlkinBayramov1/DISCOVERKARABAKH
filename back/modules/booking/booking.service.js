@@ -62,6 +62,7 @@ class BookingService {
                     Tour: type === 'tour' ? { connect: { id: entityId } } : undefined,
                     Event: type === 'event' ? { connect: { id: entityId } } : undefined,
                     attraction: type === 'attraction' ? { connect: { id: entityId } } : undefined,
+                    vehicle: type === 'transfer' ? { connect: { id: entityId } } : undefined,
 
                     // Specific sub-models injected from Strategy
                     items: {
@@ -154,6 +155,7 @@ class BookingService {
                 Tour: { select: { name: true, city: true, address: true, images: true } },
                 Event: { select: { title: true, location: true } },
                 attraction: { select: { name: true, city: true, address: true, images: true } },
+                vehicle: { select: { brand: true, model: true, images: true, category: true } },
                 items: true,
                 guests: true
             }
@@ -181,7 +183,10 @@ class BookingService {
             where: { userId },
             orderBy: { createdAt: 'desc' },
             include: {
-                hotel: { select: { name: true, address: true } },
+                hotel: { select: { name: true, address: true, images: true } },
+                Tour: { select: { name: true, city: true, address: true, images: true } },
+                attraction: { select: { name: true, city: true, address: true, images: true } },
+                vehicle: { select: { brand: true, model: true, images: true, category: true } },
                 items: true,
                 guests: true
             }
@@ -193,12 +198,13 @@ class BookingService {
             where: { vendorId },
             orderBy: { createdAt: 'desc' },
             include: {
-                user: { select: { email: true } },
+                user: { select: { email: true, firstName: true, lastName: true, phone: true } },
                 hotel: { select: { name: true } },
                 Tour: { select: { name: true } },
                 Event: { select: { title: true } },
                 attraction: { select: { name: true } },
-                items: true
+                items: true,
+                guests: true
             }
         });
     }

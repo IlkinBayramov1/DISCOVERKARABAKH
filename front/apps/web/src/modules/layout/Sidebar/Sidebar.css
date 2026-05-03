@@ -16,7 +16,6 @@
 
   /* Backgrounds - LIGHT & CLEAN */
   --dk-bg-sidebar: #ffffff;
-  /* Daha təmiz premium ağ */
   --dk-bg-card: #f8fafc;
   --dk-bg-hover: rgba(106, 40, 199, 0.04);
   --dk-bg-active: rgba(106, 40, 199, 0.08);
@@ -48,8 +47,10 @@
 .web-sidebar {
   position: fixed;
   top: 0;
-  left: -300px;
-  width: 280px;
+  left: -240px;
+  /* Matched to width */
+  width: 240px;
+  /* Reduced from 280px */
   height: 100vh;
   background: var(--dk-bg-sidebar);
   border-right: 1px solid var(--dk-border-light);
@@ -83,7 +84,8 @@
 }
 
 .web-sidebar.open {
-  transform: translateX(300px);
+  transform: translateX(240px);
+  /* Matched to width */
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
 }
 
@@ -108,21 +110,17 @@
 }
 
 /* ============================================
-   SIDEBAR HEADER (Perfectly Centered & Compact)
+   SIDEBAR HEADER
    ============================================ */
 .sidebar-header {
   position: relative;
-  /* Logonu mütləq mərkəzə almaq üçün */
   padding: 14px 16px;
-  /* Vertical padding azaldıldı */
   display: flex;
   justify-content: flex-end;
-  /* Düyməni sağa atır */
   align-items: center;
   border-bottom: 1px solid var(--dk-border-light);
   background: var(--dk-bg-sidebar);
   min-height: 80px;
-  /* Sabit yığcam hündürlük */
 }
 
 .sidebar-header h2 {
@@ -133,7 +131,6 @@
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.5px;
-  /* Premium Text Gradient */
   background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -141,7 +138,6 @@
 
 .icon-btn {
   width: 32px;
-  /* Bir az yığcamlaşdırıldı */
   height: 32px;
   border-radius: 8px;
   border: 1px solid transparent;
@@ -153,7 +149,6 @@
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 2;
-  /* Yazının üstündə qalması üçün */
 }
 
 .icon-btn:hover {
@@ -180,12 +175,13 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 14px;
   margin: 2px 4px;
   border-radius: 12px;
   color: var(--dk-text-secondary);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
+  /* Slightly smaller to fit narrow width perfectly */
   text-decoration: none;
   position: relative;
   transition: all 0.3s var(--dk-ease-smooth);
@@ -193,7 +189,6 @@
   background: transparent;
 }
 
-/* Sol tərəfdəki indikator xətt */
 .nav-link::before {
   content: '';
   position: absolute;
@@ -207,7 +202,6 @@
   transition: height 0.3s var(--dk-ease-bounce), box-shadow 0.3s ease;
 }
 
-/* Hover effekti - Yüngül sağa sürüşmə */
 .nav-link:hover {
   background: var(--dk-bg-hover);
   color: var(--dk-primary);
@@ -219,7 +213,6 @@
   box-shadow: var(--dk-shadow-glow);
 }
 
-/* Aktiv Link Effekti */
 .nav-link.active {
   background: linear-gradient(90deg, var(--dk-bg-active) 0%, transparent 100%);
   color: var(--dk-primary);
@@ -232,9 +225,9 @@
 }
 
 .nav-link svg {
-  width: 20px;
-  height: 20px;
-  margin-right: 14px;
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
   flex-shrink: 0;
   transition: all 0.3s var(--dk-ease-bounce);
   color: var(--dk-text-muted);
@@ -270,8 +263,8 @@
   opacity: 0;
   transform: translateY(-5px);
   transition: all 0.4s var(--dk-ease-smooth);
-  margin-left: 24px;
-  padding-left: 12px;
+  margin-left: 20px;
+  padding-left: 10px;
   border-left: 2px solid var(--dk-border-light);
   position: relative;
 }
@@ -287,11 +280,11 @@
 .sub-nav-link {
   display: flex;
   align-items: center;
-  padding: 10px 14px;
+  padding: 10px 12px;
   margin: 4px 0;
   border-radius: 8px;
   color: var(--dk-text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.25s ease;
@@ -304,12 +297,10 @@
   font-family: inherit;
 }
 
-/* Yumru nöqtə indikatoru */
 .sub-nav-link::before {
   content: '';
   position: absolute;
-  left: -15px;
-  /* Sol xəttin üstünə düşməsi üçün */
+  left: -13px;
   top: 50%;
   transform: translateY(-50%);
   width: 6px;
@@ -318,14 +309,12 @@
   background: var(--dk-border-light);
   transition: all 0.3s var(--dk-ease-bounce);
   border: 2px solid var(--dk-bg-sidebar);
-  /* İçlik effekti */
 }
 
 .sub-nav-link:hover {
   background: var(--dk-bg-hover);
   color: var(--dk-primary);
-  padding-left: 18px;
-  /* Hover zamanı yüngül sağa getmə */
+  padding-left: 16px;
 }
 
 .sub-nav-link:hover::before {
@@ -366,7 +355,7 @@
 
 .city-filter-group .nav-link.expandable {
   margin: 0;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 10px;
   color: var(--dk-text-primary);
 }
@@ -382,8 +371,8 @@
 }
 
 .city-filter-group .sub-nav-link {
-  font-size: 0.875rem;
-  padding: 10px 14px;
+  font-size: 0.85rem;
+  padding: 10px 12px;
   margin: 4px;
   width: calc(100% - 8px);
   border-radius: 8px;
@@ -393,15 +382,13 @@
 
 .city-filter-group .sub-nav-link::before {
   display: none;
-  /* Pill dizayni ucun noqteni yigisdiririq */
 }
 
 .city-filter-group .sub-nav-link:hover {
   background: var(--dk-bg-hover);
   color: var(--dk-primary);
   border-color: rgba(106, 40, 199, 0.1);
-  padding-left: 14px;
-  /* Sola getməsini ləğv edirik */
+  padding-left: 12px;
   transform: translateX(4px);
 }
 
@@ -430,13 +417,13 @@
 
 @media (max-width: 767px) {
   .web-sidebar {
-    width: 85vw;
-    max-width: 320px;
-    left: -85vw;
+    width: 260px;
+    /* Clean fixed width for mobile */
+    left: -260px;
   }
 
   .web-sidebar.open {
-    transform: translateX(85vw);
+    transform: translateX(260px);
   }
 
   .sidebar-header {
@@ -451,7 +438,7 @@
   .web-sidebar {
     position: fixed;
     top: 0;
-    left: -300px;
+    left: -240px;
     transform: none;
     height: 100vh;
     box-shadow: var(--dk-shadow-sidebar);
@@ -459,8 +446,8 @@
   }
 
   .web-sidebar.open {
-    transform: translateX(300px);
-    left: -300px;
+    transform: translateX(240px);
+    left: -240px;
   }
 
   .sidebar-overlay,
@@ -469,7 +456,8 @@
   }
 
   .web-sidebar.collapsed {
-    width: 88px;
+    width: 80px;
+    /* Reduced from 88px for a tighter collapsed view */
   }
 
   .web-sidebar.collapsed .sidebar-header h2,
@@ -484,8 +472,8 @@
     justify-content: center;
     padding: 14px;
     margin: 8px auto;
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 14px;
   }
 

@@ -53,6 +53,8 @@ export default function ManageTourPage() {
         description: '',
         city: 'Shusha',
         address: '',
+        meetingAddress: '',
+        destinationLink: '',
         phone: '',
         email: '',
         durationDays: 1,
@@ -63,6 +65,8 @@ export default function ManageTourPage() {
         pricePerPerson: 0,
         itinerary: [{ ...DEFAULT_ITINERARY_DAY }],
         images: [],
+        meetingPoint: '',
+        mapLink: '',
         inclusions: [],
         exclusions: [],
         startDate: ''
@@ -87,6 +91,8 @@ export default function ManageTourPage() {
                 description: tour.description,
                 city: tour.city || 'Shusha',
                 address: tour.address,
+                meetingAddress: tour.meetingAddress || '',
+                destinationLink: tour.destinationLink || '',
                 phone: tour.phone || '',
                 email: tour.email || '',
                 durationDays: tour.durationDays,
@@ -97,6 +103,8 @@ export default function ManageTourPage() {
                 pricePerPerson: tour.pricePerPerson,
                 itinerary: tour.itinerary?.length > 0 ? tour.itinerary : [{ ...DEFAULT_ITINERARY_DAY }],
                 images: tour.images || [],
+                meetingPoint: tour.meetingPoint || '',
+                mapLink: tour.mapLink || '',
                 inclusions: tour.inclusions || [],
                 exclusions: tour.exclusions || [],
                 startDate: tour.startDate ? tour.startDate.split('T')[0] : ''
@@ -112,7 +120,7 @@ export default function ManageTourPage() {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: name.includes('Price') || name.includes('Group') || name.includes('duration') ? Number(value) : value
+            [name]: name.includes('Price') || name.includes('Group') || name.includes('duration') || name === 'latitude' || name === 'longitude' ? Number(value) : value
         }));
     };
 
@@ -312,16 +320,63 @@ export default function ManageTourPage() {
                                 </div>
                             </div>
                             <div className="dk-input-group">
-                                <label>Starting Checkpoint / Address</label>
+                                <label>Tour Destination Address</label>
                                 <div className="dk-input-wrap">
                                     <MapPin size={16} className="input-icon" />
                                     <input 
                                         name="address" className="dk-input with-icon" 
                                         value={formData.address} onChange={handleInputChange} 
-                                        required placeholder="Meeting point address" 
+                                        required placeholder="Where the tour takes place (e.g. Shusha Fortress)" 
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="dk-input-group">
+                            <label>Specific Meeting Point Address</label>
+                            <div className="dk-input-wrap">
+                                <MapPin size={16} className="input-icon" />
+                                <input 
+                                    name="meetingAddress" className="dk-input with-icon" 
+                                    value={formData.meetingAddress} onChange={handleInputChange} 
+                                    placeholder="Where guests should MEET (e.g. Shusha Bus Station)" 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="dk-input-group">
+                            <label>Specific Meeting Point Instructions (Visible to guests)</label>
+                            <textarea 
+                                name="meetingPoint" className="dk-input textarea" 
+                                value={formData.meetingPoint} onChange={handleInputChange} 
+                                rows={2} placeholder="e.g. Meet us at the Shusha Fortress main gate, next to the souvenir shop..." 
+                            />
+                        </div>
+
+                        <div className="dk-input-group">
+                            <label>Google Maps Meeting Point Link (Short Link)</label>
+                            <div className="dk-input-wrap">
+                                <MapIcon size={16} className="input-icon" />
+                                <input 
+                                    name="mapLink" className="dk-input with-icon" 
+                                    value={formData.mapLink} onChange={handleInputChange} 
+                                    placeholder="https://maps.app.goo.gl/..." 
+                                />
+                            </div>
+                            <p className="dk-input-hint">Paste the short link from Google Maps where guests should MEET.</p>
+                        </div>
+
+                        <div className="dk-input-group">
+                            <label>Tour Destination Google Maps Link (Optional)</label>
+                            <div className="dk-input-wrap">
+                                <MapIcon size={16} className="input-icon" />
+                                <input 
+                                    name="destinationLink" className="dk-input with-icon" 
+                                    value={formData.destinationLink} onChange={handleInputChange} 
+                                    placeholder="https://maps.app.goo.gl/..." 
+                                />
+                            </div>
+                            <p className="dk-input-hint">Link to the actual destination (e.g. Shusha Fortress).</p>
                         </div>
 
                         <div className="dk-grid-2">

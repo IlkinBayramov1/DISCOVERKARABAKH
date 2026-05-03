@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LocationData, TaxiSearchResult } from '../../api/transport.web.api';
 import { useSearchTaxis } from '../../hooks/useSearchTaxis';
-import { WaypointsInput } from '../../components/WaypointsInput';
 import { LocationAutocomplete } from '../../components/LocationAutocomplete';
-import { Car, MapPin, Navigation, Users, Loader } from 'lucide-react';
+import { TransferCard } from './TransferCard';
+import { MapPin, Navigation, Users, Calendar, SlidersHorizontal } from 'lucide-react';
 import './PassengerTransportPage.css';
 
 export const PassengerTransportPage = () => {
@@ -12,28 +12,33 @@ export const PassengerTransportPage = () => {
 
     const [pickupLocation, setPickupLocation] = useState<LocationData>({ lat: 0, lng: 0, address: '' });
     const [dropoffLocation, setDropoffLocation] = useState<LocationData>({ lat: 0, lng: 0, address: '' });
-    const [waypoints, setWaypoints] = useState<LocationData[]>([]);
+    const [waypoints] = useState<LocationData[]>([]);
     const [paxCount, setPaxCount] = useState<number>(1);
     const [bookingDate, setBookingDate] = useState<string>(() => {
         const now = new Date();
         now.setHours(now.getHours() + 2);
-        // Correctly format to local ISO-like string (YYYY-MM-DDTHH:mm)
         const tzOffset = now.getTimezoneOffset() * 60000;
         return new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
     });
 
-    const { mutate: searchTaxis, isPending: isSearching, data: searchResult } = useSearchTaxis();
-
+    // UI States
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sortBy, setSortBy] = useState<string>('recommended');
+    const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
     const [error, setError] = useState('');
+
+    const { mutate: searchTaxis, isPending: isSearching, data: searchResult } = useSearchTaxis();
 
     // Load active taxis automatically on component mount
     useEffect(() => {
         searchTaxis({ paxCount: 1 });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const handleSearch = () => {
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
         if (!pickupLocation.address || !dropoffLocation.address) {
-            setError('Zəhmət olmasa başlanğıc və bitiş ünvanlarını qeyd edin.');
+            setError('Please specify both the pickup and drop-off locations.');
             return;
         }
         setError('');
@@ -47,9 +52,7 @@ export const PassengerTransportPage = () => {
     };
 
     const handleBookVehicle = (taxi: TaxiSearchResult) => {
-        console.log('Navigating to vehicle details:', taxi.vehicle.id, 'for date:', bookingDate);
         const targetUrl = `/transport/details/${taxi.vehicle.id}`;
-        
         navigate(targetUrl, {
             state: {
                 pickupLocation,
@@ -64,172 +67,194 @@ export const PassengerTransportPage = () => {
     };
 
     return (
-        <div className="pt-modern-container">
-            <div className="pt-hero">
-                <div className="pt-hero-overlay"></div>
-                <h1>Qarabağ Daxili Transfer</h1>
-                <p>İstədiyiniz ünvandan lüks və ya standart avtomobillərlə təhlükəsiz səyahətinizə başlayın.</p>
-            </div>
+        <div className="pt-search-page">
+            <main className="container">
+                
+                {/* HERO SECTION */}
+                <section className="pt-hero">
+                    <div className="pt-hero-overlay-content">
+                        <h1>Karabakh Inner-City Transfers</h1>
+                        <p>Start your journey safely from any location with our standard and luxury fleet.</p>
+                    </div>
+                </section>
 
-            <div className="pt-layout-grid">
-                {/* Sol Panel - Axtarış Forması */}
-                <div className="pt-search-card glass-panel">
-                    <h2 className="text-xl font-bold mb-6 text-gray-800">Səyahətinizi Planlayın</h2>
-                    
-                    {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-100">
-                            {error}
+                {/* ERROR STATE */}
+                {error && (
+                    <div className="error-premium" style={{ marginTop: '24px', marginBottom: '0' }}>
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                {/* SEARCH BAR SECTION */}
+                <div className="search-bar-wrapper">
+                    <form onSubmit={handleSearch} className="search-bar" onClick={(e) => e.stopPropagation()}>
+                        
+                        {/* 1. PICKUP */}
+                        <div className="search-item flex-1">
+                            <MapPin size={22} />
+                            <div style={{ width: '100%' }}>
+                                <label>PICKUP LOCATION</label>
+                                <div className="autocomplete-wrapper">
+                                    <LocationAutocomplete
+                                        value={pickupLocation}
+                                        onChange={setPickupLocation}
+                                        placeholder="E.g. Fuzuli Airport"
+                                        className="search-input-naked"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    )}
 
-                    <div className="pt-form-group">
-                        <label><MapPin size={16} className="text-indigo-600" /> Başlanğıc Ünvan</label>
-                        <LocationAutocomplete
-                            value={pickupLocation}
-                            onChange={setPickupLocation}
-                            placeholder="Məs: Füzuli Beynəlxalq Hava Limanı"
-                            className="pt-input"
-                        />
-                    </div>
+                        {/* 2. DROPOFF */}
+                        <div className="search-item flex-1 border-left-divider">
+                            <Navigation size={22} />
+                            <div style={{ width: '100%' }}>
+                                <label>DROP-OFF LOCATION</label>
+                                <div className="autocomplete-wrapper">
+                                    <LocationAutocomplete
+                                        value={dropoffLocation}
+                                        onChange={setDropoffLocation}
+                                        placeholder="E.g. Shusha Castle"
+                                        className="search-input-naked"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* 3. PASSENGERS */}
+                        <div className="search-item border-left-divider" style={{ minWidth: '130px' }}>
+                            <Users size={22} />
+                            <div>
+                                <label>PASSENGERS</label>
+                                <div className="search-value">
+                                    <select 
+                                        value={paxCount}
+                                        onChange={(e) => setPaxCount(Number(e.target.value))}
+                                        className="search-input-naked"
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                                            <option key={num} value={num}>{num} Pax</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
-                    <WaypointsInput waypoints={waypoints} onChange={setWaypoints} />
+                        {/* 4. DATE */}
+                        <div className="search-item border-left-divider" style={{ minWidth: '180px' }}>
+                            <Calendar size={22} />
+                            <div>
+                                <label>DATE & TIME</label>
+                                <div className="search-value">
+                                    <input 
+                                        type="datetime-local" 
+                                        value={bookingDate}
+                                        onChange={(e) => setBookingDate(e.target.value)}
+                                        className="search-input-naked"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                    <div className="pt-form-group mt-5">
-                        <label><Navigation size={16} className="text-indigo-600" /> Təyinat Ünvanı</label>
-                        <LocationAutocomplete
-                            value={dropoffLocation}
-                            onChange={setDropoffLocation}
-                            placeholder="Məs: Şuşa Qalası"
-                            className="pt-input"
-                        />
-                    </div>
+                        <button type="submit" disabled={isSearching} className="search-btn">
+                            {isSearching ? (
+                                <span className="search-btn-icon loading-spin">⟳</span>
+                            ) : (
+                                <>
+                                    <svg className="search-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    Search
+                                </>
+                            )}
+                        </button>
+                    </form>
 
-                    <div className="pt-form-row flex gap-4 mt-5">
-                        <div className="pt-form-group flex-1">
-                            <label className="flex items-center gap-1 text-sm font-semibold mb-2">
-                                <Users size={14} className="text-indigo-600" /> Sərnişin Sayı
-                            </label>
-                            <select
-                                className="pt-input"
-                                value={paxCount}
-                                onChange={(e) => setPaxCount(Number(e.target.value))}
-                            >
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                                    <option key={num} value={num}>{num} Sərnişin</option>
-                                ))}
+
+                </div>
+
+                {/* RESULTS SECTION */}
+                <section className="results-bar">
+                    <span>Showing <strong>{isSearching ? '...' : (searchResult?.data?.length || 0)}</strong> transport options</span>
+
+                    <div className="actions">
+                        <button className="ghost-btn" onClick={() => setSidebarOpen(true)}>
+                            <SlidersHorizontal size={16} />
+                            Filters
+                        </button>
+                        
+                        <div className="ghost-btn sort-wrapper">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                            Sort by:
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select">
+                                <option value="recommended">Recommended</option>
+                                <option value="price_asc">Price: Low to High</option>
+                                <option value="price_desc">Price: High to Low</option>
                             </select>
                         </div>
-                        <div className="pt-form-group flex-[1.5]">
-                            <label className="flex items-center gap-1 text-sm font-semibold mb-2">
-                                Gediş Tarixi və Saatı
-                            </label>
-                            <input 
-                                type="datetime-local" 
-                                className="pt-input"
-                                value={bookingDate}
-                                onChange={(e) => setBookingDate(e.target.value)}
-                            />
-                        </div>
                     </div>
+                </section>
 
-                    <button 
-                        className="pt-btn-primary mt-8 w-full"
-                        onClick={handleSearch}
-                        disabled={isSearching}
-                    >
-                        {isSearching ? <span className="flex-align-center gap-2 justify-center"><Loader className="animate-spin" size={18}/> Axtarılır...</span> : 'Maşınları Göstər'}
-                    </button>
+                {/* EMPTY STATES */}
+                {!isSearching && (!searchResult?.data || searchResult.data.length === 0) && (
+                    <div className="empty-state-premium">
+                        <h3 className="empty-title">No transport options found</h3>
+                        <p className="empty-text">Unfortunately, there are no vehicles matching your search criteria right now. You can try adjusting the passenger count or checking a different address.</p>
+                    </div>
+                )}
+
+                {/* TRANSFER LIST SECTION */}
+                <section className="pt-grid">
+                    {isSearching ? (
+                        [1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="skeleton-card"></div>)
+                    ) : (
+                        searchResult?.data?.map((taxi, idx) => (
+                            <TransferCard
+                                key={taxi.vehicle.id || idx}
+                                taxi={taxi}
+                                onClick={() => handleBookVehicle(taxi)}
+                                hasRoute={!!pickupLocation.address && !!dropoffLocation.address}
+                            />
+                        ))
+                    )}
+                </section>
+
+            </main>
+
+            {/* OFF-CANVAS SIDEBAR FOR FILTERS */}
+            <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}></div>
+            <aside className={`offcanvas-sidebar ${sidebarOpen ? 'active' : ''}`}>
+                <div className="sidebar-header">
+                    <h2>Filters</h2>
+                    <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>✕</button>
                 </div>
-
-                {/* Sağ Panel - Maşın Siyahısı */}
-                <div className="pt-results-panel">
-                    {isSearching && (
-                        <div className="pt-loading-state p-20 text-center">
-                            <Loader className="animate-spin mx-auto mb-4 text-indigo-500" size={48} />
-                            <h3 className="text-gray-600">Aktiv nəqliyyat vasitələri axtarılır...</h3>
-                        </div>
-                    )}
-
-                    {!searchResult && !isSearching && (
-                        <div className="pt-empty-state">
-                            <Car size={48} className="text-indigo-200 mb-4" />
-                            <h3>Transfer Axtarışı</h3>
-                            <p>Bizim avtomobil donanmamızdan təklifləri görmək üçün soldakı formunu doldurub axtarışa verin.</p>
-                        </div>
-                    )}
-
-                    {searchResult && !isSearching && (
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex-align-center gap-2">
-                                <Car className="text-indigo-600" size={20} /> 
-                                {searchResult.data?.length > 0 ? (
-                                    `Sizin üçün ${searchResult.count ?? 0} nəqliyyat vasitəsi tapıldı`
-                                ) : (
-                                    'Hazırda aktiv nəqliyyat vasitəsi yoxdur'
-                                )}
-                            </h3>
-                            
-                            {(!searchResult.data || searchResult.data.length === 0) ? (
-                                <div className="pt-no-results glass-panel p-8 text-center text-gray-500">
-                                    <Navigation size={40} className="mx-auto mb-3 text-gray-300" />
-                                    <p>Təəssüf ki, axtarış meyarlarınıza uyğun boş maşın tapılmadı.</p>
-                                    <p className="text-xs mt-2">Sərnişin sayını azaldıb və ya başqa ünvanı yoxlaya bilərsiniz.</p>
-                                </div>
-                            ) : (
-                                <div className="pt-taxi-list">
-                                    {searchResult.data.map((taxi, idx) => {
-                                        // User requested specifically to obscure vendor company names with generic "Premium" logic
-                                        const category = taxi.vehicle.category;
-                                        const customTitle = category.toLowerCase() === 'premium' ? 'Premium Taxi' : 'Standart Taksi / Transfer';
-                                        const firstImage = taxi.vehicle.images?.[0];
-                                        
-                                        return (
-                                            <div key={idx} className="pt-taxi-card">
-                                                <div className="pt-taxi-image-container">
-                                                    {firstImage ? (
-                                                        <img src={firstImage} alt={`${taxi.vehicle.brand} ${taxi.vehicle.model}`} className="pt-taxi-img" />
-                                                    ) : (
-                                                        <div className="pt-taxi-image-placeholder">
-                                                            <Car size={32} className="text-gray-400" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="pt-taxi-details">
-                                                    <div className="flex-between mb-1">
-                                                        <h4 className="font-bold text-gray-800">{taxi.vehicle.brand} {taxi.vehicle.model}</h4>
-                                                        <span className="pt-taxi-price">
-                                                            {taxi.pricing.totalPrice} {taxi.pricing.currency}
-                                                            {(!pickupLocation.address || !dropoffLocation.address) && (
-                                                                <span className="block text-[10px] font-normal text-gray-400 line-through-none">* baza qiymət</span>
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex-between text-xs text-gray-500 mb-3">
-                                                        <span>{customTitle}</span>
-                                                        <span className="text-indigo-600 font-medium">{taxi.vehicle.vendorCompany}</span>
-                                                    </div>
-                                                    
-                                                    <div className="flex-between mt-auto">
-                                                        <div className="flex gap-2">
-                                                            <span className="pt-badge-neutral"><Users size={12} /> {taxi.vehicle.seats} yer</span>
-                                                        </div>
-                                                        <button 
-                                                            className="pt-btn-reserve" 
-                                                            onClick={() => handleBookVehicle(taxi)}
-                                                        >
-                                                            Detallara Bax & Sifariş
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                
+                <div className="sidebar-content">
+                    <div className="filter-block">
+                        <h3 className="filter-heading">Vehicle Category</h3>
+                        <div className="filter-list">
+                            {['Economy', 'Business', 'Premium', 'Minivan', 'Bus'].map((cat) => (
+                                <label key={cat} className="filter-checkbox-item">
+                                    <input 
+                                        type="radio" 
+                                        name="vehicleCategory"
+                                        checked={selectedCategory === cat}
+                                        onChange={() => setSelectedCategory(cat)}
+                                    />
+                                    <span className="filter-label-text">{cat}</span>
+                                </label>
+                            ))}
+                            {selectedCategory && (
+                                <button onClick={() => setSelectedCategory(undefined)} className="clear-filter-btn">
+                                    Clear Filters
+                                </button>
                             )}
                         </div>
-                    )}
+                    </div>
                 </div>
-            </div>
+            </aside>
         </div>
     );
 };

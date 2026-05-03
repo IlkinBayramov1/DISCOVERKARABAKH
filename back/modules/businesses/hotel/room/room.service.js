@@ -14,12 +14,14 @@ class RoomService {
             throw ApiError.forbidden('You do not own this hotel.');
         }
 
-        const { images, amenities, basePrice, ...roomData } = data;
+        const { images, amenities, basePrice, category, ...roomData } = data;
 
         const result = await prisma.roomType.create({
             data: {
                 ...roomData,
+                category: category || 'Standard',
                 hotelId,
+                basePrice: basePrice !== undefined && basePrice !== null ? parseFloat(basePrice) : undefined,
                 images: images?.length ? {
                     create: images.map((url, index) => ({ url, order: index }))
                 } : undefined,
@@ -62,31 +64,115 @@ class RoomService {
     /**
      * Fetches room types grouped by a Hotel
      */
-    async getRoomsByHotel(hotelId) {
+    async getRoomsByHotel(hotelId, filters = {}) {
+        const { adults, children, category, checkIn, checkOut } = filters;
+        let whereClause = { hotelId };
+
+        const checkInDate = checkIn ? new Date(checkIn + 'T00:00:00.000Z') : null;
+        const checkOutDate = checkOut ? new Date(checkOut + 'T00:00:00.000Z') : null;
+
+        if (adults) {
+            whereClause.maxAdults = { gte: parseInt(adults) };
+        }
+        if (children) {
+            whereClause.maxChildren = { gte: parseInt(children) };
+        }
+        if (category && category !== 'All Rooms') {
+            whereClause.category = category.endsWith('s') ? category.slice(0, -1) : category;
+        }
+
         const rooms = await prisma.roomType.findMany({
-            where: { hotelId },
-            include: { 
-                images: true, 
+            where: whereClause,
+            include: {
+                images: true,
                 roomAmenities: true,
                 pricingList: {
-                    orderBy: { basePrice: 'asc' },
-                    take: 1
+                    where: checkInDate && checkOutDate ? {
+                        date: {
+                            gte: checkInDate,
+                            lt: checkOutDate
+                        }
+                    } : {
+                        date: { gte: new Date() }
+                    },
+                    orderBy: { date: 'asc' }
                 }
             },
             orderBy: { name: 'asc' }
         });
 
         return rooms.map(room => {
-            const basePrice = room.pricingList && room.pricingList.length > 0 
-                ? room.pricingList[0].basePrice 
-                : null;
+            let basePrice = room.basePrice || 0;
             
+            if (room.pricingList && room.pricingList.length > 0) {
+                // If dates were provided, calculate average price for that period
+                if (checkIn && checkOut) {
+                    const sum = room.pricingList.reduce((acc, p) => acc + p.basePrice, 0);
+                    basePrice = sum / room.pricingList.length;
+                } else {
+                    // Otherwise just take the first available price
+                    basePrice = room.pricingList[0].basePrice;
+                }
+            }
+
             const { pricingList, ...rest } = room;
             return {
                 ...rest,
-                basePrice
+                basePrice: Math.round(basePrice * 100) / 100
             };
         });
+    }
+
+    async getRoomById(hotelId, roomId, filters = {}) {
+        const { checkIn, checkOut } = filters;
+        
+        const checkInDate = checkIn ? new Date(checkIn + 'T00:00:00.000Z') : null;
+        const checkOutDate = checkOut ? new Date(checkOut + 'T00:00:00.000Z') : null;
+
+        const room = await prisma.roomType.findFirst({
+            where: { id: roomId, hotelId },
+            include: {
+                images: { orderBy: { order: 'asc' } },
+                roomAmenities: true,
+                hotel: {
+                    select: {
+                        name: true,
+                        city: true,
+                        address: true,
+                        images: { take: 1, orderBy: { order: 'asc' } }
+                    }
+                },
+                pricingList: {
+                    where: checkInDate && checkOutDate ? {
+                        date: {
+                            gte: checkInDate,
+                            lt: checkOutDate
+                        }
+                    } : {
+                        date: { gte: new Date() }
+                    },
+                    orderBy: { date: 'asc' }
+                }
+            }
+        });
+
+        if (!room) throw ApiError.notFound('Room not found');
+
+        let basePrice = room.basePrice || 0;
+        if (room.pricingList && room.pricingList.length > 0) {
+            if (checkIn && checkOut) {
+                const sum = room.pricingList.reduce((acc, p) => acc + p.basePrice, 0);
+                basePrice = sum / room.pricingList.length;
+            } else {
+                basePrice = room.pricingList[0].basePrice;
+            }
+        }
+
+        const { pricingList, ...rest } = room;
+        return {
+            ...rest,
+            basePrice: Math.round(basePrice * 100) / 100
+        };
     }
 
     /**
@@ -102,23 +188,52 @@ class RoomService {
         if (!room) throw ApiError.notFound('Room not found in this hotel');
         if (room.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
-        const { images, amenities, basePrice, ...roomData } = data;
+        const { images, amenities, basePrice, category, ...roomData } = data;
 
         const updated = await prisma.roomType.update({
             where: { id: roomId },
-            data: roomData
+            data: {
+                ...roomData,
+                category: category,
+                basePrice: basePrice !== undefined && basePrice !== null ? parseFloat(basePrice) : undefined
+            }
         });
 
-        // 🟢 FIX: Update pricing if basePrice was provided
+        // 🟢 FIX: Update pricing and ensure it exists for the next 30 days
         if (basePrice !== undefined && basePrice !== null) {
-            // A simple approach: Update all future daily pricings for this room type
-            // or just the next 30 days if they were dynamically updated
-            await prisma.dailyPricing.updateMany({
-                where: { 
+            const parsedPrice = parseFloat(basePrice);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + 30);
+
+            // 1. Delete existing records for the range to avoid unique constraint issues
+            await prisma.dailyPricing.deleteMany({
+                where: {
                     roomTypeId: roomId,
-                    date: { gte: new Date() }
-                },
-                data: { basePrice: parseFloat(basePrice) }
+                    date: {
+                        gte: today,
+                        lt: endDate
+                    }
+                }
+            });
+
+            // 2. Create fresh records for the next 30 days
+            const pricingData = [];
+            for (let i = 0; i < 30; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                pricingData.push({
+                    roomTypeId: roomId,
+                    date: d,
+                    basePrice: parsedPrice
+                });
+            }
+            
+            await prisma.dailyPricing.createMany({
+                data: pricingData,
+                skipDuplicates: true
             });
         }
 
@@ -192,7 +307,7 @@ class RoomService {
         const { status, roomTypeId, floor } = filters;
 
         return prisma.room.findMany({
-            where: { 
+            where: {
                 roomType: { hotelId },
                 ...(status && { status }),
                 ...(roomTypeId && { roomTypeId }),
@@ -239,7 +354,7 @@ class RoomService {
         if (room.roomType.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
         const updateData = { ...data };
-        
+
         // Auto-update lastCleanedAt when marked as AVAILABLE
         if (data.status === 'AVAILABLE' && room.status !== 'AVAILABLE') {
             updateData.lastCleanedAt = new Date();

@@ -17,8 +17,18 @@ export const createTour = async (req, res, next) => {
 
 export const getVendorTours = async (req, res, next) => {
     try {
-        const tours = await tourService.getVendorTours(req.user.id, req.query);
-        res.status(200).json({ success: true, count: tours.length, data: tours });
+        const { tours, totalCount } = await tourService.getVendorTours(req.user.id, req.query);
+        res.status(200).json({ 
+            success: true, 
+            count: tours.length, 
+            data: tours,
+            pagination: {
+                totalCount,
+                page: parseInt(req.query.page) || 1,
+                limit: parseInt(req.query.limit) || 10,
+                totalPages: Math.ceil(totalCount / (parseInt(req.query.limit) || 10))
+            }
+        });
     } catch (error) {
         next(error);
     }
@@ -26,8 +36,18 @@ export const getVendorTours = async (req, res, next) => {
 
 export const getTours = async (req, res, next) => {
     try {
-        const tours = await tourService.getTours(req.query);
-        res.status(200).json({ success: true, count: tours.length, data: tours });
+        const { tours, totalCount } = await tourService.getTours(req.query);
+        res.status(200).json({ 
+            success: true, 
+            count: tours.length, 
+            data: tours,
+            pagination: {
+                totalCount,
+                page: parseInt(req.query.page) || 1,
+                limit: parseInt(req.query.limit) || 12,
+                totalPages: Math.ceil(totalCount / (parseInt(req.query.limit) || 12))
+            }
+        });
     } catch (error) {
         next(error);
     }

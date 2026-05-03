@@ -20,9 +20,13 @@ export interface ITour {
     description: string;
     city?: string;
     address: string;
+    meetingAddress?: string;
+    destinationLink?: string;
     phone?: string;
     email?: string;
     images?: string[];
+    meetingPoint?: string;
+    mapLink?: string;
 
     durationDays: number;
     durationNights: number;
@@ -49,9 +53,13 @@ export interface ITourPayload {
     description: string;
     city?: string;
     address: string;
+    meetingAddress?: string;
+    destinationLink?: string;
     phone?: string;
     email?: string;
     images?: string[];
+    meetingPoint?: string;
+    mapLink?: string;
 
     durationDays: number;
     durationNights: number;

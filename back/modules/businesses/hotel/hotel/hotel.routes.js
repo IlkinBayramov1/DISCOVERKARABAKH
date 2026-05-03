@@ -7,6 +7,7 @@ import calendarRoutes from '../calendar/calendar.routes.js';
 import calendarNoteRoutes from '../calendar/calendarNote.routes.js';
 import revenueRoutes from '../pricing/revenue.routes.js';
 import blacklistRoutes from '../fraud/blacklist.routes.js';
+import { hotelReviewController } from '../reviews/hotelReview.controller.js';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.get('/vendor/reviews', authMiddleware, authorize('vendor', 'admin'), hote
 router.get('/analytics', authMiddleware, authorize('vendor', 'admin'), hotelController.getAnalytics);
 router.put('/:id', authMiddleware, authorize('vendor', 'admin'), hotelController.update);
 router.delete('/:id', authMiddleware, authorize('vendor', 'admin'), hotelController.delete);
+router.post('/reviews/:reviewId/reply', authMiddleware, authorize('vendor', 'admin'), hotelReviewController.reply);
 
 // ============================================
 // Dynamic ID & Nested Routes (Must be bottom)

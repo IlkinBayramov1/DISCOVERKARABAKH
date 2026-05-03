@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { UserCheck, Search, Eye, Filter } from 'lucide-react';
+import { UserCheck, Search, Eye, Filter, Users } from 'lucide-react';
 import { useDrivers, useApproveDriver } from '../hooks/useDrivers';
 import type { IDriverProfile } from '../types';
 import DriverModal from '../components/DriverModal';
-import './VendorTransport.css';
+import './VendorDriverPage.css';
 
 export default function VendorDriverPage() {
     const { data: drivers = [], isLoading } = useDrivers();
@@ -30,126 +30,137 @@ export default function VendorDriverPage() {
     const pendingCount = drivers.filter(d => d.status === 'Pending').length;
 
     return (
-        <div className="v-transport-page">
-            <div className="v-header-glass mb-6 p-6 rounded-2xl flex-between">
-                <div>
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                        Sürücü Filosu
-                    </h1>
-                    <p className="text-muted mt-2 text-sm max-w-md">
-                        Müəssisənizi təmsil edən sürücülərin statusunu və maşın təyinatlarını buradan idarə edin.
-                    </p>
+        <div className="dk-vendor-page">
+
+            {/* PAGE HEADER */}
+            <div className="dk-page-header">
+                <div className="header-text">
+                    <h1>Driver Management</h1>
+                    <p>Approve new drivers and assign them to your fleet vehicles.</p>
                 </div>
-                
+
                 {pendingCount > 0 && (
-                    <div className="flex-align-center gap-2 bg-amber-50 text-amber-700 px-4 py-3 rounded-lg border border-amber-200 shadow-sm animate-pulse">
-                        <UserCheck size={20} />
-                        <span className="font-semibold">{pendingCount} Təsdiq Gözləyən Sürücü</span>
+                    <div className="dk-alert-pill pending-pulse">
+                        <UserCheck size={18} />
+                        <span><strong>{pendingCount}</strong> Drivers Pending Approval</span>
                     </div>
                 )}
             </div>
 
-            <div className="v-filters flex gap-4 mb-6">
-                <div className="search-pill flex-1">
-                    <Search size={18} className="text-muted" />
+            {/* FILTERS BAR */}
+            <div className="dk-filters-bar box-shadow">
+                <div className="dk-search-box">
+                    <Search size={18} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Sürücü adı və ya nömrəsi axtar..."
+                        placeholder="Search by driver name..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                
-                <div className="filter-select">
-                    <Filter size={18} className="text-muted absolute left-3" style={{ top: '50%', transform: 'translateY(-50%)' }} />
+
+                <div className="dk-filter-select">
+                    <Filter size={18} className="filter-icon" />
                     <select
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
                     >
-                        <option value="All">Bütün Statuslar</option>
-                        <option value="Approved">Aktiv (Approved)</option>
-                        <option value="Pending">Gözləyir (Pending)</option>
-                        <option value="Rejected">İmtina Etdi (Rejected)</option>
+                        <option value="All">All Statuses</option>
+                        <option value="Approved">Active (Approved)</option>
+                        <option value="Pending">Pending Review</option>
+                        <option value="Rejected">Rejected</option>
                     </select>
                 </div>
             </div>
 
+            {/* DATA TABLE */}
             {isLoading ? (
-                <div className="flex justify-center p-12">
-                    <div className="modern-spinner"></div>
+                <div className="dk-loading-state">
+                    <div className="spinner"></div>
+                    <p>Loading driver list...</p>
                 </div>
             ) : (
-                <div className="v-table-container">
-                    <table className="v-table">
-                        <thead>
-                            <tr>
-                                <th>Ad Soyad</th>
-                                <th>Əlaqə & Lisenziya</th>
-                                <th>Nəqliyyat Vositəsi</th>
-                                <th>Status</th>
-                                <th>Əməliyyatlar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredDrivers.map(d => (
-                                <tr key={d.id} className="v-table-row">
-                                    <td>
-                                        <div className="font-semibold text-gray-800">{d.firstName} {d.lastName}</div>
-                                        <div className="text-xs text-gray-500 mt-1">UUID: {d.id.split('-')[0]}***</div>
-                                    </td>
-                                    <td>
-                                        <div>{d.phone}</div>
-                                        <div className="text-xs text-indigo-500 mt-1 uppercase tracking-wider">{d.licenseNumber}</div>
-                                    </td>
-                                    <td>
-                                        {d.currentVehicleId ? (
-                                            <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs font-medium border border-emerald-100">
-                                                Təhkim Olunub
-                                            </span>
-                                        ) : (
-                                            <span className="text-rose-600 bg-rose-50 px-2 py-1 rounded text-xs font-medium border border-rose-100">
-                                                Açıqda
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <span className={`v-badge status-${d.status.toLowerCase()}`}>
-                                            {d.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            {d.status === 'Pending' && (
-                                                <button
-                                                    className="v-btn-success flex-align-center gap-1"
-                                                    onClick={() => handleStatusChange(d.id, 'Approved')}
-                                                    disabled={isApproving}
-                                                >
-                                                    <UserCheck size={14} /> Təsdiq
-                                                </button>
-                                            )}
-                                            <button
-                                                className="v-btn-outline flex-align-center gap-1"
-                                                onClick={() => setSelectedDriver(d)}
-                                            >
-                                                <Eye size={14} /> Detallar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredDrivers.length === 0 && (
+                <div className="dk-table-card box-shadow">
+                    <div className="table-responsive">
+                        <table className="dk-data-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan={5} className="text-center py-12 text-gray-400">
-                                        Məlumat tapılmadı.
-                                    </td>
+                                    <th>Driver Profile</th>
+                                    <th>Contact & License</th>
+                                    <th>Vehicle Assignment</th>
+                                    <th>Status</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredDrivers.map(d => (
+                                    <tr key={d.id}>
+                                        <td>
+                                            <div className="profile-cell">
+                                                <div className="avatar-box">
+                                                    {d.firstName.charAt(0)}{d.lastName.charAt(0)}
+                                                </div>
+                                                <div className="profile-info">
+                                                    <span className="profile-name">{d.firstName} {d.lastName}</span>
+                                                    <span className="profile-id">ID: {d.id.split('-')[0]}***</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="contact-cell">
+                                                <span className="contact-phone">{d.phone}</span>
+                                                <span className="license-tag">{d.licenseNumber}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {d.currentVehicleId ? (
+                                                <span className="assignment-pill assigned">Assigned to Vehicle</span>
+                                            ) : (
+                                                <span className="assignment-pill unassigned">Unassigned</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <span className={`status-badge ${(d.status || 'pending').toLowerCase()}`}>
+                                                {d.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                {d.status === 'Pending' && (
+                                                    <button
+                                                        className="dk-btn-success-small"
+                                                        onClick={() => handleStatusChange(d.id, 'Approved')}
+                                                        disabled={isApproving}
+                                                        title="Approve Driver"
+                                                    >
+                                                        <UserCheck size={16} /> Approve
+                                                    </button>
+                                                )}
+                                                <button
+                                                    className="dk-btn-outline-small"
+                                                    onClick={() => setSelectedDriver(d)}
+                                                >
+                                                    <Eye size={16} /> Details
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredDrivers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="empty-table-row">
+                                            <Users size={32} />
+                                            <p>No drivers found matching your criteria.</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
+            {/* DRIVER MODAL */}
             {selectedDriver && (
                 <DriverModal
                     driver={selectedDriver}

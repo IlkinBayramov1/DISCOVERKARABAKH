@@ -17,7 +17,7 @@ export const attractionValidation = {
         isFeatured: Joi.boolean().default(false),
         status: Joi.string().valid('active', 'closed', 'maintenance').default('active'),
         city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Fuzuli', 'Kalbajar', 'Zangilan', 'Gubadly', 'Jabrayil', 'Khojaly', 'Khojavend').required(),
-        categoryId: Joi.string().uuid().required(),
+        category: Joi.string().valid('Muzey', 'Park', 'Tarixi_Mekan', 'Tebiet_Abidesi', 'Memorial_Kompleks', 'Idman_Eylence').required(),
         vendorId: Joi.string().uuid().optional(),
         images: Joi.array().items(
             Joi.alternatives().try(
@@ -49,7 +49,7 @@ export const attractionValidation = {
         isFeatured: Joi.boolean().optional(),
         status: Joi.string().valid('active', 'closed', 'maintenance').optional(),
         city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Fuzuli', 'Kalbajar', 'Zangilan', 'Gubadly', 'Jabrayil', 'Khojaly', 'Khojavend').optional(),
-        categoryId: Joi.string().uuid().optional(),
+        category: Joi.string().valid('Muzey', 'Park', 'Tarixi_Mekan', 'Tebiet_Abidesi', 'Memorial_Kompleks', 'Idman_Eylence').optional(),
         vendorId: Joi.string().uuid().optional().allow(null),
         images: Joi.array().items(
             Joi.alternatives().try(
@@ -68,11 +68,13 @@ export const attractionValidation = {
     queryAttractions: Joi.object({
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).max(100).default(20),
-        categoryId: Joi.string().uuid().optional(),
+        category: Joi.string().valid('Muzey', 'Park', 'Tarixi_Mekan', 'Tebiet_Abidesi', 'Memorial_Kompleks', 'Idman_Eylence').optional(),
         status: Joi.string().valid('active', 'closed', 'maintenance').optional(),
         city: Joi.string().valid('Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Fuzuli', 'Kalbajar', 'Zangilan', 'Gubadly', 'Jabrayil', 'Khojaly', 'Khojavend').optional(),
         isFeatured: Joi.boolean().optional(),
-        entryType: Joi.string().valid('free', 'paid', 'donation').optional()
+        entryType: Joi.string().valid('free', 'paid', 'donation').optional(),
+        keyword: Joi.string().optional().allow(''),
+        q: Joi.string().optional().allow('')
     }),
 
     nearbyQuery: Joi.object({

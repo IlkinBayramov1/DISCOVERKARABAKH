@@ -10,7 +10,7 @@ export const HotelSearchPage: React.FC = () => {
     
     // UI Local State
     const [cityInput, setCityInput] = useState(searchParams.get('city') || '');
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
     const [starRatingInput, setStarRatingInput] = useState<number | undefined>(undefined);
     
     // Premium Search Bar States
@@ -20,6 +20,7 @@ export const HotelSearchPage: React.FC = () => {
     const [childrenInput, setChildrenInput] = useState(searchParams.get('children') ? Number(searchParams.get('children')) : 0);
     const [roomsInput, setRoomsInput] = useState(searchParams.get('rooms') ? Number(searchParams.get('rooms')) : 1);
     const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
+    const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Sidebar Filter States
@@ -50,8 +51,10 @@ export const HotelSearchPage: React.FC = () => {
     // Listen for URL changes
     React.useEffect(() => {
         const urlCity = searchParams.get('city') || '';
+        const urlQ = searchParams.get('q') || '';
         setCityInput(urlCity);
-        setActiveFilters(prev => ({ ...prev, city: urlCity }));
+        setSearchInput(urlQ);
+        setActiveFilters(prev => ({ ...prev, city: urlCity, q: urlQ }));
     }, [searchParams]);
 
     // Handle Header Search
@@ -92,18 +95,35 @@ export const HotelSearchPage: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedAmenities, selectedPriceRange, selectedMinRating, sortBy]);
 
+    // Update URL when criteria change
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (checkInInput) params.set('checkIn', checkInInput);
+        if (checkOutInput) params.set('checkOut', checkOutInput);
+        if (adultsInput) params.set('adults', adultsInput.toString());
+        if (childrenInput !== undefined) params.set('children', childrenInput.toString());
+        if (roomsInput) params.set('rooms', roomsInput.toString());
+        if (cityInput) params.set('city', cityInput);
+        
+        const newRelativePathQuery = window.location.pathname + '?' + params.toString();
+        window.history.replaceState(null, '', newRelativePathQuery);
+    }, [checkInInput, checkOutInput, adultsInput, childrenInput, roomsInput, cityInput]);
+
     const toggleAmenity = (amenity: string) => {
         setSelectedAmenities(prev => 
             prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]
         );
     };
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     React.useEffect(() => {
-        const handleClickOutside = () => setGuestDropdownOpen(false);
-        if (guestDropdownOpen) document.addEventListener('click', handleClickOutside);
+        const handleClickOutside = () => {
+            setGuestDropdownOpen(false);
+            setCityDropdownOpen(false);
+        };
+        if (guestDropdownOpen || cityDropdownOpen) document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [guestDropdownOpen]);
+    }, [guestDropdownOpen, cityDropdownOpen]);
 
     return (
         <div className="hotel-search-page">
@@ -140,14 +160,31 @@ export const HotelSearchPage: React.FC = () => {
                     </div>
 
                     {/* 1. LOCATION */}
-                    <div className="search-item location-item">
+                    <div className="search-item location-item" onClick={(e) => { e.stopPropagation(); setCityDropdownOpen(!cityDropdownOpen); }}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         <div>
                             <label>LOCATION</label>
                             <div className="search-value">
-                                {cityInput ? `${cityInput}` : 'Karabakh'}
+                                {cityInput || 'Karabakh'}
                             </div>
                         </div>
+
+                        {cityDropdownOpen && (
+                            <div className="city-dropdown" onClick={(e) => e.stopPropagation()}>
+                                {['Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Karabakh'].map(city => (
+                                    <div 
+                                        key={city} 
+                                        className="city-option"
+                                        onClick={() => {
+                                            setCityInput(city === 'Karabakh' ? '' : city);
+                                            setCityDropdownOpen(false);
+                                        }}
+                                    >
+                                        {city}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     
                     {/* 2. CHECK-IN / OUT */}
@@ -271,7 +308,7 @@ export const HotelSearchPage: React.FC = () => {
                             <HotelCard
                                 key={hotel.id}
                                 hotel={hotel}
-                                onClick={(id) => navigate(`/hotels/${id}`)}
+                                onClick={(id) => navigate(`/hotels/${id}${window.location.search}`)}
                             />
                         ))
                     )}

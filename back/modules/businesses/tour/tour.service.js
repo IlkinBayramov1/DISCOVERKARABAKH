@@ -60,16 +60,24 @@ class TourService {
         const tour = await tourRepository.findById(tourId);
         if (!tour) throw ApiError.notFound('Tour not found');
 
+        const override = await tourRepository.findAvailabilityByDate(tourId, date);
         const bookedCount = await tourRepository.countBookedParticipants(tourId, date);
-        const remainingSeats = Math.max(0, tour.groupSizeMax - bookedCount);
+
+        const maxSeats = override?.maxSeats ?? tour.groupSizeMax;
+        const isStopped = override?.isStopped ?? false;
+        const price = override?.priceOverride ?? tour.pricePerPerson;
+        
+        const remainingSeats = Math.max(0, maxSeats - bookedCount);
 
         return {
             tourId,
             date,
-            maxSeats: tour.groupSizeMax,
+            maxSeats,
             bookedCount,
             remainingSeats,
-            isFull: remainingSeats <= 0
+            isFull: remainingSeats <= 0 || isStopped,
+            isStopped,
+            price
         };
     }
 

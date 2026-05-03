@@ -38,23 +38,33 @@ export default function Reservations() {
     const filteredBookings = useMemo(() => {
         let result = [...bookings];
 
-        // Status Filter
+        // Status Filter - Fixed to handle "Action Needed" statuses collectively
         if (filterStatus !== 'all') {
-            result = result.filter(b => b.status === filterStatus);
+            if (filterStatus === 'pending') {
+                result = result.filter(b => ['pending', 'draft', 'pending_payment'].includes(b.status));
+            } else {
+                result = result.filter(b => b.status === filterStatus);
+            }
         }
 
-        // Search Filter (Booking # or Email)
+        // Search Filter (Booking #, Email, Name, or Phone)
         if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            result = result.filter(b => 
-                b.bookingNumber.toLowerCase().includes(term) || 
-                (b.user?.email || '').toLowerCase().includes(term)
-            );
+            const term = searchTerm.toLowerCase().trim();
+            result = result.filter(b => {
+                const fullName = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase();
+                return (
+                    b.bookingNumber.toLowerCase().includes(term) || 
+                    (b.user?.email || '').toLowerCase().includes(term) ||
+                    fullName.includes(term) ||
+                    (b.user?.phone || '').includes(term)
+                );
+            });
         }
 
         // Date Range Filter (Default 30 days)
         if (dateRange === '30days') {
             const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setHours(0, 0, 0, 0); // Start of the day
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             result = result.filter(b => new Date(b.createdAt) >= thirtyDaysAgo);
         }
@@ -65,7 +75,7 @@ export default function Reservations() {
     // Statistics Calculation
     const stats = useMemo(() => {
         const totalRev = bookings.reduce((acc, b) => b.status !== 'cancelled' ? acc + b.totalPrice : acc, 0);
-        const pending = bookings.filter(b => b.status === 'pending' || b.status === 'draft').length;
+        const pending = bookings.filter(b => ['pending', 'draft', 'pending_payment'].includes(b.status)).length;
         const confirmed = bookings.filter(b => b.status === 'confirmed').length;
         
         return {
@@ -214,7 +224,9 @@ export default function Reservations() {
                                                     <div className="guest-avatar">{guestInitial}</div>
                                                     <div className="guest-details">
                                                         <span className="guest-id">#{b.bookingNumber}</span>
-                                                        <span className="guest-email">{b.user?.email || 'Guest Protocol'}</span>
+                                                        <span className="guest-email">
+                                                            {b.user?.firstName ? `${b.user.firstName} ${b.user.lastName || ''}` : b.user?.email || 'Guest Protocol'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

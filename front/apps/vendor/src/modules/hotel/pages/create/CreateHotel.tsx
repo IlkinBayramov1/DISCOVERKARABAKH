@@ -83,6 +83,8 @@ export default function CreateHotel() {
         email: '',
         checkInTime: '14:00',
         checkOutTime: '12:00',
+        cancellationPolicy: '',
+        petPolicy: '',
         amenities: [],
         images: []
     });
@@ -119,6 +121,8 @@ export default function CreateHotel() {
                 email: hotel.email || '',
                 checkInTime: hotel.checkInTime || '14:00',
                 checkOutTime: hotel.checkOutTime || '12:00',
+                cancellationPolicy: hotel.cancellationPolicy || '',
+                petPolicy: hotel.petPolicy || '',
                 latitude: hotel.latitude || undefined,
                 longitude: hotel.longitude || undefined,
                 amenities: hotel.amenities?.map((a: any) => a.amenity.name) || [],
@@ -354,15 +358,43 @@ export default function CreateHotel() {
                                         <input type="time" name="checkInTime" className="dk-input with-icon" value={formData.checkInTime} onChange={handleChange} required />
                                     </div>
                                 </div>
-                                <div className="dk-form-group">
-                                    <label>Check-Out Time</label>
-                                    <div className="dk-input-wrap">
-                                        <Clock size={18} className="dk-input-icon text-emerald-500" />
-                                        <input type="time" name="checkOutTime" className="dk-input with-icon" value={formData.checkOutTime} onChange={handleChange} required />
+                                    <div className="dk-form-group">
+                                        <label>Check-Out Time</label>
+                                        <div className="dk-input-wrap">
+                                            <Clock size={18} className="dk-input-icon text-emerald-500" />
+                                            <input type="time" name="checkOutTime" className="dk-input with-icon" value={formData.checkOutTime} onChange={handleChange} required />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="col-span-2 my-4"><hr className="dk-divider"/></div>
+                                <div className="dk-form-grid mt-6">
+                                    <div className="dk-form-group col-span-2">
+                                        <label className="flex items-center gap-2">
+                                            <AlertCircle size={16} className="text-amber-500" /> Cancellation Policy
+                                        </label>
+                                        <textarea 
+                                            name="cancellationPolicy" 
+                                            className="dk-input textarea" 
+                                            value={formData.cancellationPolicy} onChange={handleChange} 
+                                            placeholder="e.g. Free cancellation up to 24 hours before arrival..." 
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className="dk-form-group col-span-2">
+                                        <label className="flex items-center gap-2">
+                                            <Sparkles size={16} className="text-purple-500" /> Pet Policy & House Rules
+                                        </label>
+                                        <textarea 
+                                            name="petPolicy" 
+                                            className="dk-input textarea" 
+                                            value={formData.petPolicy} onChange={handleChange} 
+                                            placeholder="e.g. Small pets allowed with 20 AZN surcharge..." 
+                                            rows={2}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="dk-form-grid mt-4">
 
                                 <div className="dk-form-group col-span-2 md:col-span-1">
                                     <label>Verified Phone</label>

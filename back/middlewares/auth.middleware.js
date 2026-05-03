@@ -47,3 +47,23 @@ export const authorize = (...roles) => {
     next();
   };
 };
+
+export const tryAuthMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      if (token) {
+        const decoded = jwt.verify(token, env.jwtSecret);
+        const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+        if (user && user.isActive) {
+          req.user = user;
+        }
+      }
+    }
+    next();
+  } catch (error) {
+    // If token is invalid/expired, we just proceed as guest
+    next();
+  }
+};

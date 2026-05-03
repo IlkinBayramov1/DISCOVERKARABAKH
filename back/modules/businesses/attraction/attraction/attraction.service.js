@@ -52,14 +52,12 @@ class AttractionService {
         return await attractionRepository.create(finalData);
     }
 
-    async getAttractions({ page = 1, limit = 20, categoryId, status, city, isFeatured, entryType }) {
+    async getAttractions({ page = 1, limit = 20, category, status, city, isFeatured, entryType, keyword, vendorId }) {
         const skip = (page - 1) * limit;
         const take = limit;
 
-        // Cache could realistically wrap this listing endpoint as well, 
-        // but for now we prioritize exact real-time filters for lists
         return await attractionRepository.findAll(
-            { categoryId, status, city, isFeatured, entryType },
+            { category, status, city, isFeatured, entryType, keyword, vendorId },
             { skip, take }
         );
     }

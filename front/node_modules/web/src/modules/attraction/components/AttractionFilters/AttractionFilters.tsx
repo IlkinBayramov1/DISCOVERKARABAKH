@@ -8,49 +8,93 @@ interface AttractionFiltersProps {
     currentFilters: Record<string, any>;
 }
 
+const CITIES = [
+    'Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Fuzuli', 
+    'Kalbajar', 'Zangilan', 'Gubadly', 'Jabrayil', 'Khojaly', 'Khojavend'
+];
+
 export const AttractionFilters: React.FC<AttractionFiltersProps> = ({ 
     categories, 
     onFilterChange, 
     currentFilters 
 }) => {
+    const handleClearAll = () => {
+        onFilterChange({ 
+            category: undefined, 
+            city: undefined,
+            page: 1 
+        });
+    };
+
     return (
-        <div className="filter-block">
-            <h3 className="filter-heading">CATEGORIES</h3>
-            
-            <div className="filter-list">
-                {/* All Attractions (Tüm Görməli Yerlər) */}
-                <label className={`filter-card-item ${!currentFilters.categoryId ? 'active' : ''}`}>
-                    <input 
-                        type="radio" 
-                        name="categoryId"
-                        checked={!currentFilters.categoryId}
-                        onChange={() => onFilterChange({ categoryId: undefined })}
-                        className="hidden-radio"
-                    />
-                    <div className="custom-radio"></div>
-                    <span className="filter-label-text">All Attractions</span>
-                </label>
-                
-                {/* Dinamik Kateqoriyalar */}
-                {categories.map(cat => (
-                    <label key={cat.id} className={`filter-card-item ${currentFilters.categoryId === cat.id ? 'active' : ''}`}>
+        <div className="filter-container">
+            {/* CATEGORIES SECTION */}
+            <div className="filter-block">
+                <h3 className="filter-heading">CATEGORIES</h3>
+                <div className="filter-list">
+                    <label className={`filter-card-item ${!currentFilters.category ? 'active' : ''}`}>
                         <input 
                             type="radio" 
-                            name="categoryId"
-                            checked={currentFilters.categoryId === cat.id}
-                            onChange={() => onFilterChange({ categoryId: cat.id })}
+                            name="category"
+                            checked={!currentFilters.category}
+                            onChange={() => onFilterChange({ category: undefined, page: 1 })}
                             className="hidden-radio"
                         />
                         <div className="custom-radio"></div>
-                        <span className="filter-label-text">{cat.name}</span>
+                        <span className="filter-label-text">All Categories</span>
                     </label>
-                ))}
+                    
+                    {categories.map(cat => (
+                        <label key={cat.id} className={`filter-card-item ${currentFilters.category === cat.id ? 'active' : ''}`}>
+                            <input 
+                                type="radio" 
+                                name="category"
+                                checked={currentFilters.category === cat.id}
+                                onChange={() => onFilterChange({ category: cat.id, page: 1 })}
+                                className="hidden-radio"
+                            />
+                            <div className="custom-radio"></div>
+                            <span className="filter-label-text">{cat.name}</span>
+                        </label>
+                    ))}
+                </div>
             </div>
 
-            {/* Əgər hər hansı bir kateqoriya seçilibsə "Clear" düyməsini göstər */}
-            {currentFilters.categoryId && (
-                <button onClick={() => onFilterChange({ categoryId: undefined })} className="clear-filter-btn">
-                    ✕ Clear Filter
+            {/* LOCATIONS SECTION */}
+            <div className="filter-block" style={{ marginTop: '30px' }}>
+                <h3 className="filter-heading">LOCATIONS</h3>
+                <div className="filter-list">
+                    <label className={`filter-card-item ${!currentFilters.city ? 'active' : ''}`}>
+                        <input 
+                            type="radio" 
+                            name="city"
+                            checked={!currentFilters.city}
+                            onChange={() => onFilterChange({ city: undefined, page: 1 })}
+                            className="hidden-radio"
+                        />
+                        <div className="custom-radio"></div>
+                        <span className="filter-label-text">All Cities</span>
+                    </label>
+
+                    {CITIES.map(city => (
+                        <label key={city} className={`filter-card-item ${currentFilters.city === city ? 'active' : ''}`}>
+                            <input 
+                                type="radio" 
+                                name="city"
+                                checked={currentFilters.city === city}
+                                onChange={() => onFilterChange({ city, page: 1 })}
+                                className="hidden-radio"
+                            />
+                            <div className="custom-radio"></div>
+                            <span className="filter-label-text">{city}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            {(currentFilters.category || currentFilters.city) && (
+                <button onClick={handleClearAll} className="clear-filter-btn" style={{ marginTop: '20px', width: '100%' }}>
+                    ✕ Clear All Filters
                 </button>
             )}
         </div>

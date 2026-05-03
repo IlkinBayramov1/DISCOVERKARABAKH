@@ -154,10 +154,18 @@ export default function VendorTourDashboard() {
                                             </div>
                                         </div>
 
-                                        <div className="dk-tour-location">
+                                        <a 
+                                            className="dk-tour-location clickable" 
+                                            href={tour.latitude && tour.longitude 
+                                                ? `https://www.google.com/maps/search/?api=1&query=${tour.latitude},${tour.longitude}` 
+                                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${tour.city || ''} ${tour.address}`)}`}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <MapPin size={14} className="text-blue-500" />
                                             <span>{tour.city ? `${tour.city}, ` : ''}{tour.address}</span>
-                                        </div>
+                                        </a>
 
                                         <p className="dk-tour-desc">
                                             {tour.description || 'No description provided for this experience.'}

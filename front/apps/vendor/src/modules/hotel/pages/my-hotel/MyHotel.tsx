@@ -13,7 +13,9 @@ import {
     CheckCircle,
     ChevronLeft,
     ChevronRight,
-    Image as ImageIcon
+    Image as ImageIcon,
+    AlertCircle,
+    Sparkles
 } from 'lucide-react';
 import './MyHotel.css';
 
@@ -162,6 +164,17 @@ export default function MyHotel() {
                                     <div className="info-desc">
                                         <label>Official Description</label>
                                         <p>{myProperty.description || 'No description provided.'}</p>
+                                    </div>
+
+                                    <div className="info-policies-grid">
+                                        <div className="policy-item">
+                                            <label><AlertCircle size={14} /> Cancellation Policy</label>
+                                            <p>{myProperty.cancellationPolicy || 'Standard policy applies'}</p>
+                                        </div>
+                                        <div className="policy-item">
+                                            <label><Sparkles size={14} /> Pet Policy</label>
+                                            <p>{myProperty.petPolicy || 'Contact management for details'}</p>
+                                        </div>
                                     </div>
 
                                 </div>

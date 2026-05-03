@@ -1,0 +1,50 @@
+.favorite-btn-premium {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.favorite-btn-premium:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    color: #ef4444;
+}
+
+.favorite-btn-premium.active {
+    background: #ffffff;
+    color: #ef4444;
+    border-color: #fee2e2;
+}
+
+.favorite-btn-premium.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.favorite-btn-premium svg {
+    transition: transform 0.3s ease;
+}
+
+.favorite-btn-premium.active svg {
+    animation: heartBeat 0.4s ease;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}

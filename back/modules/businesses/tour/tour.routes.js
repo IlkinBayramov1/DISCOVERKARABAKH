@@ -20,7 +20,7 @@ router.get('/', getTours);
 router.get('/vendor/my-tours', authMiddleware, roleMiddleware(['vendor']), getVendorTours);
 router.get('/:id', getTourById);
 router.get('/:id/availability', getTourAvailability);
-router.get('/:id/monthly-availability', authMiddleware, getMonthlyAvailability);
+router.get('/:id/monthly-availability', getMonthlyAvailability);
 router.patch('/:id/availability/bulk', authMiddleware, roleMiddleware(['vendor', 'admin']), bulkUpdateAvailability);
 router.get('/slug/:slug', getTourBySlug);
 

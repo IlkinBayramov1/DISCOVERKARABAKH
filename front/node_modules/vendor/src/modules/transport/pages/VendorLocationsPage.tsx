@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { transportVendorApi } from '../api/transport.api';
 import type { ITransportLocation } from '../types';
-import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
+import { Plus, Edit2, Trash2, MapPin, Navigation, Map, Building, Plane, Tent } from 'lucide-react';
 import LocationModal from "../components/LocationModal";
-import './VendorTransport.css'; // Make sure styling is shared
+import './VendorLocationsPage.css';
 
 export default function VendorLocationsPage() {
     const [locations, setLocations] = useState<ITransportLocation[]>([]);
@@ -47,7 +47,7 @@ export default function VendorLocationsPage() {
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (window.confirm(`Siz "${name}" məkanını silmək istədiyinizdən əminsiniz?`)) {
+        if (window.confirm(`"${name}" məkanını silmək istədiyinizdən əminsiniz?`)) {
             try {
                 await transportVendorApi.deleteLocation(id);
                 loadLocations();
@@ -68,82 +68,121 @@ export default function VendorLocationsPage() {
         setIsModalOpen(true);
     };
 
+    // İkon təyinatı üçün köməkçi funksiya
+    const getLocationIcon = (type: string) => {
+        switch (type) {
+            case 'Hotel': return <Building size={18} />;
+            case 'Airport': return <Plane size={18} />;
+            case 'Attraction': return <Tent size={18} />;
+            default: return <Map size={18} />;
+        }
+    };
+
     return (
-        <div className="vendor-page-container">
-            <div className="page-header flex-between mb-6">
-                <div>
-                    <h1>Məkanlar (Locations)</h1>
-                    <p className="text-muted">Nəqliyyat sistemində axtarıla biləcək xüsusi məkanları idarə edin.</p>
+        <div className="dk-vendor-page">
+
+            {/* PAGE HEADER */}
+            <div className="dk-page-header">
+                <div className="header-text">
+                    <h1>Locations & Hubs</h1>
+                    <p>Manage pickup/drop-off points, hotels, and attractions for your transport network.</p>
                 </div>
-                <button className="btn-primary flex-align-center gap-2" onClick={openNew}>
-                    <Plus size={18} /> Yeni Məkan
+                <button className="dk-btn-primary" onClick={openNew}>
+                    <Plus size={18} />
+                    <span>Add Location</span>
                 </button>
             </div>
 
+            {/* CONTENT AREA */}
             {loading ? (
-                <div className="flex-align-center gap-2"><span className="spinner"></span> Yüklənir...</div>
+                <div className="dk-loading-state">
+                    <div className="spinner"></div>
+                    <p>Loading locations...</p>
+                </div>
+            ) : locations.length === 0 ? (
+                <div className="dk-empty-state">
+                    <div className="empty-icon-wrapper">
+                        <MapPin size={48} />
+                    </div>
+                    <h2>No Locations Found</h2>
+                    <p>You haven't defined any service locations yet. Add hotels, airports, or specific points to map your transport routes.</p>
+                    <button className="dk-btn-outline" style={{ marginTop: '16px' }} onClick={openNew}>
+                        <Plus size={18} /> Add Your First Location
+                    </button>
+                </div>
             ) : (
-                <div className="table-responsive bg-white rounded-lg shadow-sm border border-gray-100">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Adı</th>
-                                <th>Tip</th>
-                                <th>Ünvan</th>
-                                <th>Koordinatlar (Lat, Lng)</th>
-                                <th>Populyarlıq</th>
-                                <th>Əməliyyatlar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {locations.map(loc => {
-                                const id = loc._id || loc.id;
-                                return (
-                                    <tr key={id}>
-                                        <td>
-                                            <div className="flex-align-center gap-2">
-                                                <MapPin size={16} className="text-primary" />
-                                                <strong>{loc.name}</strong>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className={`status-badge active`}>{loc.type}</span>
-                                        </td>
-                                        <td>{loc.address}</td>
-                                        <td className="text-muted text-sm flex-align-center gap-2">
-                                            {loc.coordinates?.lat}, {loc.coordinates?.lng}
-                                            {loc.coordinates?.lat && loc.coordinates?.lng && (
-                                                <a
-                                                    href={`https://www.google.com/maps?q=${loc.coordinates.lat},${loc.coordinates.lng}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    title="Xəritədə bax"
-                                                    className="text-primary hover:underline"
-                                                >
-                                                    <MapPin size={14} />
-                                                </a>
-                                            )}
-                                        </td>
-                                        <td>{loc.popularity || 0}</td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="icon-btn-text" onClick={() => openEdit(loc)} title="Redaktə et"><Edit size={16} /></button>
-                                                <button className="icon-btn-text text-danger" onClick={() => handleDelete(id as string, loc.name)} title="Sil"><Trash2 size={16} color="red" /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            {locations.length === 0 && (
+                <div className="dk-table-card box-shadow">
+                    <div className="table-responsive">
+                        <table className="dk-data-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan={6} className="text-center py-8 text-muted">Heç bir məkan tapılmadı.</td>
+                                    <th>Location Name</th>
+                                    <th>Type</th>
+                                    <th>Address Details</th>
+                                    <th>Coordinates (Lat, Lng)</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {locations.map(loc => {
+                                    const id = loc._id || loc.id;
+                                    return (
+                                        <tr key={id}>
+                                            <td>
+                                                <div className="loc-cell">
+                                                    <div className={`loc-icon-box ${loc.type?.toLowerCase() || 'custom'}`}>
+                                                        {getLocationIcon(loc.type || 'Custom')}
+                                                    </div>
+                                                    <div className="loc-info">
+                                                        <span className="loc-name">{loc.name}</span>
+                                                        {loc.popularity ? <span className="loc-pop">Pop: {loc.popularity}</span> : null}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge active`}>{loc.type || 'Custom'}</span>
+                                            </td>
+                                            <td>
+                                                <div className="address-text">{loc.address}</div>
+                                            </td>
+                                            <td>
+                                                <div className="coord-cell">
+                                                    <span className="coord-pill">
+                                                        {loc.coordinates?.lat}, {loc.coordinates?.lng}
+                                                    </span>
+                                                    {loc.coordinates?.lat && loc.coordinates?.lng && (
+                                                        <a
+                                                            href={`http://googleusercontent.com/maps.google.com/5${loc.coordinates.lat},${loc.coordinates.lng}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            title="View on Maps"
+                                                            className="map-link-btn"
+                                                        >
+                                                            <Navigation size={14} />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <button className="icon-action-btn edit" onClick={() => openEdit(loc)} title="Edit Location">
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button className="icon-action-btn delete" onClick={() => handleDelete(id as string, loc.name)} title="Delete Location">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
+            {/* MODAL */}
             {isModalOpen && (
                 <LocationModal
                     location={selectedLocation}

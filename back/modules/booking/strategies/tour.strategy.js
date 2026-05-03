@@ -7,64 +7,68 @@ import { notificationService } from '../../shared/notification/notification.serv
 
 export class TourBookingStrategy extends BookingStrategy {
     async validateAvailability(data) {
-        const { entityId, tourDate, participants, guests, items } = data;
+        const { entityId, tourDate, participants, items } = data;
         
-        // Robust fallback: if tourDate is missing at root, try getting it from items[0]
         const finalTourDate = tourDate || items?.[0]?.checkIn;
         const finalParticipants = participants || (items?.[0]?.adults + (items?.[0]?.children || 0));
 
-        if (!finalTourDate) {
-            throw ApiError.badRequest(`Tour date is required. Received fields: ${Object.keys(data).join(', ')}`);
-        }
-        if (!finalParticipants || finalParticipants < 1) {
-            throw ApiError.badRequest(`Number of participants must be at least 1. Received participants: ${finalParticipants}`);
-        }
+        if (!finalTourDate) throw ApiError.badRequest('Tour date is required.');
+        if (!finalParticipants || finalParticipants < 1) throw ApiError.badRequest('Number of participants must be at least 1.');
 
         const tour = await prisma.tour.findUnique({ where: { id: entityId } });
         if (!tour) throw ApiError.notFound('Tour not found');
 
-        // 1. Validate the requested date matches the tour's startDate
-        const requestedDateStr = new Date(finalTourDate).toISOString().split('T')[0];
-        
-        if (!tour.startDate || new Date(tour.startDate).toISOString().split('T')[0] !== requestedDateStr) {
-            throw ApiError.badRequest(`This tour is only available on ${tour.startDate ? new Date(tour.startDate).toLocaleDateString() : 'an unspecified date'}`);
-        }
-
-        // 2. Prevent booking for past dates
+        // 1. Prevent past dates
         if (new Date(finalTourDate) < new Date(new Date().setHours(0,0,0,0))) {
             throw ApiError.badRequest('Cannot book a tour in the past');
         }
-        
-        // 3. Strict Capacity Check
-        const totalRequested = finalParticipants;
-        const available = tour.availableSlots ?? (tour.groupSizeMax - currentParticipantsCount);
 
-        if (totalRequested > available) {
-            if (available <= 0) {
+        // 2. Fetch Availability Overrides
+        const dateStr = new Date(finalTourDate).toISOString().split('T')[0];
+        const override = await tourRepository.findAvailabilityByDate(entityId, dateStr);
+        const bookedCount = await tourRepository.countBookedParticipants(entityId, dateStr);
+
+        const maxSeats = override?.maxSeats ?? tour.groupSizeMax;
+        const isStopped = override?.isStopped ?? false;
+        const price = override?.priceOverride ?? tour.pricePerPerson;
+        
+        const remainingSeats = Math.max(0, maxSeats - bookedCount);
+
+        if (isStopped) {
+            throw ApiError.badRequest('This tour is not available for the selected date.');
+        }
+
+        if (finalParticipants > remainingSeats) {
+            if (remainingSeats <= 0) {
                 throw ApiError.badRequest('This tour is fully booked for this date.');
             }
-            throw ApiError.badRequest(`Not enough seats available. Only ${available} seat(s) left. Please reduce your participant count.`);
+            throw ApiError.badRequest(`Not enough seats available. Only ${remainingSeats} seat(s) left.`);
         }
         
-        // Map vendorId for BookingService
         data.vendorId = tour.ownerId;
         
-        return { tour, tourDate: finalTourDate, participants: finalParticipants, guests };
+        return { 
+            tour, 
+            tourDate: finalTourDate, 
+            participants: finalParticipants, 
+            guests: data.guests,
+            activePrice: price 
+        };
     }
         
     async calculatePrice(context, data) {
-        const { tour, participants } = context;
-        return tour.pricePerPerson * participants;
+        const { participants, activePrice } = context;
+        return activePrice * participants;
     }
         
     async generateDetailsPayload(context, data) {
-        const { tour, tourDate, participants, guests } = context;
+        const { tour, tourDate, participants, guests, activePrice } = context;
         
         const item = {
             checkIn: new Date(tourDate),
             adults: participants,
             children: 0,
-            price: tour.pricePerPerson * participants,
+            price: activePrice * participants,
         };
 
         const mappedGuests = guests ? guests.map(g => ({

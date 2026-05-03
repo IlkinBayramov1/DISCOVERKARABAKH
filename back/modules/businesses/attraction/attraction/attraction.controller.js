@@ -20,7 +20,16 @@ export class AttractionController {
 
     async getList(req, res, next) {
         try {
-            const result = await attractionService.getAttractions(req.query);
+            const filters = { ...req.query };
+            
+            // If the user is a vendor, they should only see their own attractions in the vendor app context
+            // We can detect this by checking if they are authenticated and have a vendor role
+            // NOTE: Public users won't have req.user
+            if (req.user && req.user.role === 'vendor' && !filters.all) {
+                filters.vendorId = req.user.id;
+            }
+
+            const result = await attractionService.getAttractions(filters);
             return successResponse(res, result.data, { totalItems: result.totalItems });
         } catch (error) {
             next(error);

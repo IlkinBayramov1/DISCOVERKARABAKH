@@ -60,8 +60,8 @@ export class HotelBookingStrategy extends BookingStrategy {
             }
 
             // Real Availability checking
-            const checkInDate = new Date(item.checkIn);
-            const checkOutDate = new Date(item.checkOut);
+            const checkInDate = new Date(item.checkIn + 'T00:00:00.000Z');
+            const checkOutDate = new Date(item.checkOut + 'T00:00:00.000Z');
 
             const pricingMatrix = await prisma.dailyPricing.findMany({
                 where: {

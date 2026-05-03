@@ -55,11 +55,65 @@ export const TourDetailsPage: React.FC = () => {
         fetchTour();
     }, [id]);
 
+
+    // Schedule State
+    const [availableDates, setAvailableDates] = useState<any[]>([]);
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
     useEffect(() => {
-        if (id && tour?.startDate) {
-            checkAvailability(id, tour.startDate.split('T')[0]);
+        const fetchSchedule = async () => {
+            if (!id) return;
+            try {
+                const now = new Date();
+                const months = [
+                    now.toISOString().slice(0, 7),
+                    new Date(now.getFullYear(), now.getMonth() + 1).toISOString().slice(0, 7),
+                    new Date(now.getFullYear(), now.getMonth() + 2).toISOString().slice(0, 7)
+                ];
+
+                const allResults: any[] = [];
+                for (const m of months) {
+                    const res = await tourWebApi.getTourSchedule(id, m);
+                    if (res.success && Array.isArray(res.data)) {
+                        allResults.push(...res.data);
+                    }
+                }
+
+                // Filter out past dates and stopped dates
+                const today = new Date().toISOString().split('T')[0];
+                const validDates = allResults.filter(d => d.date >= today && !d.isStopped && d.remainingSeats > 0);
+                
+                setAvailableDates(validDates);
+                
+                // If tour.startDate is in the future, add it if not already there
+                if (tour?.startDate) {
+                    const startStr = tour.startDate.split('T')[0];
+                    if (startStr >= today && !validDates.find(d => d.date === startStr)) {
+                        // Check availability for base date too if needed, or just add it
+                        setAvailableDates(prev => [{ date: startStr, price: tour.pricePerPerson, remainingSeats: tour.availableSlots ?? 0 }, ...prev].sort((a, b) => a.date.localeCompare(b.date)));
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch tour schedule:", err);
+            }
+        };
+
+        if (tour) {
+            fetchSchedule();
         }
-    }, [id, tour?.startDate, checkAvailability]);
+    }, [id, tour]);
+
+    useEffect(() => {
+        if (id && tour?.startDate && !selectedDate) {
+            setSelectedDate(tour.startDate.split('T')[0]);
+        }
+    }, [id, tour?.startDate, selectedDate]);
+
+    useEffect(() => {
+        if (id && selectedDate) {
+            checkAvailability(id, selectedDate);
+        }
+    }, [id, selectedDate, checkAvailability]);
 
     if (loading) return <div className="loading-state">Loading tour details...</div>;
     if (error) return <div className="error-state">{error}</div>;
@@ -108,10 +162,16 @@ export const TourDetailsPage: React.FC = () => {
                                 <span>{tour.groupSizeMin}-{tour.groupSizeMax} People</span>
                             </div>
                             <span className="dot">•</span>
-                            <div className="location">
+                            <a 
+                                className="location clickable-location" 
+                                href={tour.destinationLink || `https://www.google.com/maps?q=${encodeURIComponent(fullLocation)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open Destination in Google Maps"
+                            >
                                 <i className="fa-solid fa-location-dot"></i>
                                 <span>{fullLocation}</span>
-                            </div>
+                            </a>
                         </div>
                     </div>
                     <div className="header-actions">
@@ -226,30 +286,35 @@ export const TourDetailsPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* MAP WIDGET - YENI */}
-                        <div className="premium-card map-wrapper-card">
-                            <h2>Meeting Point</h2>
-                            <div className="map-embed">
-                                <iframe 
-                                    title="Map" 
-                                    width="100%" 
-                                    height="100%" 
-                                    style={{ border: 0 }} 
-                                    loading="lazy" 
-                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(fullLocation)}&z=15&output=embed`}
-                                ></iframe>
+                        {/* MEETING POINT - YENI */}
+                        <div className="meeting-point-container">
+                            <div className="meeting-point-header">
+                                <i className="fa-solid fa-map-location-dot"></i>
+                                <h2>Meeting Point Information</h2>
+                            </div>
+                            
+                            <div className="meeting-point-content">
+                                <div className="meeting-point-info-card">
+                                    <div className="info-item">
+                                        <strong>Address</strong>
+                                        <span>{tour.meetingAddress || fullLocation}</span>
+                                    </div>
+                                    {tour.meetingPoint && (
+                                        <div className="info-item">
+                                            <strong>Specific Instructions</strong>
+                                            <p>{tour.meetingPoint}</p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <a 
-                                    className="map-overlay-btn" 
-                                    href={`https://maps.google.com/maps?q=${encodeURIComponent(fullLocation)}`} 
+                                    className="dk-btn-meeting-link" 
+                                    href={tour.mapLink || `https://www.google.com/maps?q=${encodeURIComponent(tour.meetingAddress || tour.address || fullLocation)}`} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                 >
-                                    <i className="fa-solid fa-location-crosshairs"></i> View on map
+                                    <i className="fa-solid fa-location-arrow"></i> Open in Google Maps
                                 </a>
-                            </div>
-                            <div className="map-text-info">
-                                <strong>Location</strong>
-                                <span>{fullLocation}</span>
                             </div>
                         </div>
 
@@ -282,21 +347,36 @@ export const TourDetailsPage: React.FC = () => {
                                 <span className="price-label">Price per person</span>
                                 <div className="price-amount-wrap">
                                     <span className="currency">₼</span>
-                                    <span className="amount">{tour.pricePerPerson}</span>
+                                    <span className="amount">{availability?.price ?? tour.pricePerPerson}</span>
                                 </div>
                             </div>
 
                             <div className="booking-detail-box">
-                                <label>TOUR DATE</label>
-                                {tour.startDate ? (
-                                    <div className="date-display">
-                                        <i className="fa-regular fa-calendar"></i>
-                                        {new Date(tour.startDate).toLocaleDateString('en-GB', {
-                                            day: 'numeric', month: 'long', year: 'numeric'
-                                        })}
+                                <label>SELECT TOUR DATE</label>
+                                {availableDates.length > 0 ? (
+                                    <div className="date-selector-wrapper">
+                                        <select 
+                                            className="premium-date-select"
+                                            value={selectedDate || ''}
+                                            onChange={(e) => setSelectedDate(e.target.value)}
+                                        >
+                                            {availableDates.map((d) => (
+                                                <option key={d.date} value={d.date}>
+                                                    {new Date(d.date).toLocaleDateString('en-GB', {
+                                                        day: 'numeric', month: 'long', year: 'numeric'
+                                                    })} - ₼{d.price}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <i className="fa-solid fa-calendar-days selector-icon"></i>
                                     </div>
                                 ) : (
-                                    <div className="date-empty">Date not specified</div>
+                                    <div className="date-display">
+                                        <i className="fa-regular fa-calendar"></i>
+                                        {selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB', {
+                                            day: 'numeric', month: 'long', year: 'numeric'
+                                        }) : 'No dates available'}
+                                    </div>
                                 )}
                             </div>
 
@@ -305,11 +385,13 @@ export const TourDetailsPage: React.FC = () => {
                                     <div className="av-header">
                                         <span>Availability</span>
                                         <div className={`av-status ${
-                                            (tour.availableSlots !== undefined ? tour.availableSlots <= 0 : availability?.isFull) 
-                                                ? 'full' : 'open'
+                                            availability 
+                                                ? (availability.isFull || availability.isStopped ? 'full' : 'open')
+                                                : (tour.availableSlots !== undefined && tour.availableSlots <= 0 ? 'full' : 'open')
                                         }`}>
-                                            {(tour.availableSlots !== undefined ? tour.availableSlots <= 0 : availability?.isFull) 
-                                                ? 'FULLY BOOKED' : 'LIMITED SPOTS'
+                                            {availability 
+                                                ? (availability.isStopped ? 'STOPPED' : (availability.isFull ? 'FULLY BOOKED' : 'LIMITED SPOTS'))
+                                                : (tour.availableSlots !== undefined && tour.availableSlots <= 0 ? 'FULLY BOOKED' : 'LIMITED SPOTS')
                                             }
                                         </div>
                                     </div>
@@ -317,12 +399,12 @@ export const TourDetailsPage: React.FC = () => {
                                         <div 
                                             className="av-progress-fill"
                                             style={{ 
-                                                width: `${((tour.groupSizeMax - (tour.availableSlots ?? 0)) / tour.groupSizeMax) * 100}%` 
+                                                width: `${((availability?.maxSeats ?? tour.groupSizeMax) - (availability?.remainingSeats ?? tour.availableSlots ?? 0)) / (availability?.maxSeats ?? tour.groupSizeMax) * 100}%` 
                                             }}
                                         ></div>
                                     </div>
                                     <span className="av-seats-text">
-                                        🔥 {tour.availableSlots ?? availability?.remainingSeats} places left of {tour.groupSizeMax}
+                                        🔥 {availability?.remainingSeats ?? tour.availableSlots} places left of {availability?.maxSeats ?? tour.groupSizeMax}
                                     </span>
                                 </div>
                             )}
@@ -334,14 +416,19 @@ export const TourDetailsPage: React.FC = () => {
                             )}
 
                             <button
-                                onClick={() => navigate(`/tour-checkout?tourId=${tour.id}`)}
-                                disabled={(tour.availableSlots !== undefined ? tour.availableSlots <= 0 : availability?.isFull) || availabilityLoading}
+                                onClick={() => navigate(`/tour-checkout?tourId=${tour.id}&date=${selectedDate}`)}
+                                disabled={
+                                    availability 
+                                        ? (availability.isFull || availability.isStopped)
+                                        : (tour.availableSlots !== undefined && tour.availableSlots <= 0) || availabilityLoading
+                                }
                                 className={`sidebar-action-btn ${
-                                    (tour.availableSlots !== undefined ? tour.availableSlots <= 0 : availability?.isFull) ? 'disabled' : ''
+                                    (availability ? (availability.isFull || availability.isStopped) : (tour.availableSlots !== undefined && tour.availableSlots <= 0)) ? 'disabled' : ''
                                 }`}
                             >
-                                {(tour.availableSlots !== undefined ? tour.availableSlots <= 0 : availability?.isFull) 
-                                    ? 'Sold Out' : 'Book This Adventure'
+                                {availability 
+                                    ? (availability.isStopped ? 'Unavailable' : (availability.isFull ? 'Sold Out' : 'Book This Adventure'))
+                                    : (tour.availableSlots !== undefined && tour.availableSlots <= 0 ? 'Sold Out' : 'Book This Adventure')
                                 }
                             </button>
 

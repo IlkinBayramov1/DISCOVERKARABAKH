@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Info, Users, CreditCard, ChevronLeft } from 'lucide-react';
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { tourWebApi } from '../../api/tour.api';
+import { useTourAvailability } from '../../hooks/useTourAvailability';
 import type { ITour } from '../../types';
 import { useProfile } from '../../../account/hooks/useProfile';
 import './TourReservationPage.css';
@@ -24,7 +25,7 @@ export const TourReservationPage: React.FC = () => {
     const [paymentMethod, setPaymentMethod] = useState('card');
 
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
-    const { profile, loading: profileLoading } = useProfile();
+    const { profile } = useProfile();
 
     useEffect(() => {
         if (profile) {
@@ -34,6 +35,15 @@ export const TourReservationPage: React.FC = () => {
             if (!phone) setPhone(profile.phone || '');
         }
     }, [profile]);
+
+    const { availability, loading: availabilityLoading, checkAvailability } = useTourAvailability();
+    const dateParam = searchParams.get('date');
+
+    useEffect(() => {
+        if (tourId && dateParam) {
+            checkAvailability(tourId, dateParam);
+        }
+    }, [tourId, dateParam, checkAvailability]);
 
     useEffect(() => {
         if (tourId) {
@@ -50,7 +60,8 @@ export const TourReservationPage: React.FC = () => {
     }, [tourId]);
 
     const handleBooking = async () => {
-        if (!tourId || !firstName || !lastName || !email || !phone || !tour?.startDate) {
+        const selectedDate = dateParam || tour?.startDate;
+        if (!tourId || !firstName || !lastName || !email || !phone || !selectedDate) {
             alert('Please fill out all required details');
             return;
         }
@@ -58,11 +69,11 @@ export const TourReservationPage: React.FC = () => {
         const data = await submitBooking({
             type: 'tour',
             entityId: tourId,
-            tourDate: tour.startDate,
+            tourDate: selectedDate,
             participants: participants,
             items: [{
-                checkIn: tour.startDate,
-                checkOut: tour.startDate,
+                checkIn: selectedDate,
+                checkOut: selectedDate,
                 adults: participants,
                 children: 0
             }],
@@ -80,7 +91,7 @@ export const TourReservationPage: React.FC = () => {
         }
     };
 
-    if (loadingTour) {
+    if (loadingTour || (dateParam && availabilityLoading && !availability)) {
         return <div className="min-h-screen py-20 text-center text-gray-500">Loading booking details...</div>;
     }
 
@@ -96,7 +107,8 @@ export const TourReservationPage: React.FC = () => {
         );
     }
 
-    const netTotal = tour.pricePerPerson * participants;
+    const pricePerPerson = availability?.price ?? tour.pricePerPerson;
+    const netTotal = pricePerPerson * participants;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -222,7 +234,7 @@ export const TourReservationPage: React.FC = () => {
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-sm font-bold text-gray-600">Tour Date</span>
                                     <span className="font-bold text-gray-900">
-                                        {tour.startDate ? new Date(tour.startDate).toLocaleDateString() : 'N/A'}
+                                        {dateParam ? new Date(dateParam).toLocaleDateString() : (tour.startDate ? new Date(tour.startDate).toLocaleDateString() : 'N/A')}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -245,7 +257,7 @@ export const TourReservationPage: React.FC = () => {
                             <div className="mb-8 space-y-4 text-sm font-medium">
                                 <div className="flex justify-between text-gray-600">
                                     <span>Base Ticket (x{participants})</span>
-                                    <span>₼{(tour.pricePerPerson * participants).toFixed(2)}</span>
+                                    <span>₼{(pricePerPerson * participants).toFixed(2)}</span>
                                 </div>
                                 
                                 <div className="flex justify-between pt-4 border-t border-gray-100 text-xl font-black text-gray-900">

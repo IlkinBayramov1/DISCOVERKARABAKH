@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { hotelWebApi } from '../../api/hotel.web.api';
 import { useHotelRooms } from '../../hooks/useHotelRooms';
-import type { IHotel, IRoomType } from '../../types';
+import type { IHotel } from '../../types';
 import './HotelDetailPage.css';
 
 export const HotelDetailPage: React.FC = () => {
@@ -14,28 +14,41 @@ export const HotelDetailPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const { rooms, loading: roomsLoading } = useHotelRooms(hotelId);
-    const [selectedRoom, setSelectedRoom] = useState<IRoomType | null>(null);
+    const [searchParams] = useSearchParams();
     
-    // Modal State
-    const [detailsModalRoom, setDetailsModalRoom] = useState<IRoomType | null>(null);
+    // Search Criteria States
+    const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') || '');
+    const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') || '');
+    const [adults, setAdults] = useState(Number(searchParams.get('adults')) || 2);
+    const [children, setChildren] = useState(Number(searchParams.get('children')) || 0);
+    const [roomsCount, setRoomsCount] = useState(Number(searchParams.get('rooms')) || 1);
+    const [selectedCategory, setSelectedCategory] = useState('All Rooms');
+    const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
+
+    const { rooms, loading: roomsLoading } = useHotelRooms(hotelId, {
+        checkIn,
+        checkOut,
+        adults,
+        children,
+        rooms: roomsCount,
+        category: selectedCategory
+    });
 
     const [cardImageIndexes, setCardImageIndexes] = useState<Record<string, number>>({});
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     // YENİ: Qalereya üçün State-lər
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
 
-    // YENİLƏNİB: Hər iki modal açılanda arxa fonu kilidləmək üçün
+    // YENİLƏNİB: Qalereya açılanda arxa fonu kilidləmək üçün
     useEffect(() => {
-        if (detailsModalRoom || isGalleryOpen) {
+        if (isGalleryOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'auto';
         }
         return () => { document.body.style.overflow = 'auto'; };
-    }, [detailsModalRoom, isGalleryOpen]);
+    }, [isGalleryOpen]);
 
     // Qalereyanı açmaq üçün köməkçi funksiya
     const openGallery = (index: number) => {
@@ -49,7 +62,7 @@ export const HotelDetailPage: React.FC = () => {
             setLoading(true);
             try {
                 const response = await hotelWebApi.getHotelById(hotelId);
-                const hotelData = response?.data || response; 
+                const hotelData = response?.data || response;
                 if (isMounted) setHotel(hotelData);
             } catch (err: any) {
                 if (isMounted) setError(err.message || 'Failed to load hotel details');
@@ -61,11 +74,36 @@ export const HotelDetailPage: React.FC = () => {
         return () => { isMounted = false; };
     }, [hotelId]);
 
-    const handleCheckout = () => {
-        if (selectedRoom) {
-            navigate(`/checkout?hotelId=${hotelId}&roomId=${selectedRoom.id}`);
-        }
-    };
+    // Listen for URL changes to sync state
+    useEffect(() => {
+        if (searchParams.get('checkIn')) setCheckIn(searchParams.get('checkIn') || '');
+        if (searchParams.get('checkOut')) setCheckOut(searchParams.get('checkOut') || '');
+        if (searchParams.get('adults')) setAdults(Number(searchParams.get('adults')));
+        if (searchParams.get('children')) setChildren(Number(searchParams.get('children')));
+        if (searchParams.get('rooms')) setRoomsCount(Number(searchParams.get('rooms')));
+    }, [searchParams]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setGuestDropdownOpen(false);
+        if (guestDropdownOpen) document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [guestDropdownOpen]);
+
+
+
+    // Update URL when criteria change
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (checkIn) params.set('checkIn', checkIn);
+        if (checkOut) params.set('checkOut', checkOut);
+        params.set('adults', adults.toString());
+        params.set('children', children.toString());
+        params.set('rooms', roomsCount.toString());
+        
+        const newRelativePathQuery = window.location.pathname + '?' + params.toString();
+        window.history.replaceState(null, '', newRelativePathQuery);
+    }, [checkIn, checkOut, adults, children, roomsCount]);
 
     if (loading) return <div className="loading-state">Loading details...</div>;
     if (error) return <div className="error-state">{error}</div>;
@@ -104,7 +142,7 @@ export const HotelDetailPage: React.FC = () => {
     return (
         <div className="hotel-detail-page">
             <main className="container">
-                
+
                 {/* BREADCRUMB */}
                 <div className="premium-breadcrumb">
                     <span>Hotels & Stays</span>
@@ -131,7 +169,7 @@ export const HotelDetailPage: React.FC = () => {
                             <span className="dot">•</span>
                             <div className="location">
                                 <i className="fa-solid fa-location-dot"></i>
-                                <a href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=$${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
+                                <a href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
                                     {hotel.address}{hotel.city ? `, ${hotel.city}` : ''}
                                 </a>
                             </div>
@@ -149,7 +187,7 @@ export const HotelDetailPage: React.FC = () => {
                         <img src={mainImg} alt="Main view" />
                         <div className="gallery-badge">Exterior</div>
                     </div>
-                    
+
                     <div className="gallery-grid-4">
                         <div className="gallery-item" onClick={() => openGallery(1)}>
                             <img src={sideImgs[0]} alt="Gallery 1" />
@@ -160,7 +198,7 @@ export const HotelDetailPage: React.FC = () => {
                         <div className="gallery-item" onClick={() => openGallery(3)}>
                             <img src={sideImgs[2]} alt="Gallery 3" />
                         </div>
-                        
+
                         {/* 4-cü kiçik şəkil (Əgər 5-dən çox şəkil varsa Overlay olacaq) */}
                         <div className="gallery-item" onClick={() => openGallery(4)}>
                             <img src={sideImgs[3]} alt="Gallery 4" />
@@ -217,7 +255,7 @@ export const HotelDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="premium-card rating-breakdown-card">
+                        {/* <div className="premium-card rating-breakdown-card">
                             <div className="rating-score-head">
                                 <div className="score-circle">{hotel.rating ? hotel.rating.toFixed(1) : '5.0'}</div>
                                 <div className="score-text">
@@ -243,12 +281,12 @@ export const HotelDetailPage: React.FC = () => {
                                 </div>
                             </div>
                             <a href="#reviews" className="read-reviews-link">Read all reviews <i className="fa-solid fa-arrow-right"></i></a>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
-                {/* CONTEXTUAL SEARCH BAR */}
-                <div className="contextual-search-bar">
+                {/* INTERACTIVE CONTEXTUAL SEARCH BAR */}
+                <div className="contextual-search-bar interactive" onClick={(e) => e.stopPropagation()}>
                     <div className="cs-item">
                         <div className="cs-icon"><i className="fa-solid fa-location-dot"></i></div>
                         <div className="cs-info">
@@ -257,23 +295,77 @@ export const HotelDetailPage: React.FC = () => {
                         </div>
                     </div>
                     <div className="cs-divider"></div>
-                    <div className="cs-item">
+                    <div className="cs-item clickable">
                         <div className="cs-icon"><i className="fa-regular fa-calendar"></i></div>
                         <div className="cs-info">
-                            <label>DATES</label>
-                            <strong>Oct 24 – Oct 28</strong>
+                            <label>CHECK-IN</label>
+                            <input 
+                                type="date" 
+                                value={checkIn} 
+                                onChange={(e) => setCheckIn(e.target.value)} 
+                                className="cs-date-input"
+                            />
+                        </div>
+                    </div>
+                    <div className="cs-item clickable">
+                        <div className="cs-icon"><i className="fa-regular fa-calendar"></i></div>
+                        <div className="cs-info">
+                            <label>CHECK-OUT</label>
+                            <input 
+                                type="date" 
+                                value={checkOut} 
+                                onChange={(e) => setCheckOut(e.target.value)} 
+                                className="cs-date-input"
+                            />
                         </div>
                     </div>
                     <div className="cs-divider"></div>
-                    <div className="cs-item">
+                    <div className="cs-item clickable" onClick={() => setGuestDropdownOpen(!guestDropdownOpen)}>
                         <div className="cs-icon"><i className="fa-solid fa-user-group"></i></div>
                         <div className="cs-info">
                             <label>GUESTS</label>
-                            <strong>2 Adults, 0 Children</strong>
+                            <strong>{adults + children} Guests, {roomsCount} Room</strong>
                         </div>
+
+                        {guestDropdownOpen && (
+                            <div className="cs-guest-dropdown" onClick={(e) => e.stopPropagation()}>
+                                <div className="cs-guest-row">
+                                    <div>
+                                        <div className="cs-guest-title">Adults</div>
+                                        <div className="cs-guest-desc">Ages 13+</div>
+                                    </div>
+                                    <div className="cs-guest-controls">
+                                        <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))}>-</button>
+                                        <span>{adults}</span>
+                                        <button type="button" onClick={() => setAdults(adults + 1)}>+</button>
+                                    </div>
+                                </div>
+                                <div className="cs-guest-row">
+                                    <div>
+                                        <div className="cs-guest-title">Children</div>
+                                        <div className="cs-guest-desc">Ages 2-12</div>
+                                    </div>
+                                    <div className="cs-guest-controls">
+                                        <button type="button" onClick={() => setChildren(Math.max(0, children - 1))}>-</button>
+                                        <span>{children}</span>
+                                        <button type="button" onClick={() => setChildren(children + 1)}>+</button>
+                                    </div>
+                                </div>
+                                <div className="cs-guest-row">
+                                    <div>
+                                        <div className="cs-guest-title">Rooms</div>
+                                    </div>
+                                    <div className="cs-guest-controls">
+                                        <button type="button" onClick={() => setRoomsCount(Math.max(1, roomsCount - 1))}>-</button>
+                                        <span>{roomsCount}</span>
+                                        <button type="button" onClick={() => setRoomsCount(roomsCount + 1)}>+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <div className="cs-message">
-                        Showing available rooms
+                        Prices updated for your dates
                     </div>
                 </div>
 
@@ -281,9 +373,36 @@ export const HotelDetailPage: React.FC = () => {
                 <div className="rooms-section-header" id="rooms">
                     <h2>Available Rooms</h2>
                     <div className="rooms-filters">
-                        <button className="active">All Rooms</button>
-                        <button>Suites</button>
-                        <button>Family</button>
+                        <button 
+                            className={selectedCategory === 'All Rooms' ? 'active' : ''} 
+                            onClick={() => setSelectedCategory('All Rooms')}
+                        >
+                            All Rooms
+                        </button>
+                        <button 
+                            className={selectedCategory === 'Standard' ? 'active' : ''} 
+                            onClick={() => setSelectedCategory('Standard')}
+                        >
+                            Standard
+                        </button>
+                        <button 
+                            className={selectedCategory === 'Suites' ? 'active' : ''} 
+                            onClick={() => setSelectedCategory('Suites')}
+                        >
+                            Suites
+                        </button>
+                        <button 
+                            className={selectedCategory === 'Family' ? 'active' : ''} 
+                            onClick={() => setSelectedCategory('Family')}
+                        >
+                            Family
+                        </button>
+                        <button 
+                            className={selectedCategory === 'Deluxe' ? 'active' : ''} 
+                            onClick={() => setSelectedCategory('Deluxe')}
+                        >
+                            Deluxe
+                        </button>
                     </div>
                 </div>
 
@@ -294,14 +413,14 @@ export const HotelDetailPage: React.FC = () => {
                         <div className="empty-state">No rooms are currently available for this property.</div>
                     )}
                     {rooms.map(room => (
-                        <article key={room.id} className={`room-premium-card ${selectedRoom?.id === room.id ? 'selected-ring' : ''}`}>
+                        <article key={room.id} className="room-premium-card">
                             <div className="room-image-col">
                                 {(() => {
                                     // Otağın şəkilləri yoxdursa placeholder qoyuruq
-                                    const roomImages = room.images && room.images.length > 0 
-                                        ? room.images 
+                                    const roomImages = room.images && room.images.length > 0
+                                        ? room.images
                                         : [{ id: '1', url: 'https://placehold.co/400x300?text=Room', order: 0 }];
-                                    
+
                                     // Bu otaq üçün aktiv olan şəklin indeksi (default 0)
                                     const activeImgIdx = cardImageIndexes[room.id] || 0;
 
@@ -310,21 +429,21 @@ export const HotelDetailPage: React.FC = () => {
                                             {/* Slayder Oxları və Nöqtələri (Əgər 1-dən çox şəkil varsa) */}
                                             {roomImages.length > 1 && (
                                                 <>
-                                                    <button 
+                                                    <button
                                                         className="card-slider-btn prev"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setCardImageIndexes(prev => ({
                                                                 ...prev,
-                                                                [room.id]: prev[room.id] === undefined || prev[room.id] === 0 
-                                                                    ? roomImages.length - 1 
+                                                                [room.id]: prev[room.id] === undefined || prev[room.id] === 0
+                                                                    ? roomImages.length - 1
                                                                     : prev[room.id] - 1
                                                             }));
                                                         }}
                                                     >
                                                         <i className="fa-solid fa-chevron-left"></i>
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         className="card-slider-btn next"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -336,11 +455,11 @@ export const HotelDetailPage: React.FC = () => {
                                                     >
                                                         <i className="fa-solid fa-chevron-right"></i>
                                                     </button>
-                                                    
+
                                                     <div className="card-slider-dots">
                                                         {roomImages.map((_, idx) => (
-                                                            <span 
-                                                                key={idx} 
+                                                            <span
+                                                                key={idx}
                                                                 className={`card-dot ${idx === activeImgIdx ? 'active' : ''}`}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -351,7 +470,7 @@ export const HotelDetailPage: React.FC = () => {
                                                     </div>
                                                 </>
                                             )}
-                                            
+
                                             {/* Aktiv Şəkil */}
                                             <img src={getImageUrl(roomImages[activeImgIdx].url)} alt={room.name} />
                                             {room.totalInventory > 0}
@@ -359,24 +478,14 @@ export const HotelDetailPage: React.FC = () => {
                                     );
                                 })()}
                             </div>
-                            
+
                             <div className="room-content-col">
-                                <div className="room-header-row">
                                     <div className="room-title-area">
                                         <h3>{room.name}</h3>
                                         <span className="hotel-sub">{hotel.name}</span>
                                     </div>
-                                    <button 
-                                        className="details-pill-btn"
-                                        onClick={() => {
-                                            setDetailsModalRoom(room);
-                                            setCurrentImageIndex(0); // YENİ: Slayderi sıfırlayır
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-circle-info"></i> Details
-                                    </button>
-                                </div>
-                                
+
+
                                 <div className="room-specs-pills">
                                     {room.roomSizeM2 && (
                                         <span className="spec-pill">
@@ -393,11 +502,11 @@ export const HotelDetailPage: React.FC = () => {
                                         <i className="fa-solid fa-mountain-sun"></i> Mountain View
                                     </span>
                                 </div>
-                                
+
                                 <p className="room-desc-text">
                                     {room.description || 'Experience luxury with a panoramic view of the Karabakh mountains. Includes a minibar, working desk, and premium toiletries.'}
                                 </p>
-                                
+
                                 <div className="room-footer-row">
                                     <div className="price-info-area">
                                         <span className="starting-label">Starting from</span>
@@ -407,12 +516,12 @@ export const HotelDetailPage: React.FC = () => {
                                         </div>
                                         <span className="tax-label">includes taxes & fees</span>
                                     </div>
-                                    
-                                    <button 
-                                        className={`select-room-btn ${selectedRoom?.id === room.id ? 'active' : ''}`}
-                                        onClick={() => setSelectedRoom(room)}
+
+                                    <button
+                                        className="select-room-btn primary-action-btn"
+                                        onClick={() => navigate(`/hotels/${hotelId}/rooms/${room.id}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`)}
                                     >
-                                        {selectedRoom?.id === room.id ? 'Selected ✓' : 'Select Room'}
+                                        View Details & Reserve <i className="fa-solid fa-arrow-right"></i>
                                     </button>
                                 </div>
                             </div>
@@ -422,159 +531,17 @@ export const HotelDetailPage: React.FC = () => {
 
             </main>
 
-            {/* STICKY SUMMARY FOOTER */}
-            <footer className={`premium-sticky-footer ${selectedRoom ? 'show' : ''}`}>
-                <div className="footer-content container">
-                    <div className="summary-left">
-                        <img src={selectedRoom?.images?.[0]?.url ? getImageUrl(selectedRoom.images[0].url) : 'https://placehold.co/100x100'} alt="Selected Room" />
-                        <div className="summary-info">
-                            <small>Your selection at {hotel.name}</small>
-                            <strong>{selectedRoom?.name}</strong>
-                        </div>
-                    </div>
-
-                    <div className="summary-right">
-                        <div className="summary-price-box">
-                            <small>Total Price</small>
-                            <strong>₼{selectedRoom?.basePrice || '---'}</strong>
-                        </div>
-                        <button onClick={handleCheckout} className="checkout-btn">
-                            Continue to Checkout <i className="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </footer>
-
-            {/* ROOM DETAILS MODAL (NEW) */}
-            {detailsModalRoom && (
-                <div className="room-modal-overlay" onClick={() => setDetailsModalRoom(null)}>
-                    <div className="room-modal-content" onClick={e => e.stopPropagation()}>
-                        
-                        <button className="room-modal-close" onClick={() => setDetailsModalRoom(null)}>
-                            <i className="fa-solid fa-xmark"></i>
-                        </button>
-
-                        {/* YENİLƏNMİŞ SLAYDER HİSSƏSİ */}
-                        <div className="room-modal-image">
-                            {detailsModalRoom.images && detailsModalRoom.images.length > 1 && (
-                                <>
-                                    <button 
-                                        className="modal-slider-btn prev" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentImageIndex((prev) => prev === 0 ? detailsModalRoom.images!.length - 1 : prev - 1);
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-chevron-left"></i>
-                                    </button>
-                                    
-                                    <button 
-                                        className="modal-slider-btn next" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentImageIndex((prev) => (prev + 1) % detailsModalRoom.images!.length);
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-chevron-right"></i>
-                                    </button>
-
-                                    <div className="modal-slider-dots">
-                                        {detailsModalRoom.images.map((_, idx) => (
-                                            <span 
-                                                key={idx} 
-                                                className={`slider-dot ${idx === currentImageIndex ? 'active' : ''}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCurrentImageIndex(idx);
-                                                }}
-                                            ></span>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                            
-                            <img 
-                                src={detailsModalRoom.images && detailsModalRoom.images.length > 0 
-                                    ? getImageUrl(detailsModalRoom.images[currentImageIndex].url) 
-                                    : 'https://placehold.co/800x400?text=Room'} 
-                                alt={detailsModalRoom.name} 
-                            />
-                        </div>
-
-                        <div className="room-modal-body">
-                            <h2>{detailsModalRoom.name}</h2>
-                            <p className="modal-hotel-sub">{hotel.name}</p>
-
-                            <div className="modal-specs-grid">
-                                {detailsModalRoom.roomSizeM2 && (
-                                    <div className="modal-spec-box">
-                                        <div className="spec-icon"><i className="fa-solid fa-ruler-combined"></i></div>
-                                        <div className="spec-details">
-                                            <span>Room Size</span>
-                                            <strong>{detailsModalRoom.roomSizeM2} m²</strong>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="modal-spec-box">
-                                    <div className="spec-icon"><i className="fa-solid fa-user-group"></i></div>
-                                    <div className="spec-details">
-                                        <span>Capacity</span>
-                                        <strong>Max {detailsModalRoom.maxAdults} Guests</strong>
-                                    </div>
-                                </div>
-                                <div className="modal-spec-box">
-                                    <div className="spec-icon"><i className="fa-solid fa-bed"></i></div>
-                                    <div className="spec-details">
-                                        <span>Bed Type</span>
-                                        <strong>{detailsModalRoom.bedType || '1 King Bed'}</strong>
-                                    </div>
-                                </div>
-                                <div className="modal-spec-box">
-                                    <div className="spec-icon"><i className="fa-solid fa-mountain-sun"></i></div>
-                                    <div className="spec-details">
-                                        <span>View</span>
-                                        <strong>Mountain View</strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="modal-desc-box">
-                                <h3>About this room</h3>
-                                <p>{detailsModalRoom.description || 'Experience luxury with a panoramic view of the Karabakh mountains. Includes a minibar, working desk, and premium toiletries. Perfect for both leisure and business travelers seeking comfort and style.'}</p>
-                            </div>
-                        </div>
-
-                        <div className="room-modal-footer">
-                            <div className="modal-price">
-                                <span>Price per night</span>
-                                <strong>₼{detailsModalRoom.basePrice || '---'}</strong>
-                            </div>
-                            <button 
-                                className="modal-select-btn"
-                                onClick={() => {
-                                    setSelectedRoom(detailsModalRoom);
-                                    setDetailsModalRoom(null); // Modalı bağla
-                                }}
-                            >
-                                {selectedRoom?.id === detailsModalRoom.id ? 'Selected ✓' : 'Select Room'}
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-
             {/* FULLSCREEN GALLERY MODAL (NEW) */}
             {isGalleryOpen && (
                 <div className="fullscreen-gallery-modal" onClick={() => setIsGalleryOpen(false)}>
-                    
+
                     <button className="gallery-close-btn" onClick={() => setIsGalleryOpen(false)}>
                         <i className="fa-solid fa-xmark"></i>
                     </button>
 
                     <div className="gallery-main-view" onClick={e => e.stopPropagation()}>
-                        <button 
-                            className="gallery-nav-btn prev" 
+                        <button
+                            className="gallery-nav-btn prev"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setGalleryIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
@@ -582,16 +549,16 @@ export const HotelDetailPage: React.FC = () => {
                         >
                             <i className="fa-solid fa-chevron-left"></i>
                         </button>
-                        
-                        <img 
-                            src={getImageUrl(images[galleryIndex].url)} 
-                            alt={`Gallery ${galleryIndex + 1}`} 
+
+                        <img
+                            src={getImageUrl(images[galleryIndex].url)}
+                            alt={`Gallery ${galleryIndex + 1}`}
                             key={galleryIndex} /* Animasiya üçün key vacibdir */
                             className="gallery-active-img"
                         />
-                        
-                        <button 
-                            className="gallery-nav-btn next" 
+
+                        <button
+                            className="gallery-nav-btn next"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setGalleryIndex(prev => (prev + 1) % images.length);
@@ -603,8 +570,8 @@ export const HotelDetailPage: React.FC = () => {
 
                     <div className="gallery-thumbnails" onClick={e => e.stopPropagation()}>
                         {images.map((img, idx) => (
-                            <div 
-                                key={img.id || idx} 
+                            <div
+                                key={img.id || idx}
                                 className={`thumb-item ${idx === galleryIndex ? 'active' : ''}`}
                                 onClick={() => setGalleryIndex(idx)}
                             >
@@ -614,7 +581,7 @@ export const HotelDetailPage: React.FC = () => {
                     </div>
 
                 </div>
-            )}            
+            )}
         </div>
     );
 };

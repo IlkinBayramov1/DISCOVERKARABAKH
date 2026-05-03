@@ -435,6 +435,37 @@
     border-radius: 50px;
 }
 
+/* Vendor Reply Display */
+.dk-vendor-reply-display {
+    margin-top: 16px;
+    background: #f1f5f9;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border-left: 4px solid var(--dk-rev-primary);
+    position: relative;
+}
+
+.dk-vendor-reply-display .reply-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--dk-rev-primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dk-vendor-reply-display p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--dk-rev-text-main);
+    font-weight: 500;
+    font-style: italic;
+}
+
 /* Reply Box */
 .dk-reply-box {
     margin-top: 20px;

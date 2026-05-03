@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
     Plus, 
     RefreshCw, 
@@ -17,16 +18,19 @@ import type { IPricingRule, IPricingRulePayload } from '../../types';
 import './PricingRules.css';
 
 export default function PricingRules() {
+    const [searchParams] = useSearchParams();
+    const urlHotelId = searchParams.get('hotelId');
+    
     const { data: hotels, loading: hotelsLoading } = useHotels(true);
-    const [selectedHotelId, setSelectedHotelId] = useState<string>('');
+    const [selectedHotelId, setSelectedHotelId] = useState<string>(urlHotelId || '');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRule, setEditingRule] = useState<IPricingRule | null>(null);
 
     useEffect(() => {
         if (hotels && hotels.length > 0 && !selectedHotelId) {
-            setSelectedHotelId(hotels[0].id);
+            setSelectedHotelId(urlHotelId || hotels[0].id);
         }
-    }, [hotels, selectedHotelId]);
+    }, [hotels, selectedHotelId, urlHotelId]);
 
     const { rooms } = useRooms(selectedHotelId || undefined);
     const { rules, loading, error, fetchRules, addRule, updateRule, removeRule } = useRevenue(selectedHotelId);

@@ -40,6 +40,9 @@ export function useHotelSearch(initialParams: HotelSearchParams) {
         initialParams.maxPrice,
         initialParams.minRating,
         initialParams.sortBy,
+        initialParams.adults,
+        initialParams.children,
+        initialParams.rooms,
         // Using JSON.stringify for array fields deeply compares them
         initialParams.amenityNames ? JSON.stringify(initialParams.amenityNames) : null,
         initialParams.lat,

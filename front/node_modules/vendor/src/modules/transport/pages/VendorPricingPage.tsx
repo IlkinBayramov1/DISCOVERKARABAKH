@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { transportVendorApi } from '../api/transport.api';
 import type { IPricingRule } from '../types';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Car, Truck, Calculator, MapPin, Clock, Target } from 'lucide-react';
 import PricingModal from '../components/PricingModal';
-import './VendorTransport.css';
+import './VendorPricingPage.css';
 
 export default function VendorPricingPage() {
     const [rules, setRules] = useState<IPricingRule[]>([]);
@@ -30,24 +30,29 @@ export default function VendorPricingPage() {
     };
 
     const handleSave = async (data: Partial<IPricingRule>) => {
-        if (selectedRule) {
-            await transportVendorApi.updatePricingRule(selectedRule.id, data);
-        } else {
-            await transportVendorApi.createPricingRule(data);
+        try {
+            if (selectedRule && selectedRule.id) {
+                await transportVendorApi.updatePricingRule(selectedRule.id, data);
+            } else {
+                await transportVendorApi.createPricingRule(data);
+            }
+            setIsModalOpen(false);
+            setSelectedRule(null);
+            loadRules();
+        } catch (error) {
+            console.error('Failed to save rule', error);
+            alert('An error occurred while saving the pricing rule.');
         }
-        setIsModalOpen(false);
-        setSelectedRule(null);
-        loadRules();
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (window.confirm(`Siz "${name}" qaydasını silmək istədiyinizdən əminsiniz?`)) {
+        if (window.confirm(`Are you sure you want to delete the "${name}" pricing rule?`)) {
             try {
                 await transportVendorApi.deletePricingRule(id);
                 loadRules();
             } catch (error) {
                 console.error('Failed to delete rule', error);
-                alert('Silinmə xətası.');
+                alert('Deletion failed.');
             }
         }
     };
@@ -58,7 +63,6 @@ export default function VendorPricingPage() {
     };
 
     const openNew = () => {
-        // Pre-fill config with transportType so the modal knows which context we're in
         setSelectedRule({
             id: '',
             name: '',
@@ -74,74 +78,129 @@ export default function VendorPricingPage() {
         return type === activeTab;
     });
 
+    const getRuleIcon = (type: string) => {
+        switch (type) {
+            case 'Fixed': return <Target size={20} />;
+            case 'Hourly': return <Clock size={20} />;
+            default: return <MapPin size={20} />;
+        }
+    };
+
     return (
-        <div className="vendor-page-container">
-            <div className="page-header flex-between mb-6">
-                <div>
-                    <h1>Qiymət Qaydaları (Pricing Rules)</h1>
-                    <p className="text-muted">Daşımacılıq xidmətləriniz üçün qiymət tənzimləmələri.</p>
+        <div className="dk-vendor-page">
+
+            {/* PAGE HEADER */}
+            <div className="dk-page-header">
+                <div className="header-text">
+                    <h1>Pricing Rules & Tariffs</h1>
+                    <p>Configure dynamic pricing, base fares, and distance rates for your fleet.</p>
                 </div>
-                <button className="btn-primary flex-align-center gap-2" onClick={openNew}>
-                    <Plus size={18} /> Yeni Qayda
+                <button className="dk-btn-primary" onClick={openNew}>
+                    <Plus size={18} />
+                    <span>Create Rule</span>
                 </button>
             </div>
 
-            <div className="tabs-container my-4">
-                <button
-                    className={`tab-button ${activeTab === 'passenger' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('passenger')}
-                >
-                    <span className="flex-align-center gap-2">Sərnişin Daşıma Qiymətləri</span>
-                </button>
-                <button
-                    className={`tab-button ${activeTab === 'cargo' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('cargo')}
-                >
-                    <span className="flex-align-center gap-2">Yük Daşıma Qiymətləri</span>
-                </button>
+            {/* SEGMENTED TABS */}
+            <div className="dk-tabs-wrapper">
+                <div className="dk-segmented-control">
+                    <button
+                        className={`segment-btn ${activeTab === 'passenger' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('passenger')}
+                    >
+                        <Car size={18} /> Passenger Tariffs
+                    </button>
+                    <button
+                        className={`segment-btn ${activeTab === 'cargo' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('cargo')}
+                    >
+                        <Truck size={18} /> Cargo Tariffs
+                    </button>
+                </div>
             </div>
 
+            {/* CONTENT AREA */}
             {loading ? (
-                <div className="flex-align-center gap-2"><span className="spinner"></span> Yüklənir...</div>
+                <div className="dk-loading-state">
+                    <div className="spinner"></div>
+                    <p>Loading your pricing configurations...</p>
+                </div>
+            ) : filteredRules.length === 0 ? (
+                <div className="dk-empty-state">
+                    <div className="empty-icon-wrapper">
+                        <Calculator size={48} />
+                    </div>
+                    <h2>No Pricing Rules Configured</h2>
+                    <p>You haven't set up any pricing rules for {activeTab === 'passenger' ? 'passenger transport' : 'cargo transport'}. Create a rule to start accepting bookings.</p>
+                    <button className="dk-btn-outline" style={{ marginTop: '16px' }} onClick={openNew}>
+                        <Plus size={18} /> Add Your First Tariff
+                    </button>
+                </div>
             ) : (
-                <div className="grid-cards">
+                <div className="dk-pricing-grid">
                     {filteredRules.map(rule => (
-                        <div key={rule.id} className="pricing-card glassmorphism">
-                            <div className="flex-between mb-3">
-                                <h3>{rule.name}</h3>
-                                <div className="flex gap-2">
-                                    <button className="icon-btn-text" onClick={() => openEdit(rule)}><Edit size={16} /></button>
-                                    <button className="icon-btn-text text-danger" onClick={() => handleDelete(rule.id, rule.name)}><Trash2 size={16} color="red" /></button>
+                        <div key={rule.id} className="dk-pricing-card box-shadow">
+
+                            <div className="pricing-card-header">
+                                <div className="rule-title-box">
+                                    <div className={`rule-icon ${rule.type.toLowerCase()}`}>
+                                        {getRuleIcon(rule.type)}
+                                    </div>
+                                    <h3>{rule.name}</h3>
+                                </div>
+                                <div className="action-buttons">
+                                    <button className="icon-action-btn edit" onClick={() => openEdit(rule)} title="Edit Rule">
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button className="icon-action-btn delete" onClick={() => handleDelete(rule.id, rule.name)} title="Delete Rule">
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
-                            <div className="price-details border-top pt-3">
-                                <div className="price-row flex-between mb-2">
-                                    <span className="text-muted">Hesablanma:</span> <strong>{rule.type}</strong>
+
+                            <div className="pricing-card-body">
+                                <div className="calc-type-badge">
+                                    <Calculator size={14} />
+                                    Calculation: <strong>{rule.type}</strong>
                                 </div>
-                                <div className="price-row flex-between mb-2">
-                                    <span className="text-muted">Baza/Açılış (₼):</span> <strong>{rule.basePrice}</strong>
+
+                                <div className="price-metrics">
+                                    <div className="metric-row highlight">
+                                        <span className="metric-label">Base / Starting Fare</span>
+                                        <div className="metric-value">
+                                            <span className="currency">₼</span>
+                                            <span className="amount">{rule.basePrice}</span>
+                                        </div>
+                                    </div>
+
+                                    {rule.type === 'PerKm' && rule.pricePerKm !== undefined && (
+                                        <div className="metric-row">
+                                            <span className="metric-label">Rate Per Kilometer</span>
+                                            <div className="metric-value small">
+                                                <span className="amount">{rule.pricePerKm}</span>
+                                                <span className="unit">₼ / km</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {(rule.type === 'Hourly' || rule.type === 'PerKm') && rule.pricePerMin !== undefined && (
+                                        <div className="metric-row">
+                                            <span className="metric-label">Wait Time / Per Minute</span>
+                                            <div className="metric-value small">
+                                                <span className="amount">{rule.pricePerMin}</span>
+                                                <span className="unit">₼ / min</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                {rule.pricePerKm !== undefined && (
-                                    <div className="price-row flex-between mb-2">
-                                        <span className="text-muted">1 KM :</span> <strong>{rule.pricePerKm} ₼</strong>
-                                    </div>
-                                )}
-                                {rule.pricePerMin !== undefined && (
-                                    <div className="price-row flex-between mb-2">
-                                        <span className="text-muted">Dəqiqə :</span> <strong>{rule.pricePerMin} ₼</strong>
-                                    </div>
-                                )}
                             </div>
+
                         </div>
                     ))}
-                    {filteredRules.length === 0 && (
-                        <div className="empty-state text-center py-5">
-                            {activeTab === 'passenger' ? 'Heç bir sərnişin' : 'Heç bir yük'} qiymət qaydası tapılmadı.
-                        </div>
-                    )}
                 </div>
             )}
 
+            {/* MODAL */}
             {isModalOpen && (
                 <PricingModal
                     rule={selectedRule}

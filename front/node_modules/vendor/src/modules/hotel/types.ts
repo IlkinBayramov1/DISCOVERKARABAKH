@@ -74,6 +74,7 @@ export interface IRoomType {
     bedType?: string;
     roomSizeM2?: number;
     totalInventory: number;
+    category?: string;
     hotelId: string;
     basePrice?: number | null; // Added for UI consistency
     roomAmenities?: IRoomAmenity[];
@@ -96,6 +97,7 @@ export interface IRoomTypePayload {
     roomSizeM2?: number;
     totalInventory: number;
     basePrice?: number;
+    category?: string;
     amenities?: { name: string; category?: string }[];
     images?: string[];
 }
@@ -191,6 +193,7 @@ export interface IBooking {
         email: string;
         firstName?: string;
         lastName?: string;
+        phone?: string;
     };
     hotel?: {
         id: string;
