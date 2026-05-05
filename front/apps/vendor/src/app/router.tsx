@@ -23,6 +23,7 @@ import VendorPricingPage from '../modules/transport/pages/VendorPricingPage/Vend
 import VendorTransportOrdersPage from '../modules/transport/pages/VendorTransportOrdersPage/VendorTransportOrdersPage';
 import TransportDashboard from '../modules/transport/pages/dashboard/TransportDashboard';
 import VendorLocationsPage from '../modules/transport/pages/VendorLocationsPage/VendorLocationsPage';
+import VendorAvailabilityPage from '../modules/transport/pages/VendorAvailabilityPage/VendorAvailabilityPage';
 
 // Tour Vendor Pages
 import VendorTourDashboard from '../modules/tour/pages/VendorTourDashboard/VendorTourDashboard';
@@ -143,6 +144,10 @@ export const router = createBrowserRouter([
             {
                 path: 'transport/locations',
                 element: <VendorLocationsPage />
+            },
+            {
+                path: 'transport/availability',
+                element: <VendorAvailabilityPage />
             },
             // Tour Routes
             {

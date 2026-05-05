@@ -30,7 +30,7 @@ export class PricingEngine {
             const totalNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
 
             // Load aggregate DailyPricing for this room across requested sequence
-            const pricingMatrix = await prisma.dailyPricing.findMany({
+            const pricingMatrix = await prisma.dailypricing.findMany({
                 where: {
                     roomTypeId: item.roomTypeId,
                     date: {
@@ -42,7 +42,7 @@ export class PricingEngine {
             });
 
             // Load availability for occupancy calculation
-            const availabilityMatrix = await prisma.roomAvailability.findMany({
+            const availabilityMatrix = await prisma.roomavailability.findMany({
                 where: {
                     roomTypeId: item.roomTypeId,
                     date: {
@@ -136,7 +136,7 @@ export class PricingEngine {
 
         // Apply Global or Hotel bounded Taxes
         const hotelId = data.entityId; 
-        const applicableTaxes = await prisma.taxRule.findMany({
+        const applicableTaxes = await prisma.taxrule.findMany({
             where: {
                 OR: [
                     { hotelId: hotelId },

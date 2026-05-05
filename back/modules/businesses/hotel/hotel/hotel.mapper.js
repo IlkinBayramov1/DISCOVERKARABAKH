@@ -25,10 +25,12 @@ class HotelMapper {
                 .map(rt => {
                     const dailyPrice = (rt.dailypricing && rt.dailypricing.length > 0) ? rt.dailypricing[0].basePrice : Infinity;
                     const fallbackPrice = rt.basePrice || Infinity;
-                    return Math.min(dailyPrice, fallbackPrice);
+                    const minP = Math.min(dailyPrice, fallbackPrice);
+                    return minP;
                 })
                 .filter(p => p !== Infinity);
 
+            console.log(`[MapperDebug] Hotel: ${hotel.name}, RoomTypes: ${roomTypes.length}, Found Prices: ${prices}`);
             if (prices.length > 0) {
                 startingPrice = Math.min(...prices);
             }

@@ -71,7 +71,7 @@ class TransferService {
                 category: data.vehicleCategory || undefined
             },
             include: {
-                owner: { select: { vendorProfile: { select: { companyName: true } } } }
+                user: { select: { vendorprofile: { select: { companyName: true } } } }
             }
         });
 
@@ -88,8 +88,8 @@ class TransferService {
                     model: vehicle.model,
                     category: vehicle.category,
                     seats: vehicle.seats,
-                    images: vehicle.images,
-                    vendorCompany: vehicle.owner?.vendorProfile?.companyName || 'Standard Taxi'
+                    images: vehicle.images ? (typeof vehicle.images === 'string' ? JSON.parse(vehicle.images) : vehicle.images) : [],
+                    vendorCompany: vehicle.user?.vendorprofile?.companyName || 'Standard Taxi'
                 },
                 pricing: {
                     basePrice,

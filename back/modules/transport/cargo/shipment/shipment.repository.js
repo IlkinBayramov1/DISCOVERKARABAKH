@@ -6,13 +6,13 @@ class ShipmentRepository {
         return prisma.shipment.create({
             data: {
                 ...data,
-                pricing: {
+                shipmentpricing: {
                     create: pricingData
                 }
             },
             include: {
-                pricing: true,
-                cargoVehicle: true
+                shipmentpricing: true,
+                cargovehicle: true
             }
         });
     }
@@ -21,10 +21,10 @@ class ShipmentRepository {
         return prisma.shipment.findUnique({
             where: { id },
             include: {
-                pricing: true,
-                cargoVehicle: { select: { brand: true, model: true, licensePlate: true, status: true } },
-                driver: { select: { firstName: true, lastName: true, phone: true } },
-                sender: { select: { email: true, firstName: true, lastName: true, phone: true } }
+                shipmentpricing: true,
+                cargovehicle: { select: { brand: true, model: true, licensePlate: true, status: true } },
+                driverprofile: { select: { firstName: true, lastName: true, phone: true } },
+                user: { select: { email: true, firstName: true, lastName: true, phone: true } }
             }
         });
     }
@@ -32,7 +32,7 @@ class ShipmentRepository {
     async findByIdempotencyKey(key) {
         return prisma.shipment.findUnique({
             where: { idempotencyKey: key },
-            include: { pricing: true }
+            include: { shipmentpricing: true }
         });
     }
 
@@ -48,9 +48,9 @@ class ShipmentRepository {
             take: Number(take),
             orderBy: { createdAt: 'desc' },
             include: {
-                cargoVehicle: { select: { brand: true, model: true, licensePlate: true } },
-                driver: { select: { firstName: true, lastName: true } },
-                sender: { select: { email: true, firstName: true, lastName: true, phone: true } }
+                cargovehicle: { select: { brand: true, model: true, licensePlate: true } },
+                driverprofile: { select: { firstName: true, lastName: true } },
+                user: { select: { email: true, firstName: true, lastName: true, phone: true } }
             }
         });
 

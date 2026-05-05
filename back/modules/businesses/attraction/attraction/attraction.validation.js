@@ -88,7 +88,7 @@ export const attractionValidation = {
 
     review: Joi.object({
         rating: Joi.number().integer().min(1).max(5).required(),
-        comment: Joi.string().max(1000).optional(),
+        comment: Joi.string().max(1000).optional().allow('', null),
         images: Joi.array().items(Joi.string().uri()).max(5).optional()
     })
 };

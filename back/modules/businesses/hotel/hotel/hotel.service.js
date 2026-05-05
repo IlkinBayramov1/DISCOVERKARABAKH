@@ -102,7 +102,7 @@ class HotelService {
             // Find all RoomTypes that have EXACTLY 'totalNights' available days in the range
             // This ensures no missing dates and no fully booked/stopped dates.
 
-            const roomTypesWithAvailability = await prisma.roomAvailability.groupBy({
+            const roomTypesWithAvailability = await prisma.roomavailability.groupBy({
                 by: ['roomTypeId'],
                 where: {
                     date: { gte: start, lt: end },
@@ -118,7 +118,7 @@ class HotelService {
 
             const availIds = roomTypesWithAvailability.map(r => r.roomTypeId);
 
-            const roomTypesWithPricing = await prisma.dailyPricing.groupBy({
+            const roomTypesWithPricing = await prisma.dailypricing.groupBy({
                 by: ['roomTypeId'],
                 where: {
                     roomTypeId: { in: availIds },
@@ -138,7 +138,12 @@ class HotelService {
 
         let whereClause = { status: 'active' };
 
+        if (city) {
+            whereClause.city = { contains: city, mode: 'insensitive' };
+        }
+
         if (availableRoomTypeIds !== null) {
+            console.log(`[HotelSearchDebug] Dates: ${checkIn} to ${checkOut}, Total Nights: ${totalNights}, Available RoomType IDs: ${availableRoomTypeIds.length}`);
             whereClause.roomtype = {
                 some: {
                     id: { in: availableRoomTypeIds }
@@ -195,7 +200,7 @@ class HotelService {
         if (minPrice || maxPrice) {
             whereClause.roomtype = {
                 some: {
-                    pricingList: {
+                    dailypricing: {
                         some: {
                             basePrice: {
                                 ...(minPrice ? { gte: parseFloat(minPrice) } : {}),
@@ -212,7 +217,7 @@ class HotelService {
             hotelimage: true,
             roomtype: {
                 include: {
-                    pricingList: { orderBy: { basePrice: 'asc' }, take: 1 }
+                    dailypricing: { orderBy: { basePrice: 'asc' }, take: 1 }
                 }
             },
             review: { where: { status: 'approved' }, select: { rating: true } }
@@ -231,7 +236,7 @@ class HotelService {
             const nearbyHotels = await prisma.$queryRaw`
                 SELECT id, 
                 ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance 
-                FROM Hotel 
+                FROM hotel 
                 HAVING distance < ${radius} 
                 ORDER BY distance 
                 LIMIT ${parseInt(limit)} OFFSET ${parseInt(skip)}

@@ -20,7 +20,7 @@ export class AttractionBookingStrategy extends BookingStrategy {
 
         const attraction = await prisma.attraction.findUnique({ 
             where: { id: entityId },
-            include: { workingHours: true }
+            include: { attractionworkinghour: true }
         });
         if (!attraction) throw ApiError.notFound('Attraction not found');
 
@@ -29,10 +29,10 @@ export class AttractionBookingStrategy extends BookingStrategy {
         }
 
         // Validate Working Hours
-        if (attraction.workingHours && attraction.workingHours.length > 0) {
+        if (attraction.attractionworkinghour && attraction.attractionworkinghour.length > 0) {
             const date = new Date(finalVisitDate);
             const dayOfWeek = date.getDay(); // 0 (Sun) to 6 (Sat)
-            const schedule = attraction.workingHours.find(h => h.dayOfWeek === dayOfWeek);
+            const schedule = attraction.attractionworkinghour.find(h => h.dayOfWeek === dayOfWeek);
 
             if (schedule && schedule.isClosed) {
                 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

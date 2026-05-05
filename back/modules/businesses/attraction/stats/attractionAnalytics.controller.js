@@ -15,7 +15,7 @@ class AttractionAnalyticsController {
             const startDate = new Date();
             startDate.setDate(startDate.getDate() - parseInt(days));
 
-            const stats = await prisma.attractionHourlyStat.findMany({
+            const stats = await prisma.attractionhourlystat.findMany({
                 where: {
                     attractionId: id,
                     date: { gte: startDate }

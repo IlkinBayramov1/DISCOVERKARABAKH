@@ -1,0 +1,625 @@
+/* =====================================================
+   VENDOR AVAILABILITY MATRIX - EYE-CATCHING EDITION
+   ===================================================== */
+
+:root {
+    --dk-bg: #f8fafc;
+    --dk-card-bg: #ffffff;
+    --dk-border: #e2e8f0;
+    --dk-text-main: #0f172a;
+    --dk-text-muted: #64748b;
+    --dk-primary: #2563eb;
+
+    /* VIBRANT RED SYSTEM - Eye-catching booked state */
+    --dk-danger: #dc2626;
+    --dk-danger-light: #fef2f2;
+    --dk-danger-medium: #fecaca;
+    --dk-danger-glow: rgba(220, 38, 38, 0.25);
+
+    /* VIBRANT GREEN SYSTEM - Eye-catching available state */
+    --dk-success: #059669;
+    --dk-success-light: #f0fdf4;
+    --dk-success-medium: #a7f3d0;
+    --dk-success-glow: rgba(5, 150, 105, 0.2);
+
+    --dk-weekend: #fffbeb;
+    --dk-today: #eff6ff;
+}
+
+.dk-ts-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 40px;
+    background: var(--dk-bg);
+    min-height: 100vh;
+}
+
+/* -----------------------------------------------------
+   HEADER & NAVIGATION
+   ----------------------------------------------------- */
+.dk-ts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.dk-ts-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--dk-text-main);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.dk-ts-subtitle {
+    color: var(--dk-text-muted);
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.month-navigator {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--dk-border);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    gap: 8px;
+}
+
+.month-navigator h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dk-text-main);
+    min-width: 160px;
+    text-align: center;
+    margin: 0;
+}
+
+.nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dk-text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: #f1f5f9;
+    color: var(--dk-text-main);
+}
+
+.today-btn {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0 16px;
+    width: auto;
+    color: var(--dk-primary);
+}
+
+/* -----------------------------------------------------
+   MATRIX CARD
+   ----------------------------------------------------- */
+.dk-ts-calendar-card {
+    background: var(--dk-card-bg);
+    border-radius: 24px;
+    border: 1px solid var(--dk-border);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.calendar-toolbar {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--dk-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+}
+
+.dk-legend {
+    display: flex;
+    gap: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dk-text-muted);
+}
+
+/* EYE-CATCHING LEGEND DOTS */
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+}
+
+.dot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 6px;
+    opacity: 0.3;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.dot-available { 
+    background: var(--dk-success);
+    box-shadow: 0 0 0 3px var(--dk-success-glow);
+}
+.dot-available::after {
+    border: 2px solid var(--dk-success);
+}
+
+.dot-full { 
+    background: var(--dk-danger);
+    box-shadow: 0 0 0 3px var(--dk-danger-glow);
+}
+.dot-full::after {
+    border: 2px solid var(--dk-danger);
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.1; }
+}
+
+.dk-info-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dk-primary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* -----------------------------------------------------
+   TABLE STRUCTURE
+   ----------------------------------------------------- */
+.dk-matrix-container {
+    overflow: auto;
+    max-height: 600px;
+    position: relative;
+}
+
+.dk-matrix-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.dk-matrix-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.dk-matrix-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.dk-matrix-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.dk-availability-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.dk-availability-table th {
+    background: #f8fafc;
+    padding: 16px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--dk-border);
+    border-right: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.th-day-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--dk-text-main);
+    line-height: 1;
+}
+
+.th-day-name {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--dk-text-muted);
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.fleet-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--dk-text-main);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* -----------------------------------------------------
+   STICKY COLUMN
+   ----------------------------------------------------- */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: white;
+    border-right: 2px solid var(--dk-border);
+}
+
+thead .sticky-col {
+    z-index: 20;
+    background: #f8fafc;
+}
+
+.dk-availability-table td.sticky-col {
+    padding: 16px;
+    min-width: 280px;
+}
+
+/* -----------------------------------------------------
+   VEHICLE INFO
+   ----------------------------------------------------- */
+.matrix-vehicle-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.vehicle-icon-box {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dk-primary);
+}
+
+.vehicle-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.v-name {
+    font-weight: 700;
+    color: var(--dk-text-main);
+    font-size: 15px;
+}
+
+.v-plate {
+    font-size: 12px;
+    color: var(--dk-text-muted);
+    font-weight: 500;
+}
+
+/* -----------------------------------------------------
+   CELLS & PILLS - EYE-CATCHING EDITION
+   ----------------------------------------------------- */
+.dk-availability-table td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    border-right: 1px solid #f1f5f9;
+    min-width: 80px;
+    text-align: center;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+
+/* BUSY CELL - Eye-catching red */
+.matrix-cell.is-busy {
+    background: var(--dk-danger-light);
+    position: relative;
+}
+
+.matrix-cell.is-busy::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--dk-danger);
+    opacity: 0.6;
+}
+
+.matrix-cell.is-busy:hover {
+    background: #fee2e2;
+}
+
+/* FREE CELL - Eye-catching green */
+.matrix-cell.is-free {
+    background: var(--dk-success-light);
+    position: relative;
+}
+
+.matrix-cell.is-free::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--dk-success);
+    opacity: 0.4;
+}
+
+.matrix-cell.is-free:hover {
+    background: #dcfce7;
+}
+
+/* STATUS PILLS - Bold & Eye-catching */
+.status-pill {
+    padding: 10px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 36px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+/* BUSY PILL - Vibrant Red */
+.status-pill.busy {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: #ffffff;
+    box-shadow: 
+        0 2px 8px rgba(220, 38, 38, 0.35),
+        0 0 0 1px rgba(220, 38, 38, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.status-pill.busy::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 70%
+    );
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+/* FREE PILL - Vibrant Green */
+.status-pill.free {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: #ffffff;
+    box-shadow: 
+        0 2px 8px rgba(5, 150, 105, 0.3),
+        0 0 0 1px rgba(5, 150, 105, 0.15);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-pill.free::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 70%
+    );
+    animation: shimmer 3s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* -----------------------------------------------------
+   SPECIAL STATES
+   ----------------------------------------------------- */
+.weekend {
+    background: var(--dk-weekend);
+}
+
+.weekend .th-day-num {
+    color: #92400e;
+}
+
+.weekend .th-day-name {
+    color: #d97706;
+}
+
+.today {
+    background: var(--dk-today);
+    position: relative;
+}
+
+.today::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: var(--dk-primary);
+    border-radius: 3px 3px 0 0;
+}
+
+.today .th-day-num {
+    color: var(--dk-primary);
+}
+
+.empty-fleet-msg {
+    padding: 60px;
+    color: var(--dk-text-muted);
+    font-style: italic;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* -----------------------------------------------------
+   FOOTER
+   ----------------------------------------------------- */
+.dk-cal-footer {
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-top: 1px solid var(--dk-border);
+}
+
+.footer-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--dk-text-muted);
+}
+
+.footer-stats strong {
+    color: var(--dk-text-main);
+}
+
+.separator {
+    color: var(--dk-border);
+}
+
+/* -----------------------------------------------------
+   LOADING
+   ----------------------------------------------------- */
+.dk-ts-loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    gap: 20px;
+}
+
+.dk-ts-loading-screen p {
+    color: var(--dk-text-muted);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.spin-icon {
+    animation: spin 2s linear infinite;
+    color: var(--dk-primary);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* -----------------------------------------------------
+   RESPONSIVE
+   ----------------------------------------------------- */
+@media (max-width: 1024px) {
+    .dk-ts-layout {
+        padding: 24px;
+    }
+
+    .dk-ts-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .month-navigator {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .dk-ts-layout {
+        padding: 16px;
+        gap: 20px;
+    }
+
+    .dk-ts-title {
+        font-size: 24px;
+    }
+
+    .dk-availability-table th,
+    .dk-availability-table td {
+        min-width: 60px;
+        padding: 6px 4px;
+    }
+
+    .status-pill {
+        font-size: 9px;
+        padding: 6px 2px;
+        min-height: 28px;
+    }
+
+    .dk-availability-table td.sticky-col {
+        min-width: 200px;
+        padding: 12px;
+    }
+
+    .vehicle-icon-box {
+        width: 32px;
+        height: 32px;
+    }
+
+    .v-name {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dk-ts-layout {
+        padding: 12px;
+    }
+
+    .dk-ts-title {
+        font-size: 20px;
+    }
+
+    .month-navigator h2 {
+        min-width: 120px;
+        font-size: 14px;
+    }
+
+    .dk-availability-table td.sticky-col {
+        min-width: 160px;
+        padding: 8px;
+    }
+
+    .status-pill {
+        font-size: 8px;
+        letter-spacing: 0.02em;
+    }
+}

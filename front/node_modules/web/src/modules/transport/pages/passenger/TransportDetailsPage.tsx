@@ -79,7 +79,7 @@ export const TransportDetailsPage: React.FC = () => {
         ? vehicle.images 
         : ['https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=1200'];
 
-    const hasRoute = !!pickupLocation?.address && !!dropoffLocation?.address;
+    const hasRoute = searchData.isSearched && !!pickupLocation?.address && !!dropoffLocation?.address;
 
     return (
         <div className="transport-detail-page">
@@ -277,7 +277,7 @@ export const TransportDetailsPage: React.FC = () => {
                                     <div className="r-info">
                                         <span className="r-label">Date & Time</span>
                                         <span className="r-value">
-                                            {bookingDate ? new Date(bookingDate).toLocaleString('en-GB', {
+                                            {searchData.isSearched && bookingDate ? new Date(bookingDate).toLocaleString('en-GB', {
                                                 day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
                                             }) : 'Immediate Departure'}
                                         </span>

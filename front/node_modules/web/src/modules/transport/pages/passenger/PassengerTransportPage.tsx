@@ -27,6 +27,7 @@ export const PassengerTransportPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
     const [error, setError] = useState('');
 
+    const [isSearched, setIsSearched] = useState(false);
     const { mutate: searchTaxis, isPending: isSearching, data: searchResult } = useSearchTaxis();
 
     // Load active taxis automatically on component mount
@@ -42,6 +43,7 @@ export const PassengerTransportPage = () => {
             return;
         }
         setError('');
+        setIsSearched(true);
         searchTaxis({
             pickupLocation,
             dropoffLocation,
@@ -55,13 +57,14 @@ export const PassengerTransportPage = () => {
         const targetUrl = `/transport/details/${taxi.vehicle.id}`;
         navigate(targetUrl, {
             state: {
-                pickupLocation,
-                dropoffLocation,
-                waypoints,
+                pickupLocation: isSearched ? pickupLocation : { address: '' },
+                dropoffLocation: isSearched ? dropoffLocation : { address: '' },
+                waypoints: isSearched ? waypoints : [],
                 paxCount,
                 bookingDate,
-                totalPrice: taxi.pricing.totalPrice,
-                distanceKm: taxi.pricing.distanceKm
+                totalPrice: isSearched ? taxi.pricing.totalPrice : taxi.pricing.basePrice,
+                distanceKm: isSearched ? taxi.pricing.distanceKm : 0,
+                isSearched
             }
         });
     };

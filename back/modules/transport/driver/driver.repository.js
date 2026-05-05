@@ -2,29 +2,29 @@ import prisma from '../../../config/db.js';
 
 class DriverRepository {
     async create(data) {
-        return prisma.driverProfile.create({
+        return prisma.driverprofile.create({
             data,
         });
     }
 
     async findByUserId(userId) {
-        return prisma.driverProfile.findUnique({
+        return prisma.driverprofile.findUnique({
             where: { userId },
             include: {
-                user: { select: { email: true } },
-                managedBy: { select: { vendorProfile: { select: { companyName: true } } } },
-                currentVehicle: true
+                user_driverprofile_userIdTouser: { select: { email: true } },
+                user_driverprofile_managedByIdTouser: { select: { vendorprofile: { select: { companyName: true } } } },
+                vehicle: true
             }
         });
     }
 
     async findById(id) {
-        return prisma.driverProfile.findUnique({
+        return prisma.driverprofile.findUnique({
             where: { id },
             include: {
-                user: { select: { email: true } },
-                managedBy: { select: { vendorProfile: { select: { companyName: true } } } },
-                currentVehicle: true
+                user_driverprofile_userIdTouser: { select: { email: true } },
+                user_driverprofile_managedByIdTouser: { select: { vendorprofile: { select: { companyName: true } } } },
+                vehicle: true
             }
         });
     }
@@ -41,15 +41,15 @@ class DriverRepository {
             ];
         }
 
-        const count = await prisma.driverProfile.count({ where });
-        const drivers = await prisma.driverProfile.findMany({
+        const count = await prisma.driverprofile.count({ where });
+        const drivers = await prisma.driverprofile.findMany({
             where,
             skip,
             take,
             orderBy: { id: 'desc' }, // or createdAt if available
             include: {
-                user: { select: { email: true } },
-                currentVehicle: { select: { brand: true, model: true, plateNumber: true } }
+                user_driverprofile_userIdTouser: { select: { email: true } },
+                vehicle: { select: { brand: true, model: true, plateNumber: true } }
             }
         });
 
@@ -57,14 +57,14 @@ class DriverRepository {
     }
 
     async update(id, data) {
-        return prisma.driverProfile.update({
+        return prisma.driverprofile.update({
             where: { id },
             data,
         });
     }
 
     async delete(id) {
-        return prisma.driverProfile.delete({
+        return prisma.driverprofile.delete({
             where: { id },
         });
     }

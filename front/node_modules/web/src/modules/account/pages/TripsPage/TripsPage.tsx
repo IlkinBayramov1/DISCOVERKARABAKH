@@ -91,7 +91,7 @@ export const TripsPage: React.FC = () => {
                 ) : (
                     <div className="dk-trips-list">
                         {bookings.map((booking) => {
-                            const details = booking.hotel || booking.Tour || booking.attraction || booking.vehicle || {};
+                            const details = booking.hotel || booking.tour || booking.attraction || booking.vehicle || {};
                             const checkInDate = booking.items?.[0] ? new Date(booking.items[0].checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBA';
                             
                             let title = details.name || details.title || 'Untitled Adventure';

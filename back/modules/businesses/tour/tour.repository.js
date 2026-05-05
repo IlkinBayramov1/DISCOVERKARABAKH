@@ -1,11 +1,19 @@
 import prisma from '../../../config/db.js';
+import crypto from 'crypto';
 
 class TourRepository {
     async create(data) {
+        const { images, itinerary, inclusions, exclusions, ...rest } = data;
         return prisma.tour.create({
             data: {
-                ...data,
-                availableSlots: data.groupSizeMax
+                id: crypto.randomUUID(),
+                ...rest,
+                images: images ? JSON.stringify(images) : null,
+                itinerary: itinerary ? JSON.stringify(itinerary) : null,
+                inclusions: inclusions ? JSON.stringify(inclusions) : null,
+                exclusions: exclusions ? JSON.stringify(exclusions) : null,
+                availableSlots: data.groupSizeMax,
+                updatedAt: new Date()
             },
         });
     }
@@ -53,7 +61,7 @@ class TourRepository {
             prisma.tour.findMany({
                 where,
                 include: {
-                    owner: { select: { email: true, isApproved: true } }
+                    user: { select: { email: true, isApproved: true } }
                 },
                 take: parseInt(limit),
                 skip: (parseInt(page) - 1) * parseInt(limit),
@@ -62,22 +70,44 @@ class TourRepository {
             prisma.tour.count({ where })
         ]);
 
-        return { tours, totalCount };
+        const mappedTours = tours.map(tour => {
+            const { user, images, itinerary, inclusions, exclusions, ...rest } = tour;
+            return { 
+                ...rest, 
+                owner: user,
+                images: images ? (typeof images === 'string' ? JSON.parse(images) : images) : [],
+                itinerary: itinerary ? (typeof itinerary === 'string' ? JSON.parse(itinerary) : itinerary) : [],
+                inclusions: inclusions ? (typeof inclusions === 'string' ? JSON.parse(inclusions) : inclusions) : [],
+                exclusions: exclusions ? (typeof exclusions === 'string' ? JSON.parse(exclusions) : exclusions) : []
+            };
+        });
+
+        return { tours: mappedTours, totalCount };
     }
 
     async findById(id) {
-        return prisma.tour.findUnique({
+        const tour = await prisma.tour.findUnique({
             where: { id },
             include: {
-                owner: {
+                user: {
                     select: { email: true, isApproved: true }
                 }
             }
         });
+        if (!tour) return null;
+        const { user, images, itinerary, inclusions, exclusions, ...rest } = tour;
+        return { 
+            ...rest, 
+            owner: user,
+            images: images ? (typeof images === 'string' ? JSON.parse(images) : images) : [],
+            itinerary: itinerary ? (typeof itinerary === 'string' ? JSON.parse(itinerary) : itinerary) : [],
+            inclusions: inclusions ? (typeof inclusions === 'string' ? JSON.parse(inclusions) : inclusions) : [],
+            exclusions: exclusions ? (typeof exclusions === 'string' ? JSON.parse(exclusions) : exclusions) : []
+        };
     }
 
     async findAvailabilityByDate(tourId, date) {
-        return prisma.tourAvailability.findUnique({
+        return prisma.touravailability.findUnique({
             where: {
                 tourId_date: {
                     tourId,
@@ -88,20 +118,37 @@ class TourRepository {
     }
 
     async findBySlug(slug) {
-        return prisma.tour.findUnique({
+        const tour = await prisma.tour.findUnique({
             where: { slug },
             include: {
-                owner: {
+                user: {
                     select: { email: true, isApproved: true }
                 }
             }
         });
+        if (!tour) return null;
+        const { user, images, itinerary, inclusions, exclusions, ...rest } = tour;
+        return { 
+            ...rest, 
+            owner: user,
+            images: images ? (typeof images === 'string' ? JSON.parse(images) : images) : [],
+            itinerary: itinerary ? (typeof itinerary === 'string' ? JSON.parse(itinerary) : itinerary) : [],
+            inclusions: inclusions ? (typeof inclusions === 'string' ? JSON.parse(inclusions) : inclusions) : [],
+            exclusions: exclusions ? (typeof exclusions === 'string' ? JSON.parse(exclusions) : exclusions) : []
+        };
     }
 
     async update(id, data) {
+        const { images, itinerary, inclusions, exclusions, ...rest } = data;
+        const updateData = { ...rest, updatedAt: new Date() };
+        if (images) updateData.images = JSON.stringify(images);
+        if (itinerary) updateData.itinerary = JSON.stringify(itinerary);
+        if (inclusions) updateData.inclusions = JSON.stringify(inclusions);
+        if (exclusions) updateData.exclusions = JSON.stringify(exclusions);
+
         return prisma.tour.update({
             where: { id },
-            data,
+            data: updateData,
         });
     }
 
@@ -116,20 +163,21 @@ class TourRepository {
             where: {
                 tourId,
                 status: { in: ['pending_payment', 'confirmed', 'checked_in'] },
-                items: {
+                bookingitem: {
                     some: {
                         checkIn: new Date(date)
                     }
                 }
             },
             include: {
-                items: true
+                bookingitem: true
             }
         });
 
         let total = 0;
         bookings.forEach(b => {
-            b.items.forEach(item => {
+            const items = b.bookingitem || [];
+            items.forEach(item => {
                 if (new Date(item.checkIn).getTime() === new Date(date).getTime()) {
                     total += (item.adults + (item.children || 0));
                 }
@@ -173,7 +221,7 @@ class TourRepository {
         if (!tour) return [];
 
         // 2. Get specific availability overrides
-        const overrides = await prisma.tourAvailability.findMany({
+        const overrides = await prisma.touravailability.findMany({
             where: {
                 tourId,
                 date: {
@@ -188,7 +236,7 @@ class TourRepository {
             where: {
                 tourId,
                 status: { in: ['pending_payment', 'confirmed', 'checked_in'] },
-                items: {
+                bookingitem: {
                     some: {
                         checkIn: {
                             gte: new Date(startDate),
@@ -197,7 +245,7 @@ class TourRepository {
                     }
                 }
             },
-            include: { items: true }
+            include: { bookingitem: true }
         });
 
         // 4. Map them to a days object for easy lookup
@@ -212,7 +260,8 @@ class TourRepository {
             // Calculate booked participants for this day
             let bookedCount = 0;
             bookings.forEach(b => {
-                b.items.forEach(item => {
+                const items = b.bookingitem || [];
+                items.forEach(item => {
                     if (item.checkIn && item.checkIn.toISOString().split('T')[0] === dateStr) {
                         bookedCount += (item.adults + (item.children || 0));
                     }
@@ -253,7 +302,7 @@ class TourRepository {
 
             if (!daysOfWeek || daysOfWeek.includes(dayName)) {
                 updates.push(
-                    prisma.tourAvailability.upsert({
+                    prisma.touravailability.upsert({
                         where: {
                             tourId_date: {
                                 tourId,
@@ -266,6 +315,7 @@ class TourRepository {
                             priceOverride: priceOverride !== undefined ? priceOverride : undefined
                         },
                         create: {
+                            id: crypto.randomUUID(),
                             tourId,
                             date: new Date(current),
                             isStopped: isStopped ?? false,

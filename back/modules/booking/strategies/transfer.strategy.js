@@ -14,7 +14,7 @@ export class TransferBookingStrategy extends BookingStrategy {
 
         const vehicle = await prisma.vehicle.findUnique({ 
             where: { id: entityId },
-            include: { owner: true }
+            include: { user: true }
         });
         
         if (!vehicle) throw ApiError.notFound('Vehicle not found');
@@ -49,13 +49,27 @@ export class TransferBookingStrategy extends BookingStrategy {
         }
 
         if (!pickupLocation || !dropoffLocation) {
+             console.error('[TransferStrategyError] Missing locations:', { pickupLocation, dropoffLocation });
              throw ApiError.badRequest('Pickup and Dropoff locations are required for transfer booking.');
         }
+
+        // Standardize location format if it comes as a string (unlikely but safe)
+        const finalPickup = typeof pickupLocation === 'string' ? { address: pickupLocation } : pickupLocation;
+        const finalDropoff = typeof dropoffLocation === 'string' ? { address: dropoffLocation } : dropoffLocation;
+
+        console.log(`[TransferStrategyDebug] Validating locations: ${finalPickup.address} -> ${finalDropoff.address}`);
 
         // Map vendorId for BookingService
         data.vendorId = vehicle.vendorId;
         
-        return { vehicle, scheduledTime, pickupLocation, dropoffLocation, distanceKm: data.distanceKm || 0, paxCount: data.participants || items?.[0]?.adults || 1 };
+        return { 
+            vehicle, 
+            scheduledTime, 
+            pickupLocation: finalPickup, 
+            dropoffLocation: finalDropoff, 
+            distanceKm: data.distanceKm || 0, 
+            paxCount: data.participants || items?.[0]?.adults || 1 
+        };
     }
         
     async calculatePrice(context, data) {
@@ -70,14 +84,21 @@ export class TransferBookingStrategy extends BookingStrategy {
     }
         
     async generateDetailsPayload(context, data) {
-        const { scheduledTime, paxCount } = context;
+        const { scheduledTime, paxCount, pickupLocation, dropoffLocation } = context;
         const calculatedPrice = await this.calculatePrice(context, data);
+
+        console.log(`[TransferStrategyDebug] Generating payload for ${scheduledTime}. Locations: ${pickupLocation?.address} -> ${dropoffLocation?.address}`);
 
         const item = {
             checkIn: new Date(scheduledTime),
             adults: paxCount,
             children: 0,
             price: calculatedPrice,
+            meta: {
+                pickupTime: scheduledTime,
+                pickupLocation,
+                dropoffLocation
+            }
         };
 
         const guests = data.guests ? data.guests.map(g => ({
@@ -101,16 +122,18 @@ export class TransferBookingStrategy extends BookingStrategy {
         // We know distanceKm exist either from data or defaults from validation
         await tx.ride.create({
             data: {
+                id: crypto.randomUUID(),
                 passengerId: booking.userId,
                 vehicleId: data.entityId, // The assigned VIP car
                 status: 'Pending',
-                pickupLocation: data.pickupLocation,
-                dropoffLocation: data.dropoffLocation,
+                pickupLocation: typeof data.pickupLocation === 'string' ? data.pickupLocation : JSON.stringify(data.pickupLocation),
+                dropoffLocation: typeof data.dropoffLocation === 'string' ? data.dropoffLocation : JSON.stringify(data.dropoffLocation),
                 distanceKm: data.distanceKm || 0,
                 price: booking.totalPrice,
                 paxCount: data.participants || data.items?.[0]?.adults || 1,
                 scheduledAt: new Date(scheduledTime),
-                bookingNumber: booking.bookingNumber
+                bookingNumber: booking.bookingNumber,
+                updatedAt: new Date()
             }
         });
     }

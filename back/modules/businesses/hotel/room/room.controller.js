@@ -18,7 +18,7 @@ class RoomController {
             const rooms = await roomService.getRoomsByHotel(hotelId, req.query);
             return successResponse(res, rooms, { count: rooms.length });
         } catch (error) {
-            next(error);
+            next(error); 
         }
     }
 

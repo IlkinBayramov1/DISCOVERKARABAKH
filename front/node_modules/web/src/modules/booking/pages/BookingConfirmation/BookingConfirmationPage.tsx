@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../../api/booking.api';
-import { CheckCircle, Clock, MapPin, Download, ShieldCheck, Users, Home } from 'lucide-react';
+import { CheckCircle, MapPin, Download, ShieldCheck, Users, Home } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import logoImg from '../../../../assets/dk logo main3.png'; // Yolunuzu yoxlayın
@@ -165,9 +165,13 @@ export const BookingConfirmationPage: React.FC = () => {
         exploreLinkText = 'events';
         participantLabel = 'Attendees';
     } else if (bookingType === 'transfer') {
+        const meta = primaryItem?.meta;
         sectionTitle = 'Transfer Overview';
         itemName = 'Professional Transfer';
-        dateLabel = 'Pickup Time';
+        locationName = meta?.pickupLocation?.address 
+            ? `${meta.pickupLocation.address} → ${meta.dropoffLocation?.address || '...'}`
+            : 'Address details available in itinerary';
+        dateLabel = 'Pickup Schedule';
         exploreLink = '/transport/passenger';
         exploreLinkText = 'rides';
         participantLabel = 'Passengers';
@@ -242,10 +246,14 @@ export const BookingConfirmationPage: React.FC = () => {
                             <div className="dk-bc-date-box">
                                 <div className="date-col">
                                     <span className="date-label">{dateLabel}</span>
-                                    <span className="date-value">{primaryItem?.checkIn ? new Date(primaryItem.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : 'N/A'}</span>
-                                    {bookingType === 'hotel' && (
-                                        <span className="time-text"><Clock size={12}/> {details?.checkInTime || '14:00'}</span>
-                                    )}
+                                    <span className="date-value">
+                                        {primaryItem?.checkIn ? (
+                                            (bookingType === 'hotel' || bookingType === 'tour' || bookingType === 'attraction') 
+                                                ? new Date(primaryItem.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                                                : new Date(primaryItem.checkIn).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                        ) : 'N/A'}
+                                    </span>
+                                    {/* Time labels removed by user request */}
                                 </div>
                                 {bookingType === 'hotel' && primaryItem?.checkOut && (
                                     <>
@@ -253,7 +261,7 @@ export const BookingConfirmationPage: React.FC = () => {
                                         <div className="date-col">
                                             <span className="date-label">Check-out</span>
                                             <span className="date-value">{new Date(primaryItem.checkOut).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'})}</span>
-                                            <span className="time-text"><Clock size={12}/> {details?.checkOutTime || '12:00'}</span>
+                                            {/* Time label removed by user request */}
                                         </div>
                                     </>
                                 )}
@@ -268,6 +276,7 @@ export const BookingConfirmationPage: React.FC = () => {
                             <div className="guest-details">
                                 <h4>{primaryGuest.firstName} {primaryGuest.lastName}</h4>
                                 <p>{primaryGuest.email}</p>
+                                {primaryGuest.phone && <p className="guest-phone">{primaryGuest.phone}</p>}
                             </div>
                             <div className="guest-status">
                                 <span className={`status-pill ${status}`}>

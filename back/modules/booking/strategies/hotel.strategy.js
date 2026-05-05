@@ -37,7 +37,7 @@ export class HotelBookingStrategy extends BookingStrategy {
 
         const hotel = await prisma.hotel.findUnique({
             where: { id: entityId },
-            include: { roomTypes: true }
+            include: { roomtype: true }
         });
 
         if (!hotel) throw ApiError.notFound('Hotel not found');
@@ -48,7 +48,7 @@ export class HotelBookingStrategy extends BookingStrategy {
         data.hotelId = hotel.id;
 
         for (const item of items) {
-            const roomType = hotel.roomTypes.find(r => r.id === item.roomTypeId);
+            const roomType = hotel.roomtype.find(r => r.id === item.roomTypeId);
             if (!roomType) {
                 throw ApiError.badRequest(`Requested RoomType (${item.roomTypeId}) does not belong to this Hotel`);
             }
@@ -63,7 +63,7 @@ export class HotelBookingStrategy extends BookingStrategy {
             const checkInDate = new Date(item.checkIn + 'T00:00:00.000Z');
             const checkOutDate = new Date(item.checkOut + 'T00:00:00.000Z');
 
-            const pricingMatrix = await prisma.dailyPricing.findMany({
+            const pricingMatrix = await prisma.dailypricing.findMany({
                 where: {
                     roomTypeId: item.roomTypeId,
                     date: { gte: checkInDate, lt: checkOutDate }
@@ -71,7 +71,7 @@ export class HotelBookingStrategy extends BookingStrategy {
             });
 
             // Fetch actual availability records
-            const availabilityMatrix = await prisma.roomAvailability.findMany({
+            const availabilityMatrix = await prisma.roomavailability.findMany({
                 where: {
                     roomTypeId: item.roomTypeId,
                     date: { gte: checkInDate, lt: checkOutDate }
@@ -167,7 +167,7 @@ export class HotelBookingStrategy extends BookingStrategy {
         // Increment reservedRooms
         if (booking.items && booking.items.length > 0) {
             for (const item of booking.items) {
-                await prisma.roomAvailability.updateMany({
+                await prisma.roomavailability.updateMany({
                     where: {
                         roomTypeId: item.roomTypeId,
                         date: {
@@ -181,7 +181,7 @@ export class HotelBookingStrategy extends BookingStrategy {
                 });
 
                 // Release user's temporary locks for these rooms
-                await prisma.inventoryLock.deleteMany({
+                await prisma.inventorylock.deleteMany({
                     where: {
                         userId: booking.userId,
                         roomTypeId: item.roomTypeId,
@@ -213,7 +213,7 @@ export class HotelBookingStrategy extends BookingStrategy {
 
         if (fullBooking && fullBooking.items) {
             for (const item of fullBooking.items) {
-                await prisma.roomAvailability.updateMany({
+                await prisma.roomavailability.updateMany({
                     where: {
                         roomTypeId: item.roomTypeId,
                         date: {

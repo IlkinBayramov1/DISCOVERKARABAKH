@@ -18,7 +18,7 @@ class AttractionStatsService {
         try {
             const incrementValue = action === 'added' ? 1 : -1;
 
-            await prisma.attractionStat.upsert({
+            await prisma.attractionstat.upsert({
                 where: { attractionId },
                 update: {
                     favoriteCount: { increment: incrementValue }
@@ -42,7 +42,7 @@ class AttractionStatsService {
             const hour = now.getHours();
 
             // 1. Increment total stats (Primary key is just attractionId)
-            await prisma.attractionStat.upsert({
+            await prisma.attractionstat.upsert({
                 where: { attractionId },
                 update: {
                     viewCount: { increment: 1 }
@@ -55,7 +55,7 @@ class AttractionStatsService {
 
             // 2. Increment hourly stats (Composite primary key)
             // Using a separate find/update/create or robust upsert
-            await prisma.attractionHourlyStat.upsert({
+            await prisma.attractionhourlystat.upsert({
                 where: {
                     attractionId_date_hour: {
                         attractionId,
@@ -85,12 +85,12 @@ class AttractionStatsService {
     async _handleReviewChange({ attractionId }) {
         try {
             // Aggregate all reviews to get average
-            const aggregation = await prisma.attractionReview.aggregate({
+            const aggregation = await prisma.attractionreview.aggregate({
                 where: { attractionId, status: 'approved' },
                 _avg: { rating: true }
             });
 
-            await prisma.attractionStat.upsert({
+            await prisma.attractionstat.upsert({
                 where: { attractionId },
                 update: {
                     averageRating: aggregation._avg.rating || 0

@@ -17,6 +17,58 @@ bookingStrategyRegistry.register('attraction', new AttractionBookingStrategy());
 bookingStrategyRegistry.register('transfer', new TransferBookingStrategy());
 
 class BookingService {
+    _mapBooking(b) {
+        if (!b) return b;
+        
+        if (b.hotel && b.hotel.hotelimage) {
+            b.hotel.images = b.hotel.hotelimage.map(img => img.url);
+            delete b.hotel.hotelimage;
+        }
+        if (b.attraction && b.attraction.attractionimage) {
+            b.attraction.images = b.attraction.attractionimage.map(img => img.url);
+            delete b.attraction.attractionimage;
+        }
+        if (b.tour && b.tour.images) {
+            b.tour.images = typeof b.tour.images === 'string' ? JSON.parse(b.tour.images) : b.tour.images;
+        }
+        if (b.vehicle && b.vehicle.images) {
+            b.vehicle.images = typeof b.vehicle.images === 'string' ? JSON.parse(b.vehicle.images) : b.vehicle.images;
+        }
+        
+        if (b.bookingitem) {
+            b.bookingitem = b.bookingitem.map(item => {
+                let metaData = null;
+                try {
+                    metaData = item.nightlyBreakdown ? JSON.parse(item.nightlyBreakdown) : null;
+                } catch (e) {
+                    metaData = null;
+                }
+
+                const isArray = Array.isArray(metaData);
+                return {
+                    ...item,
+                    nightlyBreakdown: isArray ? metaData : [],
+                    meta: (!isArray && metaData) ? metaData : null
+                };
+            });
+        }
+        
+        b.items = b.bookingitem || [];
+        b.guests = (b.guest && b.guest.length > 0) ? b.guest.map(g => ({
+            ...g,
+            firstName: g.firstName || 'Guest',
+            lastName: g.lastName || '',
+            email: g.email || 'N/A',
+            phone: g.phone || 'N/A'
+        })) : (b.user ? [{ 
+            firstName: b.user.firstName, 
+            lastName: b.user.lastName, 
+            email: b.user.email, 
+            phone: b.user.phone || 'N/A'
+        }] : []);
+        
+        return b;
+    }
 
     // Generate PNR
     _generatePNR() {
@@ -44,6 +96,7 @@ class BookingService {
         const booking = await prisma.$transaction(async (tx) => {
             const newBooking = await tx.booking.create({
                 data: {
+                    id: crypto.randomUUID(),
                     bookingNumber: this._generatePNR(),
                     bookingType: type,
                     entityId: entityId,
@@ -57,6 +110,7 @@ class BookingService {
 
                     totalPrice,
                     currency: data.currency || 'AZN',
+                    updatedAt: new Date(),
 
                     hotel: type === 'hotel' ? { connect: { id: entityId } } : undefined,
                     tour: type === 'tour' ? { connect: { id: entityId } } : undefined,
@@ -66,15 +120,26 @@ class BookingService {
 
                     // Specific sub-models injected from Strategy
                     bookingitem: {
-                        create: details.items || []
+                        create: (details.items || []).map(item => {
+                            const { meta, ...itemData } = item;
+                            return {
+                                id: crypto.randomUUID(),
+                                ...itemData,
+                                nightlyBreakdown: item.nightlyBreakdown ? JSON.stringify(item.nightlyBreakdown) : (meta ? JSON.stringify(meta) : null)
+                            };
+                        })
                     },
                     guest: {
-                        create: details.guests || []
+                        create: (details.guests || []).map(g => ({
+                            id: crypto.randomUUID(),
+                            ...g
+                        }))
                     },
                     bookingauditlog: {
                         create: [{
+                            id: crypto.randomUUID(),
                             action: 'created',
-                            meta: { source: 'api', message: 'Booking Confirmed (Payment Bypassed)' }
+                            meta: JSON.stringify({ source: 'api', message: 'Booking Confirmed (Payment Bypassed)' })
                         }]
                     }
                 },
@@ -150,51 +215,58 @@ class BookingService {
     async getBookingById(bookingId, userId) {
         const booking = await prisma.booking.findFirst({
             where: { id: bookingId, userId },
-            include: {
-                hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true, images: true } },
+            select: {
+                id: true, bookingNumber: true, bookingType: true, entityId: true, status: true, paymentStatus: true,
+                totalPrice: true, currency: true, createdAt: true, updatedAt: true,
+                hotel: { select: { name: true, address: true, hotelimage: { select: { url: true } } } },
                 tour: { select: { name: true, city: true, address: true, images: true } },
-                event: { select: { title: true, location: true } },
-                attraction: { select: { name: true, city: true, address: true, images: true } },
+                attraction: { select: { name: true, city: true, address: true, attractionimage: { select: { url: true } } } },
                 vehicle: { select: { brand: true, model: true, images: true, category: true } },
                 bookingitem: true,
-                guest: true
+                guest: true,
+                user: { select: { firstName: true, lastName: true, email: true, phone: true } }
             }
         });
+        
         if (!booking) throw ApiError.notFound('Booking not found');
 
-        // Manually stitch room names since no direct Prisma relation exists for roomType in BookingItem
+        // Manually stitch room names
         if (booking.bookingitem && booking.bookingitem.length > 0) {
             const roomIds = booking.bookingitem.map(i => i.roomTypeId).filter(Boolean);
-            const rooms = await prisma.roomType.findMany({
+            const rooms = await prisma.roomtype.findMany({
                 where: { id: { in: roomIds } },
                 select: { id: true, name: true }
             });
-            booking.bookingitem = booking.bookingitem.map(item => {
-                const rt = rooms.find(r => r.id === item.roomTypeId);
-                return { ...item, roomType: rt || null };
-            });
+
+            booking.bookingitem = booking.bookingitem.map(item => ({
+                ...item,
+                roomName: rooms.find(r => r.id === item.roomTypeId)?.name || 'Standard Room'
+            }));
         }
 
-        return booking;
+        return this._mapBooking(booking);
     }
 
     async getMyBookings(userId) {
-        return prisma.booking.findMany({
+        const bookings = await prisma.booking.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
             include: {
-                hotel: { select: { name: true, address: true, images: true } },
+                hotel: { select: { name: true, address: true, hotelimage: { select: { url: true } } } },
                 tour: { select: { name: true, city: true, address: true, images: true } },
-                attraction: { select: { name: true, city: true, address: true, images: true } },
+                attraction: { select: { name: true, city: true, address: true, attractionimage: { select: { url: true } } } },
                 vehicle: { select: { brand: true, model: true, images: true, category: true } },
                 bookingitem: true,
-                guest: true
+                guest: true,
+                user: { select: { firstName: true, lastName: true, email: true, phone: true } }
             }
         });
+
+        return bookings.map(b => this._mapBooking(b));
     }
 
     async getVendorBookings(vendorId) {
-        return prisma.booking.findMany({
+        const bookings = await prisma.booking.findMany({
             where: { vendorId },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -207,6 +279,8 @@ class BookingService {
                 guest: true
             }
         });
+
+        return bookings.map(b => this._mapBooking(b));
     }
 
     async updateVendorBookingStatus(bookingId, vendorId, action) {
@@ -224,14 +298,18 @@ class BookingService {
         const updatedBooking = await prisma.$transaction(async (tx) => {
             const b = await tx.booking.update({
                 where: { id: bookingId },
-                data: { status: newStatus }
+                data: { 
+                    status: newStatus,
+                    updatedAt: new Date()
+                }
             });
 
             await tx.bookingauditlog.create({
                 data: {
+                    id: crypto.randomUUID(),
                     bookingId,
                     action: action === 'approve' ? 'vendor_approved' : 'vendor_rejected',
-                    meta: { initator: 'vendor', vendorId, timestamp: new Date() }
+                    meta: JSON.stringify({ initator: 'vendor', vendorId, timestamp: new Date() })
                 }
             });
 
@@ -255,14 +333,18 @@ class BookingService {
         const updated = await prisma.$transaction(async (tx) => {
             const b = await tx.booking.update({
                 where: { id: bookingId },
-                data: { status: 'cancelled' }
+                data: { 
+                    status: 'cancelled',
+                    updatedAt: new Date()
+                }
             });
 
             await tx.bookingauditlog.create({
                 data: {
+                    id: crypto.randomUUID(),
                     bookingId,
                     action: 'cancelled',
-                    meta: { initator: 'user', timestamp: new Date() }
+                    meta: JSON.stringify({ initator: 'user', timestamp: new Date() })
                 }
             });
 

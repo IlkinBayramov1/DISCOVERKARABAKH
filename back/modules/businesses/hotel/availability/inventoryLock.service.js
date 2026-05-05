@@ -23,7 +23,7 @@ class InventoryLockService {
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + i);
 
-                const availability = await tx.roomAvailability.findUnique({
+                const availability = await tx.roomavailability.findUnique({
                     where: {
                         roomTypeId_date: {
                             roomTypeId,
@@ -37,7 +37,7 @@ class InventoryLockService {
                 }
 
                 // Count active locks for this date
-                const activeLocks = await tx.inventoryLock.count({
+                const activeLocks = await tx.inventorylock.count({
                     where: {
                         roomTypeId,
                         startDate: { lte: currentDate },
@@ -54,7 +54,7 @@ class InventoryLockService {
             }
 
             // If we reached here, it means all nights are available
-            const lock = await tx.inventoryLock.create({
+            const lock = await tx.inventorylock.create({
                 data: {
                     roomTypeId,
                     startDate: start,
@@ -70,7 +70,7 @@ class InventoryLockService {
 
     async getActiveLocksForDate(roomTypeId, date) {
         const d = new Date(date);
-        return prisma.inventoryLock.count({
+        return prisma.inventorylock.count({
             where: {
                 roomTypeId,
                 startDate: { lte: d },
@@ -82,7 +82,7 @@ class InventoryLockService {
 
     async releaseLock(lockId) {
         try {
-            await prisma.inventoryLock.delete({
+            await prisma.inventorylock.delete({
                 where: { id: lockId }
             });
         } catch (e) {
@@ -95,7 +95,7 @@ class InventoryLockService {
      * Can be called by a cron job.
      */
     async cleanupExpiredLocks() {
-        return prisma.inventoryLock.deleteMany({
+        return prisma.inventorylock.deleteMany({
             where: {
                 expiresAt: { lte: new Date() }
             }

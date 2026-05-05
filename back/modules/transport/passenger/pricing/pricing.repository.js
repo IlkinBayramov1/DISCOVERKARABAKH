@@ -1,37 +1,41 @@
 import prisma from '../../../../config/db.js';
+import crypto from 'crypto';
 
 class PricingRepository {
     async create(data) {
-        return prisma.ridePricing.create({
-            data,
+        return prisma.ridepricing.create({
+            data: {
+                id: crypto.randomUUID(),
+                ...data
+            },
         });
     }
 
     async findById(id) {
-        return prisma.ridePricing.findUnique({
+        return prisma.ridepricing.findUnique({
             where: { id },
         });
     }
 
     async findAll() {
-        return prisma.ridePricing.findMany();
+        return prisma.ridepricing.findMany();
     }
 
     async findByType(type) {
-        return prisma.ridePricing.findMany({
+        return prisma.ridepricing.findMany({
             where: { type }
         });
     }
 
     async update(id, data) {
-        return prisma.ridePricing.update({
+        return prisma.ridepricing.update({
             where: { id },
             data,
         });
     }
 
     async delete(id) {
-        return prisma.ridePricing.delete({
+        return prisma.ridepricing.delete({
             where: { id },
         });
     }

@@ -5,6 +5,7 @@ import { ApiError } from '../../../../core/api.error.js';
 import prisma from '../../../../config/db.js';
 import { generateKeywords, slugify } from '../../../../core/utils/keyword.util.js';
 import { eventRepository } from '../../event/event/event.repository.js';
+import crypto from 'crypto';
 
 class AttractionService {
     async createAttraction(data) {
@@ -24,8 +25,9 @@ class AttractionService {
         const finalData = { ...rest };
 
         if (workingHours && workingHours.length > 0) {
-            finalData.workingHours = {
+            finalData.attractionworkinghour = {
                 create: workingHours.map(h => ({
+                    id: crypto.randomUUID(),
                     dayOfWeek: h.dayOfWeek,
                     openTime: h.openTime,
                     closeTime: h.closeTime,
@@ -35,11 +37,12 @@ class AttractionService {
         }
 
         if (images && images.length > 0) {
-            finalData.images = {
+            finalData.attractionimage = {
                 create: images.map((img, index) => {
                     const url = typeof img === 'string' ? img : img.url;
                     const type = typeof img === 'string' ? 'image' : (img.type || 'image');
                     return { 
+                        id: crypto.randomUUID(),
                         url, 
                         type,
                         isCover: index === 0,
@@ -114,13 +117,14 @@ class AttractionService {
 
         if (workingHours !== undefined) {
             // Delete all current working hours
-            await prisma.attractionWorkingHour.deleteMany({
+            await prisma.attractionworkinghour.deleteMany({
                 where: { attractionId: id }
             });
 
             // Prepare for nested create
-            rest.workingHours = {
+            rest.attractionworkinghour = {
                 create: workingHours.map(h => ({
+                    id: crypto.randomUUID(),
                     dayOfWeek: h.dayOfWeek,
                     openTime: h.openTime,
                     closeTime: h.closeTime,
@@ -131,16 +135,17 @@ class AttractionService {
         
         if (images !== undefined) {
             // Delete all current images
-            await prisma.attractionImage.deleteMany({
+            await prisma.attractionimage.deleteMany({
                 where: { attractionId: id }
             });
 
             // Prepare for nested create in repository.update
-            rest.images = {
+            rest.attractionimage = {
                 create: images.map((img, index) => {
                     const url = typeof img === 'string' ? img : img.url;
                     const type = typeof img === 'string' ? 'image' : (img.type || 'image');
                     return {
+                        id: crypto.randomUUID(),
                         url,
                         type,
                         isCover: index === 0,

@@ -87,6 +87,7 @@ export default function Sidebar() {
                 items: [
                     { path: '/transport/dashboard', name: 'Dashboard', icon: LayoutDashboard },
                     { path: '/transport/orders', name: 'Aktiv Sifarişlər', icon: Map },
+                    { path: '/transport/availability', name: 'Əlyetərlilik Cədvəli', icon: CalendarDays },
                 ]
             },
             {

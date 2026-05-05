@@ -83,7 +83,7 @@ class FraudDetectionService {
             }
 
             // 3. High Cancellation Velocity (Chargeback / Bot mitigation)
-            const recentCancellations = await prisma.bookingAuditLog.count({
+            const recentCancellations = await prisma.bookingauditlog.count({
                 where: {
                     booking: { userId: userId },
                     action: 'cancelled',
@@ -106,7 +106,7 @@ class FraudDetectionService {
                     where: {
                         userId: userId,
                         status: { notIn: ['cancelled', 'refunded'] },
-                        items: {
+                        bookingitem: {
                             some: {
                                 checkIn: {
                                     lte: checkInDate // Extremely simplified overlap for demo
@@ -136,7 +136,7 @@ class FraudDetectionService {
 
             // 4. Persistence: Always log Significant Risk evaluations to Audit Log
             if (riskScore > 0 || !result.isApproved) {
-                await prisma.bookingAuditLog.create({
+                await prisma.bookingauditlog.create({
                     data: {
                         action: 'risk_evaluation',
                         details: JSON.stringify({

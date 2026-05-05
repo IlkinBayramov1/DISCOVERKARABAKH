@@ -1,37 +1,55 @@
 import prisma from '../../../../config/db.js';
+import crypto from 'crypto';
 
 class AttractionRepository {
     async create(data) {
-        return await prisma.attraction.create({
-            data,
+        const attraction = await prisma.attraction.create({
+            data: {
+                id: crypto.randomUUID(),
+                ...data,
+                updatedAt: new Date()
+            },
             include: { 
-                images: true,
-                stats: true
+                attractionimage: true,
+                attractionstat: true
             }
         });
+        return this._mapAttraction(attraction);
+    }
+
+    _mapAttraction(attraction) {
+        if (!attraction) return null;
+        const { attractionimage, attractionstat, attractionworkinghour, ...rest } = attraction;
+        return {
+            ...rest,
+            images: attractionimage,
+            stats: attractionstat,
+            workingHours: attractionworkinghour
+        };
     }
 
     async findById(id) {
-        // Deep pull of relational Modules
-        return await prisma.attraction.findUnique({
+        const attraction = await prisma.attraction.findUnique({
             where: { id },
             include: {
-                images: { orderBy: { order: 'asc' } },
-                stats: true,
-                workingHours: true
+                attractionimage: { orderBy: { order: 'asc' } },
+                attractionstat: true,
+                attractionworkinghour: true
             }
         });
+        return this._mapAttraction(attraction);
     }
 
     async findBySlug(slug) {
-        return await prisma.attraction.findUnique({
+        const attraction = await prisma.attraction.findUnique({
             where: { slug },
             include: {
-                images: { orderBy: { order: 'asc' } },
-                stats: true,
-                workingHours: true
+                attractionimage: { orderBy: { order: 'asc' } },
+                attractionstat: true,
+                attractionworkinghour: true
             }
         });
+        return this._mapAttraction(attraction);
     }
 
     async findAll(filters = {}, pagination = { skip: 0, take: 20 }) {
@@ -70,29 +88,36 @@ class AttractionRepository {
             orderBy = { createdAt: 'desc' };
         }
 
-        const data = await prisma.attraction.findMany({
+        const attractions = await prisma.attraction.findMany({
             where: whereClause,
             include: {
-                images: { orderBy: { order: 'asc' } },
-                stats: true
+                attractionimage: { orderBy: { order: 'asc' } },
+                attractionstat: true
             },
             orderBy,
             skip: pagination.skip,
             take: pagination.take
         });
 
-        return { data, totalItems };
+        return { 
+            data: attractions.map(a => this._mapAttraction(a)), 
+            totalItems 
+        };
     }
 
     async update(id, data) {
-        return await prisma.attraction.update({
+        const attraction = await prisma.attraction.update({
             where: { id },
-            data,
+            data: {
+                ...data,
+                updatedAt: new Date()
+            },
             include: { 
-                images: true,
-                stats: true
+                attractionimage: true,
+                attractionstat: true
             }
         });
+        return this._mapAttraction(attraction);
     }
 
     async findNearby(lat, lng, radiusKm = 50, limit = 5) {
