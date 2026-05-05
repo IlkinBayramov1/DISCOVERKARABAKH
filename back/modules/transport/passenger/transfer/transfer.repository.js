@@ -13,15 +13,31 @@ class TransferRepository {
     }
 
     async findById(id) {
-        return prisma.ride.findUnique({
+        const ride = await prisma.ride.findUnique({
             where: { id },
             include: {
-                passenger: { select: { email: true, phone: true } },
+                passenger: { select: { email: true, phone: true, firstName: true, lastName: true } },
                 driver: { select: { firstName: true, lastName: true, phone: true, currentLocation: true } },
                 vehicle: true,
                 pricingRule: true
             }
         });
+
+        if (ride && ride.bookingNumber) {
+            const booking = await prisma.booking.findUnique({
+                where: { bookingNumber: ride.bookingNumber },
+                include: { items: true }
+            });
+            if (booking && booking.items && booking.items.length > 0) {
+                const item = booking.items[0];
+                return {
+                    ...ride,
+                    paxCount: (item.adults || 0) + (item.children || 0)
+                };
+            }
+        }
+
+        return ride;
     }
 
     async findAll(filter = {}, skip = 0, take = 10) {
@@ -45,13 +61,32 @@ class TransferRepository {
             take,
             orderBy: { createdAt: 'desc' },
             include: {
-                passenger: { select: { email: true } },
+                passenger: { select: { email: true, firstName: true, lastName: true, phone: true } },
                 driver: { select: { firstName: true, lastName: true } },
                 vehicle: { select: { brand: true, model: true, plateNumber: true } }
             }
         });
 
-        return { count, rides };
+        // Enhance rides with actual passenger count from Booking records
+        const enhancedRides = await Promise.all(rides.map(async (ride) => {
+            if (ride.bookingNumber) {
+                const booking = await prisma.booking.findUnique({
+                    where: { bookingNumber: ride.bookingNumber },
+                    include: { items: true }
+                });
+                if (booking && booking.items && booking.items.length > 0) {
+                    const item = booking.items[0];
+                    return {
+                        ...ride,
+                        paxCount: (item.adults || 0) + (item.children || 0)
+                    };
+                }
+            }
+            // Fallback to ride.paxCount if it exists (for new records if migration ever works) or 1
+            return { ...ride, paxCount: ride.paxCount || 1 };
+        }));
+
+        return { count, rides: enhancedRides };
     }
 
     async update(id, data) {

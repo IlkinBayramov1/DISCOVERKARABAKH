@@ -57,9 +57,24 @@ export interface IPricingRule {
 
 export interface IRide {
     id: string;
+    bookingNumber?: string;
     passengerId: string;
+    passenger?: {
+        email: string;
+        firstName?: string;
+        lastName?: string;
+    };
     driverId?: string;
+    driver?: {
+        firstName: string;
+        lastName: string;
+    };
     vehicleId?: string;
+    vehicle?: {
+        brand: string;
+        model: string;
+        plateNumber: string;
+    };
     pickupLocation: any;
     dropoffLocation: any;
     waypoints?: any;
@@ -67,14 +82,31 @@ export interface IRide {
     price: number;
     distanceKm?: number;
     durationMin?: number;
+    paxCount?: number;
+    scheduledAt?: string;
     createdAt: string;
 }
 
 export interface IShipment {
     id: string;
+    bookingNumber?: string;
     senderId: string;
+    sender?: {
+        email: string;
+        firstName?: string;
+        lastName?: string;
+    };
     driverId?: string;
+    driver?: {
+        firstName: string;
+        lastName: string;
+    };
     cargoVehicleId?: string;
+    cargoVehicle?: {
+        brand: string;
+        model: string;
+        licensePlate: string;
+    };
     pickupLocation: any;
     dropoffLocation: any;
     waypoints?: any;
@@ -82,6 +114,7 @@ export interface IShipment {
     weightKg: number;
     volumeM3?: number;
     price?: number;
+    scheduledAt?: string;
     createdAt: string;
 }
 
@@ -90,6 +123,7 @@ export interface ITransportLocation {
     _id?: string;
     name: string;
     address: string;
+    googleMapsUrl?: string;
     coordinates: {
         lat: number;
         lng: number;

@@ -22,6 +22,7 @@ export const transportVendorApi = {
 
     // Drivers
     getDrivers: () => httpClient<IApiResponse<IDriverProfile[]>>('/transport/drivers'),
+    createDriver: (data: any) => httpClient<IDriverProfile>('/transport/drivers/create', { method: 'POST', body: JSON.stringify(data) }),
     approveDriver: (id: string, status: string) => httpClient<IDriverProfile>(`/transport/drivers/${id}/approve`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     assignDriverVehicle: (id: string, vehicleId?: string, cargoVehicleId?: string) => httpClient<IDriverProfile>(`/transport/drivers/${id}/assign`, { method: 'PATCH', body: JSON.stringify({ vehicleId, cargoVehicleId }) }),
 

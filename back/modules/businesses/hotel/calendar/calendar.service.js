@@ -1,6 +1,7 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
 import { hotelEvents, PRICING_UPDATED, AVAILABILITY_UPDATED } from '../hotel.events.js';
+import crypto from 'crypto';
 
 class CalendarService {
 
@@ -16,7 +17,7 @@ class CalendarService {
         }
 
         // 1. Get all room types for this hotel
-        const roomTypes = await prisma.roomType.findMany({
+        const roomTypes = await prisma.roomtype.findMany({
             where: { hotelId },
             select: { id: true, name: true, totalInventory: true }
         });
@@ -28,7 +29,7 @@ class CalendarService {
         }
 
         // 2. Fetch Pricing
-        const pricing = await prisma.dailyPricing.findMany({
+        const pricing = await prisma.dailypricing.findMany({
             where: {
                 roomTypeId: { in: roomTypeIds },
                 date: {
@@ -39,7 +40,7 @@ class CalendarService {
         });
 
         // 3. Fetch Availability
-        const availability = await prisma.roomAvailability.findMany({
+        const availability = await prisma.roomavailability.findMany({
             where: {
                 roomTypeId: { in: roomTypeIds },
                 date: {
@@ -50,7 +51,7 @@ class CalendarService {
         });
 
         // 4. Fetch Calendar Notes
-        const notes = await prisma.hotelCalendarNote.findMany({
+        const notes = await prisma.hotelcalendarnote.findMany({
             where: {
                 hotelId,
                 date: {
@@ -163,7 +164,7 @@ class CalendarService {
         }
 
         // Verify hotel ownership of roomType
-        const roomType = await prisma.roomType.findFirst({
+        const roomType = await prisma.roomtype.findFirst({
             where: { id: roomTypeId, hotelId }
         });
 
@@ -184,7 +185,7 @@ class CalendarService {
         // If priceAdjustment is used, fetch current prices first
         let currentPrices = [];
         if (priceAdjustment) {
-            currentPrices = await prisma.dailyPricing.findMany({
+            currentPrices = await prisma.dailypricing.findMany({
                 where: {
                     roomTypeId,
                     date: { gte: start, lte: end }
@@ -236,7 +237,7 @@ class CalendarService {
                 if (closedToDeparture !== undefined) pricingUpdate.closedToDeparture = closedToDeparture;
 
                 transactionOps.push(
-                    prisma.dailyPricing.upsert({
+                    prisma.dailypricing.upsert({
                         where: {
                             roomTypeId_date: {
                                 roomTypeId: roomTypeId,
@@ -245,6 +246,7 @@ class CalendarService {
                         },
                         update: pricingUpdate,
                         create: {
+                            id: crypto.randomUUID(),
                             roomTypeId,
                             date: dateObj,
                             basePrice: finalPrice !== undefined ? finalPrice : 0,
@@ -261,7 +263,7 @@ class CalendarService {
             // Availability Upsert
             if (availableRooms !== undefined) {
                 transactionOps.push(
-                    prisma.roomAvailability.upsert({
+                    prisma.roomavailability.upsert({
                         where: {
                             roomTypeId_date: {
                                 roomTypeId: roomTypeId,
@@ -273,6 +275,7 @@ class CalendarService {
                             totalRooms: roomType.totalInventory
                         },
                         create: {
+                            id: crypto.randomUUID(),
                             roomTypeId,
                             date: dateObj,
                             totalRooms: roomType.totalInventory,

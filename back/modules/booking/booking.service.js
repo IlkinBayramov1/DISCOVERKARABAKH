@@ -59,26 +59,26 @@ class BookingService {
                     currency: data.currency || 'AZN',
 
                     hotel: type === 'hotel' ? { connect: { id: entityId } } : undefined,
-                    Tour: type === 'tour' ? { connect: { id: entityId } } : undefined,
-                    Event: type === 'event' ? { connect: { id: entityId } } : undefined,
+                    tour: type === 'tour' ? { connect: { id: entityId } } : undefined,
+                    event: type === 'event' ? { connect: { id: entityId } } : undefined,
                     attraction: type === 'attraction' ? { connect: { id: entityId } } : undefined,
                     vehicle: type === 'transfer' ? { connect: { id: entityId } } : undefined,
 
                     // Specific sub-models injected from Strategy
-                    items: {
+                    bookingitem: {
                         create: details.items || []
                     },
-                    guests: {
+                    guest: {
                         create: details.guests || []
                     },
-                    auditLogs: {
+                    bookingauditlog: {
                         create: [{
                             action: 'created',
                             meta: { source: 'api', message: 'Booking Confirmed (Payment Bypassed)' }
                         }]
                     }
                 },
-                include: { items: true, guests: true }
+                include: { bookingitem: true, guest: true }
             });
 
             // 4.1 Perform any strategy-specific atomic actions (e.g., decrement tour slots)
@@ -152,24 +152,24 @@ class BookingService {
             where: { id: bookingId, userId },
             include: {
                 hotel: { select: { name: true, address: true, checkInTime: true, checkOutTime: true, images: true } },
-                Tour: { select: { name: true, city: true, address: true, images: true } },
-                Event: { select: { title: true, location: true } },
+                tour: { select: { name: true, city: true, address: true, images: true } },
+                event: { select: { title: true, location: true } },
                 attraction: { select: { name: true, city: true, address: true, images: true } },
                 vehicle: { select: { brand: true, model: true, images: true, category: true } },
-                items: true,
-                guests: true
+                bookingitem: true,
+                guest: true
             }
         });
         if (!booking) throw ApiError.notFound('Booking not found');
 
         // Manually stitch room names since no direct Prisma relation exists for roomType in BookingItem
-        if (booking.items && booking.items.length > 0) {
-            const roomIds = booking.items.map(i => i.roomTypeId).filter(Boolean);
+        if (booking.bookingitem && booking.bookingitem.length > 0) {
+            const roomIds = booking.bookingitem.map(i => i.roomTypeId).filter(Boolean);
             const rooms = await prisma.roomType.findMany({
                 where: { id: { in: roomIds } },
                 select: { id: true, name: true }
             });
-            booking.items = booking.items.map(item => {
+            booking.bookingitem = booking.bookingitem.map(item => {
                 const rt = rooms.find(r => r.id === item.roomTypeId);
                 return { ...item, roomType: rt || null };
             });
@@ -184,11 +184,11 @@ class BookingService {
             orderBy: { createdAt: 'desc' },
             include: {
                 hotel: { select: { name: true, address: true, images: true } },
-                Tour: { select: { name: true, city: true, address: true, images: true } },
+                tour: { select: { name: true, city: true, address: true, images: true } },
                 attraction: { select: { name: true, city: true, address: true, images: true } },
                 vehicle: { select: { brand: true, model: true, images: true, category: true } },
-                items: true,
-                guests: true
+                bookingitem: true,
+                guest: true
             }
         });
     }
@@ -200,11 +200,11 @@ class BookingService {
             include: {
                 user: { select: { email: true, firstName: true, lastName: true, phone: true } },
                 hotel: { select: { name: true } },
-                Tour: { select: { name: true } },
-                Event: { select: { title: true } },
+                tour: { select: { name: true } },
+                event: { select: { title: true } },
                 attraction: { select: { name: true } },
-                items: true,
-                guests: true
+                bookingitem: true,
+                guest: true
             }
         });
     }
@@ -227,7 +227,7 @@ class BookingService {
                 data: { status: newStatus }
             });
 
-            await tx.bookingAuditLog.create({
+            await tx.bookingauditlog.create({
                 data: {
                     bookingId,
                     action: action === 'approve' ? 'vendor_approved' : 'vendor_rejected',
@@ -258,7 +258,7 @@ class BookingService {
                 data: { status: 'cancelled' }
             });
 
-            await tx.bookingAuditLog.create({
+            await tx.bookingauditlog.create({
                 data: {
                     bookingId,
                     action: 'cancelled',

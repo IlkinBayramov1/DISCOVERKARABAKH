@@ -11,7 +11,7 @@ class UserRepository {
     return prisma.user.findUnique({
       where: { email },
       include: {
-        vendorProfile: true, // Needed for auth routing based on category
+        vendorprofile: true, // Needed for auth routing based on category
       }
     });
   }
@@ -20,10 +20,10 @@ class UserRepository {
     return prisma.user.findUnique({
       where: { id },
       include: {
-        vendorProfile: true,
-        touristProfile: true,
-        residentProfile: true,
-        driverProfile: true
+        vendorprofile: true,
+        touristprofile: true,
+        residentprofile: true,
+        driverprofile_driverprofile_userIdTouser: true
       }
     });
   }
@@ -37,7 +37,7 @@ class UserRepository {
       // Pick only TouristProfile fields
       const { nationality, passportNumber, interests, emergencyContact } = profileData;
       profileUpdate = { 
-        touristProfile: { 
+        touristprofile: { 
           update: { nationality, passportNumber, interests, emergencyContact } 
         } 
       };
@@ -45,7 +45,7 @@ class UserRepository {
       // Pick only ResidentProfile fields
       const { permitNumber, localAddress, familyMembers } = profileData;
       profileUpdate = { 
-        residentProfile: { 
+        residentprofile: { 
           update: { permitNumber, localAddress, familyMembers } 
         } 
       };
@@ -53,7 +53,7 @@ class UserRepository {
       // Pick only VendorProfile fields
       const { companyName, category } = profileData;
       profileUpdate = { 
-        vendorProfile: { 
+        vendorprofile: { 
           update: { companyName, category } 
         } 
       };
@@ -66,9 +66,9 @@ class UserRepository {
         ...profileUpdate
       },
       include: {
-        vendorProfile: true,
-        touristProfile: true,
-        residentProfile: true
+        vendorprofile: true,
+        touristprofile: true,
+        residentprofile: true
       }
     });
   }

@@ -36,10 +36,12 @@ export const assignDriver = async (req, res, next) => {
 
 export const advanceStatus = async (req, res, next) => {
     try {
-        const { nextStatus, extraPayload } = req.body;
-        // e.g. nextStatus = 'Delivered', extraPayload = { proofOfDeliveryImages: [...], deliveredByDriverId: '123' }
+        const { nextStatus, status, extraPayload } = req.body;
+        const targetStatus = nextStatus || status;
+        
+        if (!targetStatus) throw ApiError.badRequest('Status is required');
 
-        const shipment = await shipmentService.advanceStatus(req.params.id, nextStatus, extraPayload);
+        const shipment = await shipmentService.advanceStatus(req.params.id, targetStatus, extraPayload);
         res.status(200).json({ success: true, data: shipment });
     } catch (error) {
         next(error);

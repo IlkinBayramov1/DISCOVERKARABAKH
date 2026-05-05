@@ -22,5 +22,5 @@ export const createTransferSchema = Joi.object({
 });
 
 export const updateStatusSchema = Joi.object({
-    status: Joi.string().valid('Pending', 'DriverAssigned', 'OnWayToPickup', 'ArrivedAtPickup', 'Ongoing', 'Completed', 'Cancelled').required()
+    status: Joi.string().required() // Service handles specific state transitions
 });

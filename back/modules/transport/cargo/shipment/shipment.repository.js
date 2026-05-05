@@ -24,7 +24,7 @@ class ShipmentRepository {
                 pricing: true,
                 cargoVehicle: { select: { brand: true, model: true, licensePlate: true, status: true } },
                 driver: { select: { firstName: true, lastName: true, phone: true } },
-                sender: { select: { email: true } }
+                sender: { select: { email: true, firstName: true, lastName: true, phone: true } }
             }
         });
     }
@@ -50,7 +50,7 @@ class ShipmentRepository {
             include: {
                 cargoVehicle: { select: { brand: true, model: true, licensePlate: true } },
                 driver: { select: { firstName: true, lastName: true } },
-                sender: { select: { email: true } }
+                sender: { select: { email: true, firstName: true, lastName: true, phone: true } }
             }
         });
 

@@ -18,14 +18,13 @@ try {
 }
 
 const RIDE_STATES = {
-    REQUESTED: 'REQUESTED',
-    MATCHING: 'MATCHING',
-    DRIVER_ASSIGNED: 'DRIVER_ASSIGNED',
-    DRIVER_ACCEPTED: 'DRIVER_ACCEPTED',
-    ARRIVED: 'ARRIVED',
-    STARTED: 'STARTED',
-    COMPLETED: 'COMPLETED',
-    CANCELLED: 'CANCELLED'
+    PENDING: 'Pending',
+    DRIVER_ASSIGNED: 'DriverAssigned',
+    ON_WAY_TO_PICKUP: 'OnWayToPickup',
+    ARRIVED_AT_PICKUP: 'ArrivedAtPickup',
+    ONGOING: 'Ongoing',
+    COMPLETED: 'Completed',
+    CANCELLED: 'Cancelled'
 };
 
 class TransferService {
@@ -42,13 +41,34 @@ class TransferService {
             );
         }
 
+        // 3-hour buffer logic
+        let busyVehicleIds = [];
+        if (scheduledAt) {
+            const requestedTime = new Date(scheduledAt);
+            const bufferStart = new Date(requestedTime.getTime() - 3 * 60 * 60 * 1000);
+            const bufferEnd = new Date(requestedTime.getTime() + 3 * 60 * 60 * 1000);
+
+            const conflictingRides = await prisma.ride.findMany({
+                where: {
+                    status: { notIn: ['Cancelled', 'Completed'] },
+                    scheduledAt: {
+                        gte: bufferStart,
+                        lte: bufferEnd
+                    },
+                    vehicleId: { not: null }
+                },
+                select: { vehicleId: true }
+            });
+            busyVehicleIds = conflictingRides.map(r => r.vehicleId);
+        }
+
         // Find active Vendor Vehicles that can fit paxCount
-        // Booking strategy will handle strict clash detection later
         const vehicles = await prisma.vehicle.findMany({
             where: {
                 status: 'Active',
+                id: { notIn: busyVehicleIds },
                 seats: { gte: paxCount || 1 },
-                category: data.vehicleCategory || undefined // Optional filter
+                category: data.vehicleCategory || undefined
             },
             include: {
                 owner: { select: { vendorProfile: { select: { companyName: true } } } }
@@ -60,7 +80,7 @@ class TransferService {
             const basePrice = vehicle.basePrice || 5.0; // Fallbacks if vendor hasn't set
             const ratePerKm = vehicle.pricePerKm || 1.5;
             let totalPrice = basePrice + ((distanceKm || 0) * ratePerKm);
-            
+
             return {
                 vehicle: {
                     id: vehicle.id,
@@ -110,26 +130,59 @@ class TransferService {
     }
 
     async updateStatus(id, status, userId) {
-        // Validation logic: only driver or admin can change status?
+        // Normalize status to PascalCase for consistency with DB Enum
+        const normalizedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
+        // Handle special case for "Ongoing" which normalized would be "Ongoing" (correct)
+        // Handle special case for "DriverAssigned" etc.
+        let finalStatus = normalizedStatus;
+        if (normalizedStatus === 'Completed') finalStatus = 'Completed';
+        if (normalizedStatus === 'Cancelled') finalStatus = 'Cancelled';
+
+        // Manual override for complex names if needed, but PascalCase normalization usually works
+        // for 'driverassigned' -> 'Driverassigned' (Incorrect, should be 'DriverAssigned')
+
+        // Let's use a mapping for normalization to be safe
+        const statusMap = {
+            'pending': 'Pending',
+            'driverassigned': 'DriverAssigned',
+            'onwaytopickup': 'OnWayToPickup',
+            'arrivedatpickup': 'ArrivedAtPickup',
+            'ongoing': 'Ongoing',
+            'completed': 'Completed',
+            'cancelled': 'Cancelled'
+        };
+
+        const safeStatus = statusMap[status.toLowerCase()] || normalizedStatus;
+
         const transfer = await this.getTransferById(id);
 
-        // STATE MACHINE GUARDS to prevent race conditions during lifecycle transitions
+        // FINAL STATES (Cannot move from here)
+        if (transfer.status === RIDE_STATES.COMPLETED || transfer.status === RIDE_STATES.CANCELLED) {
+            throw ApiError.badRequest(`Cannot update status of a finalized ride (${transfer.status})`);
+        }
+
+        // Admin/Vendor can bypass lifecycle and go straight to final states
+        if (safeStatus === RIDE_STATES.COMPLETED || safeStatus === RIDE_STATES.CANCELLED) {
+            return transferRepository.update(id, { status: safeStatus });
+        }
+
+        // STATE MACHINE GUARDS for normal lifecycle transitions
         const validTransitions = {
-            [RIDE_STATES.REQUESTED]: [RIDE_STATES.MATCHING, RIDE_STATES.CANCELLED],
-            [RIDE_STATES.MATCHING]: [RIDE_STATES.DRIVER_ASSIGNED, RIDE_STATES.CANCELLED],
-            [RIDE_STATES.DRIVER_ASSIGNED]: [RIDE_STATES.DRIVER_ACCEPTED, RIDE_STATES.MATCHING, RIDE_STATES.CANCELLED], // MATCHING if driver rejects
-            [RIDE_STATES.DRIVER_ACCEPTED]: [RIDE_STATES.ARRIVED, RIDE_STATES.CANCELLED],
-            [RIDE_STATES.ARRIVED]: [RIDE_STATES.STARTED, RIDE_STATES.CANCELLED],
-            [RIDE_STATES.STARTED]: [RIDE_STATES.COMPLETED],
+            [RIDE_STATES.PENDING]: [RIDE_STATES.DRIVER_ASSIGNED, RIDE_STATES.CANCELLED],
+            [RIDE_STATES.DRIVER_ASSIGNED]: [RIDE_STATES.ON_WAY_TO_PICKUP, RIDE_STATES.CANCELLED],
+            [RIDE_STATES.ON_WAY_TO_PICKUP]: [RIDE_STATES.ARRIVED_AT_PICKUP, RIDE_STATES.CANCELLED],
+            [RIDE_STATES.ARRIVED_AT_PICKUP]: [RIDE_STATES.ONGOING, RIDE_STATES.CANCELLED],
+            [RIDE_STATES.ONGOING]: [RIDE_STATES.COMPLETED],
             [RIDE_STATES.COMPLETED]: [],
             [RIDE_STATES.CANCELLED]: []
         };
 
-        if (!validTransitions[transfer.status] || !validTransitions[transfer.status].includes(status)) {
-            throw ApiError.badRequest(`Invalid state transition from ${transfer.status} to ${status}`);
+        if (!validTransitions[transfer.status] || !validTransitions[transfer.status].includes(safeStatus)) {
+            throw ApiError.badRequest(`Invalid state transition from ${transfer.status} to ${safeStatus}`);
         }
 
-        return transferRepository.update(id, { status });
+        return transferRepository.update(id, { status: safeStatus });
     }
 
     async assignDriver(rideId, driverId) {
@@ -169,26 +222,26 @@ class TransferService {
 
     async acceptRide(rideId, driverProfileId) {
         const transfer = await this.getTransferById(rideId);
-        
+
         if (transfer.status !== RIDE_STATES.DRIVER_ASSIGNED || transfer.driverId !== driverProfileId) {
             throw ApiError.badRequest('Ride is no longer available or was unassigned.');
         }
 
         // Update to accepted
         const updated = await this.updateStatus(rideId, RIDE_STATES.DRIVER_ACCEPTED, null);
-        
+
         // Broadcast to Passenger that Driver is coming
         trackingService.broadcastRideUpdate(rideId, 'driver_accepted', updated);
-        
+
         return updated;
     }
 
     async rejectRide(rideId, driverProfileId, pickupLocation, requiredSeats, requiredCategory) {
         const transfer = await this.getTransferById(rideId);
-        
+
         if (transfer.status === RIDE_STATES.DRIVER_ASSIGNED && transfer.driverId === driverProfileId) {
             console.log(`❌ [Platform] Driver ${driverProfileId} rejected assigned Ride ${rideId}`);
-            
+
             // Revert status so vendor can re-assign
             await transferRepository.update(rideId, { driverId: null, status: RIDE_STATES.MATCHING });
         }
@@ -197,7 +250,7 @@ class TransferService {
 
     async updateLifecycle(rideId, driverProfileId, nextState) {
         const transfer = await this.getTransferById(rideId);
-        
+
         if (transfer.driverId !== driverProfileId && driverProfileId !== 'admin') {
             throw ApiError.forbidden('Only the assigned driver can update this ride');
         }
@@ -208,7 +261,7 @@ class TransferService {
         }
 
         const updated = await this.updateStatus(rideId, nextState, null);
-        
+
         // Notify Passenger
         trackingService.broadcastRideUpdate(rideId, nextState.toLowerCase(), updated);
 

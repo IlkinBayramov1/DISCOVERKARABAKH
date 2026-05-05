@@ -40,9 +40,22 @@ export const AttractionsPage: React.FC = () => {
     };
 
     useEffect(() => {
+        const urlCity = searchParams.get('city') || undefined;
+        const urlQ = searchParams.get('q') || undefined;
+        
+        const updates: any = {};
+        if (urlCity !== params.city) updates.city = urlCity;
+        if (urlQ !== params.q) updates.q = urlQ;
+        
+        if (Object.keys(updates).length > 0) {
+            updateFilters(updates);
+        }
+    }, [searchParams, params.city, params.q, updateFilters]);
+
+    useEffect(() => {
         const urlQ = searchParams.get('q') || '';
-        if (urlQ !== params.q) setKeywordInput(urlQ);
-    }, [searchParams, params.q]);
+        setKeywordInput(urlQ);
+    }, [searchParams]);
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         updateFilters({ sort: e.target.value });
@@ -81,16 +94,17 @@ export const AttractionsPage: React.FC = () => {
                             />
                         </div>
                     </div>
-                    {/* LOCATION (Read-only display of sidebar selection) */}
-                    <div className="search-item location-item" style={{ cursor: 'pointer' }} onClick={() => setSidebarOpen(true)}>
+
+                    {/* LOCATION (Read-only display of global selection) */}
+                    <div className="search-item location-item" style={{ cursor: 'default', borderLeft: '1px solid #eee' }}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
                         <div>
                             <label>LOCATION</label>
-                            <div className="search-value" style={{ fontSize: '15px', color: params.city ? 'var(--dk-primary)' : '#666', fontWeight: params.city ? '600' : '400' }}>
-                                {params.city || 'Any City'}
+                            <div className="search-value" style={{ fontSize: '15px', color: 'var(--dk-primary)', fontWeight: '600' }}>
+                                {params.city || 'All Karabakh'}
                             </div>
                         </div>
                     </div>

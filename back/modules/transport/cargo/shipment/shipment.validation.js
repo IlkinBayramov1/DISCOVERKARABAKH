@@ -24,9 +24,7 @@ export const assignDriverSchema = Joi.object({
 });
 
 export const advanceStatusSchema = Joi.object({
-    nextStatus: Joi.string().valid(
-        'DriverAssigned', 'VehicleArrived', 'PickedUp', 'InTransit',
-        'AtDropoff', 'Delivered', 'Completed', 'Cancelled', 'Failed'
-    ).required(),
+    nextStatus: Joi.string().optional(),
+    status: Joi.string().optional(),
     extraPayload: Joi.object().optional()
-});
+}).or('nextStatus', 'status');

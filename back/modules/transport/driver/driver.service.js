@@ -1,7 +1,9 @@
 import { driverRepository } from './driver.repository.js';
-import prisma from '../../../config/db.js'; // Need raw prisma for role update
+import prisma from '../../../config/db.js'; 
 import { ApiError } from '../../../core/api.error.js';
 import { createClient } from 'redis';
+import { hashPassword } from '../../../utils/hash.util.js';
+import crypto from 'crypto';
 
 let redisClient;
 try {
@@ -15,6 +17,50 @@ try {
 }
 
 class DriverService {
+    async createDriverByVendor(vendorId, data) {
+        const { email, password, firstName, lastName, phone, licenseNumber } = data;
+
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) throw ApiError.badRequest('Bu email ilə istifadəçi artıq mövcuddur.');
+
+        const hashedPassword = await hashPassword(password || 'driver123456'); // Default password if not provided
+
+        return await prisma.$transaction(async (tx) => {
+            // 1. Create User
+            const user = await tx.user.create({
+                data: {
+                    id: crypto.randomUUID(),
+                    email,
+                    password: hashedPassword,
+                    role: 'driver',
+                    firstName,
+                    lastName,
+                    phone,
+                    isActive: true,
+                    isApproved: true,
+                    updatedAt: new Date()
+                }
+            });
+
+            // 2. Create Driver Profile
+            const driverProfile = await tx.driverProfile.create({
+                data: {
+                    id: crypto.randomUUID(),
+                    userId: user.id,
+                    managedById: vendorId,
+                    firstName,
+                    lastName,
+                    phone,
+                    licenseNumber,
+                    status: 'Approved' // Vendor created drivers are approved by default
+                }
+            });
+
+            return driverProfile;
+        });
+    }
+
     async registerDriver(userId, data) {
         const existing = await driverRepository.findByUserId(userId);
         if (existing) throw ApiError.badRequest('Driver profile already exists');

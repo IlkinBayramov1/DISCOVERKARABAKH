@@ -31,3 +31,14 @@ export const useAssignDriverVehicle = () => {
         },
     });
 };
+
+export const useCreateDriver = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: any) => transportVendorApi.createDriver(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['transport-drivers'] });
+        },
+    });
+};

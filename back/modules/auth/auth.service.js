@@ -58,7 +58,7 @@ class AuthService {
         const { companyName, category } = data;
         if (!companyName || !category) throw ApiError.badRequest('Vendor details missing');
 
-        await tx.vendorProfile.create({
+        await tx.vendorprofile.create({
           data: {
             userId: user.id,
             companyName,
@@ -67,12 +67,12 @@ class AuthService {
         });
       } else if (role === 'tourist') {
         const { nationality, passportNumber, interests } = data;
-        await tx.touristProfile.create({
+        await tx.touristprofile.create({
           data: { userId: user.id, nationality, passportNumber, interests }
         });
       } else if (role === 'resident') {
         const { permitNumber, localAddress } = data;
-        await tx.residentProfile.create({
+        await tx.residentprofile.create({
           data: { userId: user.id, permitNumber, localAddress }
         });
       }

@@ -28,6 +28,7 @@ class LocationService {
         const payload = {
             name: data.name,
             address: data.address,
+            googleMapsUrl: data.googleMapsUrl,
             lat: data.coordinates.lat,
             lng: data.coordinates.lng,
             type: data.type || 'Custom'
@@ -59,6 +60,7 @@ class LocationService {
         const payload = {
             name: data.name,
             address: data.address,
+            googleMapsUrl: data.googleMapsUrl,
             lat: data.coordinates?.lat,
             lng: data.coordinates?.lng,
             type: data.type
@@ -75,6 +77,7 @@ class LocationService {
             id: loc.id.toString(),
             name: loc.name,
             address: loc.address,
+            googleMapsUrl: loc.googleMapsUrl,
             type: loc.type,
             popularity: loc.popularity,
             vendorId: loc.vendorId,

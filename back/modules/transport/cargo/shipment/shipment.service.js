@@ -124,9 +124,22 @@ class ShipmentService {
     }
 
     _enforceTransition(currentStatus, nextStatus) {
+        // Normalize: Capitalize first letter (e.g. 'completed' -> 'Completed')
+        const normalizedNext = nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1).toLowerCase();
+
+        // Already in final state
+        if (currentStatus === 'Completed' || currentStatus === 'Cancelled') {
+            throw ApiError.badRequest(`Enterprise Logistics Constraint: Cannot modify a finalized shipment (${currentStatus})`);
+        }
+
+        // Allow bypassing any step to reach final states (Admin/Vendor override)
+        if (normalizedNext === 'Completed' || normalizedNext === 'Cancelled') {
+            return; 
+        }
+
         const allowed = ALLOWED_TRANSITIONS[currentStatus];
-        if (!allowed || !allowed.includes(nextStatus)) {
-            throw ApiError.badRequest(`Enterprise Logistics Constraint: Invalid state transition from ${currentStatus} to ${nextStatus}`);
+        if (!allowed || !allowed.includes(normalizedNext)) {
+            throw ApiError.badRequest(`Enterprise Logistics Constraint: Invalid state transition from ${currentStatus} to ${normalizedNext}`);
         }
     }
 }

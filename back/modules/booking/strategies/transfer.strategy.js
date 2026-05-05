@@ -23,6 +23,26 @@ export class TransferBookingStrategy extends BookingStrategy {
             throw ApiError.badRequest('This vehicle is currently unavailable.');
         }
 
+        // 3-hour buffer check
+        const requestedTime = new Date(scheduledTime);
+        const bufferStart = new Date(requestedTime.getTime() - 3 * 60 * 60 * 1000);
+        const bufferEnd = new Date(requestedTime.getTime() + 3 * 60 * 60 * 1000);
+
+        const conflictingRide = await prisma.ride.findFirst({
+            where: {
+                vehicleId: entityId,
+                status: { notIn: ['Cancelled', 'Completed'] },
+                scheduledAt: {
+                    gte: bufferStart,
+                    lte: bufferEnd
+                }
+            }
+        });
+
+        if (conflictingRide) {
+            throw ApiError.badRequest('This vehicle is already booked or busy within 3 hours of your requested time.');
+        }
+
         // Prevent booking for past dates
         if (new Date(scheduledTime) < new Date(new Date().setHours(0,0,0,0))) {
             throw ApiError.badRequest('Cannot book for a past date');
@@ -88,6 +108,7 @@ export class TransferBookingStrategy extends BookingStrategy {
                 dropoffLocation: data.dropoffLocation,
                 distanceKm: data.distanceKm || 0,
                 price: booking.totalPrice,
+                paxCount: data.participants || data.items?.[0]?.adults || 1,
                 scheduledAt: new Date(scheduledTime),
                 bookingNumber: booking.bookingNumber
             }

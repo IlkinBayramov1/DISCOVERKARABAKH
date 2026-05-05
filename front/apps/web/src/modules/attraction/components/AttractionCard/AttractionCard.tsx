@@ -21,7 +21,7 @@ export const AttractionCard: React.FC<AttractionCardProps> = ({ attraction, isFa
                 
                 {attraction.category && (
                     <div className="card-duration-badge">
-                        <span>{attraction.category.name}</span>
+                        <span>{attraction.category}</span>
                     </div>
                 )}
                 

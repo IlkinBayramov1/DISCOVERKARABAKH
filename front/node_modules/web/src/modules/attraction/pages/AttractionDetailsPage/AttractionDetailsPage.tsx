@@ -136,7 +136,7 @@ export const AttractionDetailsPage: React.FC = () => {
                                 <>
                                     <div className="badge-pill">
                                         <MapPin size={16} />
-                                        <span>{attraction.category.name}</span>
+                                        <span>{attraction.category}</span>
                                     </div>
                                     <span className="dot">•</span>
                                 </>
@@ -253,11 +253,16 @@ export const AttractionDetailsPage: React.FC = () => {
                                     height="100%" 
                                     style={{ border: 0 }} 
                                     loading="lazy" 
-                                    src={`https://maps.google.com/maps?q=$${attraction.latitude},${attraction.longitude}&z=15&output=embed`}
+                                    src={`https://maps.google.com/maps?q=${attraction.latitude},${attraction.longitude}&z=15&output=embed`}
                                 ></iframe>
                             </div>
                             <div className="directions-actions">
-                                <a href={`https://www.google.com/maps/dir/?api=1&destination=$${attraction.latitude},${attraction.longitude}`} target="_blank" rel="noopener noreferrer" className="nav-way google">
+                                <a 
+                                    href={attraction.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${attraction.latitude},${attraction.longitude}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="nav-way google"
+                                >
                                     <Navigation size={16} /> Open in Google Maps
                                 </a>
                                 <a href={`https://yandex.com/maps/?rtext=~${attraction.latitude},${attraction.longitude}`} target="_blank" rel="noopener noreferrer" className="nav-way yandex">
@@ -324,32 +329,42 @@ export const AttractionDetailsPage: React.FC = () => {
                     <div className="split-sidebar">
                         
                         <div className="premium-card booking-cta-card">
-                            <div className="price-tag">
-                                <span className="currency">₼</span>
-                                <span className="amount">{attraction.price || 0}</span>
-                                <span className="period">/ person</span>
-                            </div>
-                            
-                            <div className="status-indicator">
-                                <CheckCircle2 size={16} />
-                                <span>Reservation Active</span>
-                            </div>
+                            {attraction.entryType === 'free' ? (
+                                <div className="free-entry-banner">
+                                    <CheckCircle2 size={32} color="var(--dk-primary)" />
+                                    <h3>Entry Free</h3>
+                                    <p>This attraction is open to the public for free. No reservation required.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="price-tag">
+                                        <span className="currency">₼</span>
+                                        <span className="amount">{attraction.price || 0}</span>
+                                        <span className="period">/ person</span>
+                                    </div>
+                                    
+                                    <div className="status-indicator">
+                                        <CheckCircle2 size={16} />
+                                        <span>Reservation Active</span>
+                                    </div>
 
-                            <p className="cta-description">
-                                Professional guides and priority entrance included.
-                            </p>
+                                    <p className="cta-description">
+                                        Professional guides and priority entrance included.
+                                    </p>
 
-                            <button 
-                                className="primary-booking-btn" 
-                                onClick={() => navigate(`/attraction-checkout?attractionId=${attraction.id}`)}
-                            >
-                                Book Experience or Add to Collection
-                            </button>
+                                    <button 
+                                        className="primary-booking-btn" 
+                                        onClick={() => navigate(`/attraction-checkout?attractionId=${attraction.id}`)}
+                                    >
+                                        Book Experience or Add to Collection
+                                    </button>
 
-                            <div className="info-notes">
-                                <Info size={14} />
-                                <span>Free cancellation up to 24h before</span>
-                            </div>
+                                    <div className="info-notes">
+                                        <Info size={14} />
+                                        <span>Free cancellation up to 24h before</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className="premium-card sticky-sidebar-card mt-6">
@@ -395,9 +410,11 @@ export const AttractionDetailsPage: React.FC = () => {
                             <div className="loading-nearby">Finding more gems nearby...</div>
                         ) : (
                             <div className="tour-grid">
-                                {nearby.map(item => (
-                                    <AttractionCard key={item.id} attraction={item} />
-                                ))}
+                                {nearby
+                                    .filter(item => item.id !== attraction.id)
+                                    .map(item => (
+                                        <AttractionCard key={item.id} attraction={item} />
+                                    ))}
                             </div>
                         )}
                     </div>

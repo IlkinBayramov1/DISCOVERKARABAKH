@@ -16,17 +16,8 @@ class HotelReviewService {
             where: {
                 userId: userId,
                 hotelId: hotelId,
-                // STATUS CHECK DISABLED FOR TESTING
-                // status: {
-                //     in: ['checked_out', 'completed', 'confirmed']
-                // },
-                // items: {
-                //     some: {
-                //         checkOut: { lt: new Date() }
-                //     }
-                // }
             },
-            include: { items: true },
+            include: { bookingitem: true },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -126,17 +117,17 @@ class HotelReviewService {
 
         if (!review) {
             // Try in room reviews
-            review = await prisma.roomReview.findUnique({
+            review = await prisma.roomreview.findUnique({
                 where: { id: reviewId },
-                include: { roomType: { include: { hotel: true } } }
+                include: { roomtype: { include: { hotel: true } } }
             });
-            model = 'roomReview';
+            model = 'roomreview';
         }
 
         if (!review) throw ApiError.notFound('Review not found');
 
         // Authorization check
-        const hotel = model === 'review' ? review.hotel : review.roomType.hotel;
+        const hotel = model === 'review' ? review.hotel : review.roomtype.hotel;
         if (hotel.ownerId !== vendorId) {
             throw ApiError.forbidden('You can only reply to reviews for your own hotels');
         }

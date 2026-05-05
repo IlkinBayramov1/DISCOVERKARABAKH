@@ -17,12 +17,12 @@ import PricingRules from '@/modules/hotel/pages/pricing/PricingRules';
 import MyHotel from '../modules/hotel/pages/my-hotel/MyHotel';
 
 // Transport Vendor Pages
-import VendorFleetPage from '../modules/transport/pages/VendorFleetPage';
-import VendorDriverPage from '../modules/transport/pages/VendorDriverPage';
-import VendorPricingPage from '../modules/transport/pages/VendorPricingPage';
-import VendorTransportOrdersPage from '../modules/transport/pages/VendorTransportOrdersPage';
+import VendorFleetPage from '../modules/transport/pages/VendorFleetPage/VendorFleetPage';
+import VendorDriverPage from '../modules/transport/pages/VendorDriverPage/VendorDriverPage';
+import VendorPricingPage from '../modules/transport/pages/VendorPricingPage/VendorPricingPage';
+import VendorTransportOrdersPage from '../modules/transport/pages/VendorTransportOrdersPage/VendorTransportOrdersPage';
 import TransportDashboard from '../modules/transport/pages/dashboard/TransportDashboard';
-import VendorLocationsPage from '../modules/transport/pages/VendorLocationsPage';
+import VendorLocationsPage from '../modules/transport/pages/VendorLocationsPage/VendorLocationsPage';
 
 // Tour Vendor Pages
 import VendorTourDashboard from '../modules/tour/pages/VendorTourDashboard/VendorTourDashboard';

@@ -10,7 +10,7 @@ import { ApiError } from '../../core/api.error.js';
 
 export const getVendorProfile = async (req, res, next) => {
     try {
-        const vendor = await prisma.vendorProfile.findUnique({
+        const vendor = await prisma.vendorprofile.findUnique({
             where: { userId: req.user.id },
             include: { user: { select: { email: true, role: true } } }
         });
@@ -31,7 +31,7 @@ export const updateVendorProfile = async (req, res, next) => {
         if (req.body.userId) delete req.body.userId;
         if (req.body.category) delete req.body.category;
 
-        const vendor = await prisma.vendorProfile.update({
+        const vendor = await prisma.vendorprofile.update({
             where: { userId: req.user.id },
             data: req.body
         });
@@ -48,7 +48,7 @@ export const banUserFromTransport = async (req, res, next) => {
         const { targetUserId, ban } = req.body; // ban = true/false
 
         // 1. Check if requester is a Transport Vendor
-        const requesterProfile = await prisma.vendorProfile.findUnique({
+        const requesterProfile = await prisma.vendorprofile.findUnique({
             where: { userId: req.user.id }
         });
 

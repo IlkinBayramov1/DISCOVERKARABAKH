@@ -1,6 +1,7 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
 import { hotelMapper } from './hotel.mapper.js';
+import crypto from 'crypto';
 
 class HotelService {
     /**
@@ -22,7 +23,7 @@ class HotelService {
                 ownerId: vendorId,
                 status: 'active',
                 // Handle many-to-many relationship for amenities
-                amenities: amenities && amenities.length > 0 ? {
+                hotelamenity: amenities && amenities.length > 0 ? {
                     create: amenities.map(amenityName => ({
                         amenity: {
                             connectOrCreate: {
@@ -33,7 +34,7 @@ class HotelService {
                     }))
                 } : undefined,
                 // Handle Nearby POIs
-                nearbyPOIs: nearbyPOIs && nearbyPOIs.length > 0 ? {
+                hotelpoi: nearbyPOIs && nearbyPOIs.length > 0 ? {
                     create: nearbyPOIs.map(poi => ({
                         attractionId: poi.attractionId,
                         distance: poi.distance,
@@ -42,15 +43,15 @@ class HotelService {
                     }))
                 } : undefined,
                 // Handle One-to-Many images relationship
-                images: images && images.length > 0 ? {
-                    create: images.map((url, index) => ({ url, order: index }))
+                hotelimage: images && images.length > 0 ? {
+                    create: images.map((url, index) => ({ id: crypto.randomUUID(), url, order: index }))
                 } : undefined
             },
-            include: { 
-                amenities: { include: { amenity: true } },
-                images: true,
-                reviews: true,
-                roomTypes: { include: { pricingList: true } }
+            include: {
+                hotelamenity: { include: { amenity: true } },
+                hotelimage: true,
+                review: true,
+                roomtype: { include: { dailypricing: true } }
             }
         });
 
@@ -100,7 +101,7 @@ class HotelService {
         if (totalNights > 0) {
             // Find all RoomTypes that have EXACTLY 'totalNights' available days in the range
             // This ensures no missing dates and no fully booked/stopped dates.
-            
+
             const roomTypesWithAvailability = await prisma.roomAvailability.groupBy({
                 by: ['roomTypeId'],
                 where: {
@@ -138,7 +139,7 @@ class HotelService {
         let whereClause = { status: 'active' };
 
         if (availableRoomTypeIds !== null) {
-            whereClause.roomTypes = {
+            whereClause.roomtype = {
                 some: {
                     id: { in: availableRoomTypeIds }
                 }
@@ -160,14 +161,14 @@ class HotelService {
                 maxChildren: { gte: parseInt(children) || 0 }
             };
 
-            if (whereClause.roomTypes?.some) {
+            if (whereClause.roomtype?.some) {
                 // Merge with existing availability filter if present
-                whereClause.roomTypes.some = {
-                    ...whereClause.roomTypes.some,
+                whereClause.roomtype.some = {
+                    ...whereClause.roomtype.some,
                     ...occupancyFilter
                 };
             } else {
-                whereClause.roomTypes = { some: occupancyFilter };
+                whereClause.roomtype = { some: occupancyFilter };
             }
         }
 
@@ -185,14 +186,14 @@ class HotelService {
             whereClause.AND = [
                 ...(whereClause.AND || []),
                 ...namesList.map(name => ({
-                    amenities: { some: { amenity: { name } } }
+                    hotelamenity: { some: { amenity: { name } } }
                 }))
             ];
         }
 
         // Price Range Filtering (via RoomTypes -> DailyPricing)
         if (minPrice || maxPrice) {
-            whereClause.roomTypes = {
+            whereClause.roomtype = {
                 some: {
                     pricingList: {
                         some: {
@@ -206,20 +207,20 @@ class HotelService {
             };
         }
 
-        const includeRelations = { 
-            amenities: { include: { amenity: true } }, 
-            images: true,
-            roomTypes: { 
-                include: { 
-                    pricingList: { orderBy: { basePrice: 'asc' }, take: 1 } 
-                } 
+        const includeRelations = {
+            hotelamenity: { include: { amenity: true } },
+            hotelimage: true,
+            roomtype: {
+                include: {
+                    pricingList: { orderBy: { basePrice: 'asc' }, take: 1 }
+                }
             },
-            reviews: { where: { status: 'approved' }, select: { rating: true } }
+            review: { where: { status: 'approved' }, select: { rating: true } }
         };
 
         // Determine Prisma OrderBy (if standard)
         let prismaOrderBy = [{ isFeatured: 'desc' }, { featuredPriority: 'desc' }];
-        
+
         // Geospatial Logic - Prisma Native RAW Haversine
         if (lat && lng) {
             const latitude = parseFloat(lat);
@@ -268,10 +269,10 @@ class HotelService {
         const hotels = await prisma.hotel.findMany({
             where: { ownerId: vendorId },
             include: {
-                amenities: { include: { amenity: true } },
-                roomTypes: true,
-                images: true,
-                reviews: {
+                hotelamenity: { include: { amenity: true } },
+                roomtype: true,
+                hotelimage: true,
+                review: {
                     where: { status: 'approved' },
                     select: { rating: true }
                 }
@@ -286,19 +287,19 @@ class HotelService {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const rooms = await prisma.roomType.findMany({
+        const rooms = await prisma.roomtype.findMany({
             where: {
                 hotel: {
                     ownerId: vendorId
                 }
             },
             include: {
-                images: true,
-                roomAmenities: true,
+                roomimage: true,
+                roomamenity: true,
                 hotel: {
                     select: { name: true, id: true }
                 },
-                pricingList: {
+                dailypricing: {
                     where: { date: { gte: today } },
                     orderBy: { date: 'asc' },
                     take: 1
@@ -308,14 +309,16 @@ class HotelService {
         });
 
         return rooms.map(room => {
-            const currentPrice = room.pricingList && room.pricingList.length > 0
-                ? room.pricingList[0].basePrice
+            const currentPrice = room.dailypricing && room.dailypricing.length > 0
+                ? room.dailypricing[0].basePrice
                 : (room.basePrice || null);
 
-            const { pricingList, ...rest } = room;
+            const { dailypricing, roomimage, roomamenity, ...rest } = room;
             return {
                 ...rest,
-                basePrice: currentPrice
+                basePrice: currentPrice,
+                images: roomimage,
+                amenities: roomamenity
             };
         });
     }
@@ -332,15 +335,15 @@ class HotelService {
                 },
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.roomReview.findMany({
+            prisma.roomreview.findMany({
                 where: {
-                    roomType: {
+                    roomtype: {
                         hotel: { ownerId: vendorId }
                     }
                 },
                 include: {
                     user: { select: { email: true, firstName: true, lastName: true } },
-                    roomType: {
+                    roomtype: {
                         include: {
                             hotel: { select: { name: true, id: true } }
                         }
@@ -356,8 +359,8 @@ class HotelService {
             ...roomReviews.map(r => ({
                 ...r,
                 type: 'room',
-                hotel: r.roomType.hotel,
-                roomType: { id: r.roomType.id, name: r.roomType.name }
+                hotel: r.roomtype.hotel,
+                roomType: { id: r.roomtype.id, name: r.roomtype.name }
             }))
         ];
 
@@ -368,23 +371,23 @@ class HotelService {
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId },
             include: {
-                amenities: { include: { amenity: true } },
-                roomTypes: {
+                hotelamenity: { include: { amenity: true } },
+                roomtype: {
                     include: {
-                        images: true,
-                        roomAmenities: true,
-                        pricingList: {
+                        roomimage: true,
+                        roomamenity: true,
+                        dailypricing: {
                             orderBy: { basePrice: 'asc' },
                             take: 1
                         }
                     }
                 },
-                images: true,
-                dailyStats: {
+                hotelimage: true,
+                hoteldailystat: {
                     orderBy: { date: 'desc' },
                     take: 7
                 },
-                nearbyPOIs: {
+                hotelpoi: {
                     include: {
                         attraction: {
                             select: {
@@ -392,7 +395,7 @@ class HotelService {
                                 name: true,
                                 latitude: true,
                                 longitude: true,
-                                images: { take: 1 }
+                                attractionimage: { take: 1 }
                             }
                         }
                     },
@@ -421,13 +424,14 @@ class HotelService {
         let amenitiesUpdate = undefined;
         if (amenities) {
             // Hard deletion of M2M records safely mapping the new batch
-            await prisma.hotelAmenity.deleteMany({ where: { hotelId } });
+            await prisma.hotelamenity.deleteMany({ where: { hotelId } });
             amenitiesUpdate = {
                 create: amenities.map(amenityName => ({
+                    id: crypto.randomUUID(),
                     amenity: {
                         connectOrCreate: {
                             where: { name: amenityName },
-                            create: { name: amenityName }
+                            create: { id: crypto.randomUUID(), name: amenityName }
                         }
                     }
                 }))
@@ -437,9 +441,10 @@ class HotelService {
         // Handle Nearby POIs Update
         let poiUpdate = undefined;
         if (nearbyPOIs) {
-            await prisma.hotelPOI.deleteMany({ where: { hotelId } });
+            await prisma.hotelpoi.deleteMany({ where: { hotelId } });
             poiUpdate = {
                 create: nearbyPOIs.map(poi => ({
+                    id: crypto.randomUUID(),
                     attractionId: poi.attractionId,
                     distance: poi.distance,
                     description: poi.description,
@@ -450,24 +455,52 @@ class HotelService {
 
         let imagesUpdate = undefined;
         if (images) {
-            await prisma.hotelImage.deleteMany({ where: { hotelId } });
+            await prisma.hotelimage.deleteMany({ where: { hotelId } });
             imagesUpdate = {
-                create: images.map((url, index) => ({ url, order: index }))
+                create: images.map((url, index) => ({ id: crypto.randomUUID(), url, order: index }))
             };
         }
 
         const updated = await prisma.hotel.update({
             where: { id: hotelId },
-            data: { 
-                ...rest, 
-                amenities: amenitiesUpdate, 
-                images: imagesUpdate,
-                nearbyPOIs: poiUpdate
+            data: {
+                ...rest,
+                updatedAt: new Date(),
+                hotelamenity: amenitiesUpdate,
+                hotelimage: imagesUpdate,
+                hotelpoi: poiUpdate
             },
-            include: { 
-                amenities: { include: { amenity: true } }, 
-                images: true,
-                nearbyPOIs: { include: { attraction: true } }
+            include: {
+                hotelamenity: { include: { amenity: true } },
+                roomtype: {
+                    include: {
+                        roomimage: true,
+                        roomamenity: true,
+                        dailypricing: {
+                            orderBy: { basePrice: 'asc' },
+                            take: 1
+                        }
+                    }
+                },
+                hotelimage: true,
+                hoteldailystat: {
+                    orderBy: { date: 'desc' },
+                    take: 7
+                },
+                hotelpoi: {
+                    include: {
+                        attraction: {
+                            select: {
+                                id: true,
+                                name: true,
+                                latitude: true,
+                                longitude: true,
+                                attractionimage: { take: 1 }
+                            }
+                        }
+                    },
+                    orderBy: { order: 'asc' }
+                }
             }
         });
 
@@ -538,8 +571,8 @@ class HotelService {
 
         const totalRoomsAvg = occupancyData._avg.totalRooms || 0;
         const availableRoomsAvg = occupancyData._avg.availableRooms || 0;
-        const occupancyRate = totalRoomsAvg > 0 
-            ? ((totalRoomsAvg - availableRoomsAvg) / totalRoomsAvg) * 100 
+        const occupancyRate = totalRoomsAvg > 0
+            ? ((totalRoomsAvg - availableRoomsAvg) / totalRoomsAvg) * 100
             : 0;
 
         return {

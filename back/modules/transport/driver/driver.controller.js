@@ -3,11 +3,17 @@ import { driverService } from './driver.service.js';
 // For prospective drivers to register
 export const registerDriver = async (req, res, next) => {
     try {
-        // If managed by a vendor, maybe vendor ID is passed or inferred?
-        // Let's assume standard user creates profile.
-        // If Vendor creates driver, different flow?
-        // MVP: User registers self as driver.
         const driver = await driverService.registerDriver(req.user.id, req.body);
+        res.status(201).json({ success: true, data: driver });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const createDriver = async (req, res, next) => {
+    try {
+        // Vendor creates a driver. req.user.id is the vendorId.
+        const driver = await driverService.createDriverByVendor(req.user.id, req.body);
         res.status(201).json({ success: true, data: driver });
     } catch (error) {
         next(error);

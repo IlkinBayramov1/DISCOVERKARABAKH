@@ -10,30 +10,32 @@ class HotelMapper {
         if (!hotel) return null;
 
         // Calculate Average Rating
-        const reviewCount = hotel.reviews ? hotel.reviews.length : (hotel._count?.reviews || 0);
+        const reviews = hotel.review || [];
+        const reviewCount = reviews.length || (hotel._count?.review || 0);
         let rating = 0;
-        if (hotel.reviews && hotel.reviews.length > 0) {
-            rating = hotel.reviews.reduce((sum, r) => sum + r.rating, 0) / hotel.reviews.length;
+        if (reviews.length > 0) {
+            rating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
         }
 
         // Calculate Starting Price (Lowest price among all room types)
         let startingPrice = 0;
-        if (hotel.roomTypes && hotel.roomTypes.length > 0) {
-            const prices = hotel.roomTypes
+        const roomTypes = hotel.roomtype || [];
+        if (roomTypes.length > 0) {
+            const prices = roomTypes
                 .map(rt => {
-                    const dailyPrice = (rt.pricingList && rt.pricingList.length > 0) ? rt.pricingList[0].basePrice : Infinity;
+                    const dailyPrice = (rt.dailypricing && rt.dailypricing.length > 0) ? rt.dailypricing[0].basePrice : Infinity;
                     const fallbackPrice = rt.basePrice || Infinity;
                     return Math.min(dailyPrice, fallbackPrice);
                 })
                 .filter(p => p !== Infinity);
-            
+
             if (prices.length > 0) {
                 startingPrice = Math.min(...prices);
             }
         }
 
         // Map POIs
-        const nearbyPOIs = hotel.nearbyPOIs ? hotel.nearbyPOIs.map(poi => this.toHotelPOIDTO(poi)) : [];
+        const nearbyPOIs = hotel.hotelpoi ? hotel.hotelpoi.map(poi => this.toHotelPOIDTO(poi)) : [];
 
         // Return clean DTO
         return {
@@ -59,14 +61,14 @@ class HotelMapper {
             rating: Math.round(rating * 10) / 10,
             startingPrice: startingPrice,
             nearbyPOIs,
-            amenities: hotel.amenities ? hotel.amenities.map(a => ({
+            amenities: hotel.hotelamenity ? hotel.hotelamenity.map(a => ({
                 amenity: { name: a.amenity.name }
             })) : [],
-            images: hotel.images ? hotel.images.map(img => ({
+            images: hotel.hotelimage ? hotel.hotelimage.map(img => ({
                 url: img.url,
                 order: img.order
             })) : [],
-            roomTypes: hotel.roomTypes ? hotel.roomTypes.map(rt => ({
+            roomTypes: roomTypes.map(rt => ({
                 id: rt.id,
                 name: rt.name,
                 description: rt.description,
@@ -74,10 +76,10 @@ class HotelMapper {
                 maxAdults: rt.maxAdults,
                 maxChildren: rt.maxChildren,
                 totalInventory: rt.totalInventory,
-                basePrice: Math.min(rt.basePrice || Infinity, rt.pricingList?.[0]?.basePrice || Infinity) === Infinity 
-                    ? null 
-                    : Math.min(rt.basePrice || Infinity, rt.pricingList?.[0]?.basePrice || Infinity)
-            })) : [],
+                basePrice: Math.min(rt.basePrice || Infinity, rt.dailypricing?.[0]?.basePrice || Infinity) === Infinity
+                    ? null
+                    : Math.min(rt.basePrice || Infinity, rt.dailypricing?.[0]?.basePrice || Infinity)
+            })),
             createdAt: hotel.createdAt,
             updatedAt: hotel.updatedAt
         };

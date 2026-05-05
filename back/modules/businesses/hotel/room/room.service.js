@@ -1,6 +1,7 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
 import { hotelEvents, ROOM_INVENTORY_DEPLETED, ROOM_TYPE_CREATED, ROOM_TYPE_UPDATED, ROOM_TYPE_DELETED } from '../hotel.events.js';
+import crypto from 'crypto';
 
 class RoomService {
     /**
@@ -16,23 +17,24 @@ class RoomService {
 
         const { images, amenities, basePrice, category, ...roomData } = data;
 
-        const result = await prisma.roomType.create({
+        const result = await prisma.roomtype.create({
             data: {
                 ...roomData,
                 category: category || 'Standard',
                 hotelId,
                 basePrice: basePrice !== undefined && basePrice !== null ? parseFloat(basePrice) : undefined,
-                images: images?.length ? {
-                    create: images.map((url, index) => ({ url, order: index }))
+                roomimage: images?.length ? {
+                    create: images.map((url, index) => ({ id: crypto.randomUUID(), url, order: index }))
                 } : undefined,
-                roomAmenities: amenities?.length ? {
+                roomamenity: amenities?.length ? {
                     create: amenities.map(item => ({
+                        id: crypto.randomUUID(),
                         amenityName: typeof item === 'string' ? item : item.name,
                         category: typeof item === 'string' ? 'General' : (item.category || 'General')
                     }))
                 } : undefined
             },
-            include: { images: true, roomAmenities: true }
+            include: { roomimage: true, roomamenity: true }
         });
 
         // 🟢 FIX: Handle basePrice by generating standard daily pricing for the next 30 days 
@@ -44,21 +46,23 @@ class RoomService {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 pricingData.push({
+                    id: crypto.randomUUID(),
                     date: d,
                     basePrice: parseFloat(basePrice),
                     roomTypeId: result.id
                 });
             }
-            await prisma.dailyPricing.createMany({
+            await prisma.dailypricing.createMany({
                 data: pricingData,
                 skipDuplicates: true
             });
         }
 
         // Trigger snapshot update
-        hotelEvents.emit(ROOM_TYPE_CREATED, { hotelId, roomType: result });
+        hotelEvents.emit(ROOM_TYPE_CREATED, { hotelId, roomtype: result });
 
-        return result;
+        const { roomimage, roomamenity, ...rest } = result;
+        return { ...rest, images: roomimage, amenities: roomamenity };
     }
 
     /**
@@ -81,12 +85,12 @@ class RoomService {
             whereClause.category = category.endsWith('s') ? category.slice(0, -1) : category;
         }
 
-        const rooms = await prisma.roomType.findMany({
+        const rooms = await prisma.roomtype.findMany({
             where: whereClause,
             include: {
-                images: true,
-                roomAmenities: true,
-                pricingList: {
+                roomimage: true,
+                roomamenity: true,
+                dailypricing: {
                     where: checkInDate && checkOutDate ? {
                         date: {
                             gte: checkInDate,
@@ -97,28 +101,29 @@ class RoomService {
                     },
                     orderBy: { date: 'asc' }
                 }
-            },
-            orderBy: { name: 'asc' }
+            }
         });
 
         return rooms.map(room => {
             let basePrice = room.basePrice || 0;
             
-            if (room.pricingList && room.pricingList.length > 0) {
+            if (room.dailypricing && room.dailypricing.length > 0) {
                 // If dates were provided, calculate average price for that period
                 if (checkIn && checkOut) {
-                    const sum = room.pricingList.reduce((acc, p) => acc + p.basePrice, 0);
-                    basePrice = sum / room.pricingList.length;
+                    const sum = room.dailypricing.reduce((acc, p) => acc + p.basePrice, 0);
+                    basePrice = sum / room.dailypricing.length;
                 } else {
                     // Otherwise just take the first available price
-                    basePrice = room.pricingList[0].basePrice;
+                    basePrice = room.dailypricing[0].basePrice;
                 }
             }
 
-            const { pricingList, ...rest } = room;
+            const { dailypricing, roomimage, roomamenity, ...rest } = room;
             return {
                 ...rest,
-                basePrice: Math.round(basePrice * 100) / 100
+                basePrice: Math.round(basePrice * 100) / 100,
+                images: roomimage,
+                amenities: roomamenity
             };
         });
     }
@@ -129,20 +134,20 @@ class RoomService {
         const checkInDate = checkIn ? new Date(checkIn + 'T00:00:00.000Z') : null;
         const checkOutDate = checkOut ? new Date(checkOut + 'T00:00:00.000Z') : null;
 
-        const room = await prisma.roomType.findFirst({
+        const room = await prisma.roomtype.findFirst({
             where: { id: roomId, hotelId },
             include: {
-                images: { orderBy: { order: 'asc' } },
-                roomAmenities: true,
+                roomimage: { orderBy: { order: 'asc' } },
+                roomamenity: true,
                 hotel: {
                     select: {
                         name: true,
                         city: true,
                         address: true,
-                        images: { take: 1, orderBy: { order: 'asc' } }
+                        hotelimage: { take: 1, orderBy: { order: 'asc' } }
                     }
                 },
-                pricingList: {
+                dailypricing: {
                     where: checkInDate && checkOutDate ? {
                         date: {
                             gte: checkInDate,
@@ -159,19 +164,21 @@ class RoomService {
         if (!room) throw ApiError.notFound('Room not found');
 
         let basePrice = room.basePrice || 0;
-        if (room.pricingList && room.pricingList.length > 0) {
+        if (room.dailypricing && room.dailypricing.length > 0) {
             if (checkIn && checkOut) {
-                const sum = room.pricingList.reduce((acc, p) => acc + p.basePrice, 0);
-                basePrice = sum / room.pricingList.length;
+                const sum = room.dailypricing.reduce((acc, p) => acc + p.basePrice, 0);
+                basePrice = sum / room.dailypricing.length;
             } else {
-                basePrice = room.pricingList[0].basePrice;
+                basePrice = room.dailypricing[0].basePrice;
             }
         }
 
-        const { pricingList, ...rest } = room;
+        const { dailypricing, roomimage, roomamenity, ...rest } = room;
         return {
             ...rest,
-            basePrice: Math.round(basePrice * 100) / 100
+            basePrice: Math.round(basePrice * 100) / 100,
+            images: roomimage,
+            amenities: roomamenity
         };
     }
 
@@ -180,7 +187,7 @@ class RoomService {
      */
     async updateRoomType(hotelId, roomId, vendorId, data) {
         // Ownership cascading check
-        const room = await prisma.roomType.findFirst({
+        const room = await prisma.roomtype.findFirst({
             where: { id: roomId, hotelId },
             include: { hotel: true }
         });
@@ -190,7 +197,7 @@ class RoomService {
 
         const { images, amenities, basePrice, category, ...roomData } = data;
 
-        const updated = await prisma.roomType.update({
+        const updated = await prisma.roomtype.update({
             where: { id: roomId },
             data: {
                 ...roomData,
@@ -209,7 +216,7 @@ class RoomService {
             endDate.setDate(today.getDate() + 30);
 
             // 1. Delete existing records for the range to avoid unique constraint issues
-            await prisma.dailyPricing.deleteMany({
+            await prisma.dailypricing.deleteMany({
                 where: {
                     roomTypeId: roomId,
                     date: {
@@ -225,13 +232,14 @@ class RoomService {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 pricingData.push({
+                    id: crypto.randomUUID(),
                     roomTypeId: roomId,
                     date: d,
                     basePrice: parsedPrice
                 });
             }
             
-            await prisma.dailyPricing.createMany({
+            await prisma.dailypricing.createMany({
                 data: pricingData,
                 skipDuplicates: true
             });
@@ -239,20 +247,21 @@ class RoomService {
 
         // Sync Images
         if (images !== undefined) {
-            await prisma.roomImage.deleteMany({ where: { roomTypeId: roomId } });
+            await prisma.roomimage.deleteMany({ where: { roomTypeId: roomId } });
             if (images.length > 0) {
-                await prisma.roomImage.createMany({
-                    data: images.map((url, index) => ({ roomTypeId: roomId, url, order: index }))
+                await prisma.roomimage.createMany({
+                    data: images.map((url, index) => ({ id: crypto.randomUUID(), roomTypeId: roomId, url, order: index }))
                 });
             }
         }
 
         // Sync Amenities
         if (amenities !== undefined) {
-            await prisma.roomAmenity.deleteMany({ where: { roomTypeId: roomId } });
+            await prisma.roomamenity.deleteMany({ where: { roomTypeId: roomId } });
             if (amenities.length > 0) {
-                await prisma.roomAmenity.createMany({
+                await prisma.roomamenity.createMany({
                     data: amenities.map(item => ({
+                        id: crypto.randomUUID(),
                         roomTypeId: roomId,
                         amenityName: typeof item === 'string' ? item : item.name,
                         category: typeof item === 'string' ? 'General' : (item.category || 'General')
@@ -262,9 +271,9 @@ class RoomService {
         }
 
         // Fetch complete object with relations
-        const fullRoom = await prisma.roomType.findUnique({
+        const fullRoom = await prisma.roomtype.findUnique({
             where: { id: roomId },
-            include: { images: true, roomAmenities: true }
+            include: { roomimage: true, roomamenity: true }
         });
 
         // Event trigger if we dropped inventory drastically
@@ -275,11 +284,12 @@ class RoomService {
         // Trigger snapshot update
         hotelEvents.emit(ROOM_TYPE_UPDATED, { hotelId, roomId });
 
-        return fullRoom;
+        const { roomimage, roomamenity, ...rest } = fullRoom;
+        return { ...rest, images: roomimage, amenities: roomamenity };
     }
 
     async deleteRoomType(hotelId, roomId, vendorId) {
-        const room = await prisma.roomType.findFirst({
+        const room = await prisma.roomtype.findFirst({
             where: { id: roomId, hotelId },
             include: { hotel: true }
         });
@@ -287,7 +297,7 @@ class RoomService {
         if (!room) throw ApiError.notFound('Room not found in this hotel');
         if (room.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
-        const result = await prisma.roomType.delete({ where: { id: roomId } });
+        const result = await prisma.roomtype.delete({ where: { id: roomId } });
 
         // Trigger snapshot update
         hotelEvents.emit(ROOM_TYPE_DELETED, { hotelId, roomId });
@@ -308,12 +318,12 @@ class RoomService {
 
         return prisma.room.findMany({
             where: {
-                roomType: { hotelId },
+                roomtype: { hotelId },
                 ...(status && { status }),
                 ...(roomTypeId && { roomTypeId }),
                 ...(floor && { floor: floor.toString() })
             },
-            include: { roomType: true },
+            include: { roomtype: true },
             orderBy: [{ floor: 'asc' }, { roomNumber: 'asc' }]
         });
     }
@@ -325,12 +335,13 @@ class RoomService {
 
         const { roomTypeId, roomNumber, floor } = data;
 
-        // Verify roomType belongs to this hotel
-        const rt = await prisma.roomType.findUnique({ where: { id: roomTypeId } });
+        // Verify roomtype belongs to this hotel
+        const rt = await prisma.roomtype.findUnique({ where: { id: roomTypeId } });
         if (!rt || rt.hotelId !== hotelId) throw ApiError.badRequest('Invalid Room Type for this hotel');
 
         const result = await prisma.room.create({
             data: {
+                id: crypto.randomUUID(),
                 roomNumber,
                 floor,
                 roomTypeId,
@@ -347,11 +358,11 @@ class RoomService {
     async updatePhysicalRoomStatus(hotelId, roomId, vendorId, data) {
         const room = await prisma.room.findUnique({
             where: { id: roomId },
-            include: { roomType: { include: { hotel: true } } }
+            include: { roomtype: { include: { hotel: true } } }
         });
 
-        if (!room || room.roomType.hotelId !== hotelId) throw ApiError.notFound('Room not found');
-        if (room.roomType.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
+        if (!room || room.roomtype.hotelId !== hotelId) throw ApiError.notFound('Room not found');
+        if (room.roomtype.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
         const updateData = { ...data };
 
@@ -374,11 +385,11 @@ class RoomService {
     async deletePhysicalRoom(hotelId, roomId, vendorId) {
         const room = await prisma.room.findUnique({
             where: { id: roomId },
-            include: { roomType: { include: { hotel: true } } }
+            include: { roomtype: { include: { hotel: true } } }
         });
 
-        if (!room || room.roomType.hotelId !== hotelId) throw ApiError.notFound('Room not found');
-        if (room.roomType.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
+        if (!room || room.roomtype.hotelId !== hotelId) throw ApiError.notFound('Room not found');
+        if (room.roomtype.hotel.ownerId !== vendorId) throw ApiError.forbidden('Unauthorized');
 
         const result = await prisma.room.delete({ where: { id: roomId } });
 
@@ -395,13 +406,14 @@ class RoomService {
 
         const { roomTypeId, floor, startNumber, endNumber, prefix = '' } = data;
 
-        // Verify roomType belongs to this hotel
-        const rt = await prisma.roomType.findUnique({ where: { id: roomTypeId } });
+        // Verify roomtype belongs to this hotel
+        const rt = await prisma.roomtype.findUnique({ where: { id: roomTypeId } });
         if (!rt || rt.hotelId !== hotelId) throw ApiError.badRequest('Invalid Room Type for this hotel');
 
         const roomsToCreate = [];
         for (let i = startNumber; i <= endNumber; i++) {
             roomsToCreate.push({
+                id: crypto.randomUUID(),
                 roomNumber: `${prefix}${i}`,
                 floor: floor?.toString() || null,
                 roomTypeId: roomTypeId,

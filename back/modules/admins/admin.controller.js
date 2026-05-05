@@ -12,7 +12,7 @@ export const getAllUsers = async (req, res, next) => {
         isBanned: true,
         isApproved: true,
         createdAt: true,
-        vendorProfile: true,
+        vendorprofile: true,
         _count: {
           select: {
             hotels: true,
@@ -253,7 +253,7 @@ export const getAllBookings = async (req, res, next) => {
             include: {
                 user: { select: { email: true } },
                 hotel: { select: { name: true } },
-                Tour: { select: { name: true } }
+                tour: { select: { name: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -271,11 +271,11 @@ export const getBookingDetails = async (req, res, next) => {
             where: { id: req.params.id },
             include: {
                 user: { select: { email: true, phone: true } },
-                items: true,
-                guests: true,
-                auditLogs: true,
+                bookingitem: true,
+                guest: true,
+                bookingauditlog: true,
                 hotel: { select: { name: true, address: true } },
-                Tour: { select: { name: true } }
+                tour: { select: { name: true } }
             }
         });
 
@@ -298,7 +298,7 @@ export const updateBookingStatus = async (req, res, next) => {
                 data: { status }
             });
 
-            await tx.bookingAuditLog.create({
+            await tx.bookingauditlog.create({
                 data: {
                     bookingId,
                     action: `STATUS_CHANGE_TO_${status.toUpperCase()}`,

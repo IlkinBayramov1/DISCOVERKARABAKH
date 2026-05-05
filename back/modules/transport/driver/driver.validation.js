@@ -5,11 +5,19 @@ export const registerDriverSchema = Joi.object({
     lastName: Joi.string().required(),
     phone: Joi.string().required(),
     licenseNumber: Joi.string().required(),
-    licenseImages: Joi.array().items(Joi.string().uri()).optional(), // URLs
+    licenseImages: Joi.array().items(Joi.string().uri()).optional(),
     idCardImages: Joi.array().items(Joi.string().uri()).optional(),
-    managedById: Joi.string().uuid().optional(), // If they know their vendor
-    
+    managedById: Joi.string().uuid().optional(),
     driverType: Joi.string().valid('passenger', 'cargo').required()
+});
+
+export const createDriverSchema = Joi.object({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).optional(),
+    phone: Joi.string().required(),
+    licenseNumber: Joi.string().required()
 });
 
 export const updateStatusSchema = Joi.object({

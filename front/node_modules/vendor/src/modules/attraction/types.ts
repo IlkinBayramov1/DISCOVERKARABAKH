@@ -56,6 +56,7 @@ export interface Attraction {
     crowdLevel: 'low' | 'medium' | 'high';
     audioUrl?: string;
     virtualTourUrl?: string;
+    googleMapsUrl?: string;
     searchKeywords?: string;
     isFeatured: boolean;
     status: 'active' | 'closed' | 'maintenance';

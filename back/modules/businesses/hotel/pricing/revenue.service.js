@@ -1,13 +1,16 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
+import crypto from 'crypto';
 
 class RevenueService {
     async createRule(hotelId, data) {
         const sanitized = this._sanitizeData(data);
-        return prisma.pricingRule.create({
+        return prisma.pricingrule.create({
             data: {
+                id: crypto.randomUUID(),
                 ...sanitized,
-                hotelId
+                hotelId,
+                updatedAt: new Date()
             }
         });
     }
@@ -25,28 +28,31 @@ class RevenueService {
             where.isActive = true;
         }
 
-        return prisma.pricingRule.findMany({
+        return prisma.pricingrule.findMany({
             where,
             orderBy: { priority: 'desc' }
         });
     }
 
     async updateRule(ruleId, hotelId, data) {
-        const rule = await prisma.pricingRule.findUnique({ where: { id: ruleId } });
+        const rule = await prisma.pricingrule.findUnique({ where: { id: ruleId } });
         if (!rule || rule.hotelId !== hotelId) throw ApiError.notFound('Rule not found');
 
         const sanitized = this._sanitizeData(data);
-        return prisma.pricingRule.update({
+        return prisma.pricingrule.update({
             where: { id: ruleId },
-            data: sanitized
+            data: {
+                ...sanitized,
+                updatedAt: new Date()
+            }
         });
     }
 
     async deleteRule(ruleId, hotelId) {
-        const rule = await prisma.pricingRule.findUnique({ where: { id: ruleId } });
+        const rule = await prisma.pricingrule.findUnique({ where: { id: ruleId } });
         if (!rule || rule.hotelId !== hotelId) throw ApiError.notFound('Rule not found');
 
-        return prisma.pricingRule.delete({ where: { id: ruleId } });
+        return prisma.pricingrule.delete({ where: { id: ruleId } });
     }
 
     /**

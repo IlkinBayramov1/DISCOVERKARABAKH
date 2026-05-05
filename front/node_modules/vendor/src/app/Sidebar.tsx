@@ -39,19 +39,19 @@ export default function Sidebar() {
 
     const getActiveModule = (): ModuleType => {
         const path = location.pathname;
-        
+
         if (path.startsWith('/attractions')) return 'attraction';
         if (path.startsWith('/tours')) return 'tour';
         if (path.startsWith('/transport')) return 'transport';
         if (path.startsWith('/hotel')) return 'hotel';
-        
+
         const storedCategory = getVendorCategory()?.toLowerCase();
         if (storedCategory === 'attraction') return 'attraction';
         if (storedCategory === 'tour') return 'tour';
         if (storedCategory === 'transport') return 'transport';
         if (storedCategory === 'hotel') return 'hotel';
 
-        return 'hotel'; 
+        return 'hotel';
     };
 
     const activeModule = getActiveModule();
@@ -174,9 +174,9 @@ export default function Sidebar() {
                                         <li key={route.path}>
                                             <NavLink
                                                 to={route.path}
-                                                className={({ isActive }) => 
+                                                className={({ isActive }) =>
                                                     isActive || (route.path !== '/attractions' && location.pathname.includes(route.path))
-                                                        ? 'dk-sidebar-link active' 
+                                                        ? 'dk-sidebar-link active'
                                                         : 'dk-sidebar-link'
                                                 }
                                             >

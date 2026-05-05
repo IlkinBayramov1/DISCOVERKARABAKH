@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     Plus, X, UploadCloud, MapPin, Clock,
@@ -10,7 +10,10 @@ import { useAttractionCategories } from '../../hooks/useAttractionCategories';
 import type { AttractionImage, AttractionImageType } from '../../types';
 import './ManageAttractionPage.css';
 
-const CITIES = ['Shusha', 'Lachin', 'Khankendi', 'Aghdam', 'Kalbajar', 'Fuzuli'];
+// Leaflet types (partial)
+declare const L: any;
+
+const CITIES = ['Shusha', 'Lachin', 'Khankendi', 'Aghdam'];
 
 export default function ManageAttractionPage() {
     const { id } = useParams<{ id: string }>();
@@ -34,6 +37,7 @@ export default function ManageAttractionPage() {
         latitude: '39.76',
         longitude: '46.74',
         virtualTourUrl: '',
+        googleMapsUrl: '',
         searchKeywords: ''
     });
 
@@ -84,6 +88,7 @@ export default function ManageAttractionPage() {
                     latitude: attr.latitude?.toString() || '39.76',
                     longitude: attr.longitude?.toString() || '46.74',
                     virtualTourUrl: attr.virtualTourUrl || '',
+                    googleMapsUrl: attr.googleMapsUrl || '',
                     searchKeywords: attr.searchKeywords || ''
                 });
                 setImages(attr.images || []);
@@ -109,6 +114,178 @@ export default function ManageAttractionPage() {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
+
+    const parseGoogleMapsLink = (url: string) => {
+        try {
+            // Pattern 1: !3d39.758!4d46.742 (Internal Google format - HIGHEST PRECISION)
+            const internalMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            if (internalMatch) {
+                return { lat: internalMatch[1], lng: internalMatch[2] };
+            }
+
+            // Pattern 2: @39.758,46.742 (Camera center - lower precision for a point)
+            const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (atMatch) {
+                return { lat: atMatch[1], lng: atMatch[2] };
+            }
+
+            // Pattern 3: q=39.758,46.742
+            const qMatch = url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (qMatch) {
+                return { lat: qMatch[1], lng: qMatch[2] };
+            }
+
+            // Pattern 4: Search results /place/Name/@39.758,46.742
+            const placeMatch = url.match(/\/place\/[^/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (placeMatch) {
+                return { lat: placeMatch[1], lng: placeMatch[2] };
+            }
+
+            // Pattern 5: Simple comma separated fallback
+            const simpleMatch = url.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+            if (simpleMatch && !url.includes('goo.gl') && !url.includes('maps.app.goo.gl')) {
+                return { lat: simpleMatch[1], lng: simpleMatch[2] };
+            }
+
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const handleMapLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setFormData(prev => ({ ...prev, googleMapsUrl: url }));
+    };
+
+    const handleApplyMapLink = (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        const url = formData.googleMapsUrl;
+        if (!url) return;
+
+        const coords = parseGoogleMapsLink(url);
+        if (coords) {
+            setFormData(prev => ({
+                ...prev,
+                latitude: coords.lat,
+                longitude: coords.lng
+            }));
+            
+            // Zoom in very close (level 18) for pinpoint accuracy verification
+            if (mapRef.current) {
+                mapRef.current.setView([parseFloat(coords.lat), parseFloat(coords.lng)], 18);
+            }
+
+            alert("Dəqiq koordinatlar çıxarıldı və xəritə həmin nöqtəyə fokuslandı.");
+        } else {
+            alert("Xəritə linki anlaşılamadı. Zəhmət olmasa düzgün Google Maps linki daxil edin.");
+        }
+    };
+
+    const mapRef = useRef<any>(null);
+    const markerRef = useRef<any>(null);
+
+    // MAP PICKER LOGIC
+    useEffect(() => {
+        // Load Leaflet CSS
+        if (!document.getElementById('leaflet-css')) {
+            const link = document.createElement('link');
+            link.id = 'leaflet-css';
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+        }
+
+        // Load Leaflet JS
+        if (!document.getElementById('leaflet-js')) {
+            const script = document.createElement('script');
+            script.id = 'leaflet-js';
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.async = true;
+            script.onload = () => initMap();
+            document.body.appendChild(script);
+        } else {
+            initMap();
+        }
+
+        function initMap() {
+            if (typeof L === 'undefined') return;
+            
+            const mapContainer = document.getElementById('map-picker');
+            if (!mapContainer || mapContainer.innerHTML !== "") return;
+
+            const initialLat = parseFloat(formData.latitude) || 39.758;
+            const initialLng = parseFloat(formData.longitude) || 46.742;
+
+            // Define Layers
+            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            });
+
+            const satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                attribution: '© Google'
+            });
+
+            const map = L.map('map-picker', {
+                center: [initialLat, initialLng],
+                zoom: 15,
+                layers: [osm]
+            });
+            mapRef.current = map;
+
+            const baseMaps = {
+                "Standart": osm,
+                "Peyk (Satellite)": satellite
+            };
+
+            L.control.layers(baseMaps).addTo(map);
+
+            const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+            markerRef.current = marker;
+
+            const updateCoords = (lat: number, lng: number) => {
+                setFormData(prev => ({
+                    ...prev,
+                    latitude: lat.toFixed(6),
+                    longitude: lng.toFixed(6)
+                }));
+            };
+
+            map.on('click', (e: any) => {
+                const { lat, lng } = e.latlng;
+                marker.setLatLng([lat, lng]);
+                updateCoords(lat, lng);
+            });
+
+            marker.on('dragend', (e: any) => {
+                const { lat, lng } = e.target.getLatLng();
+                updateCoords(lat, lng);
+            });
+        }
+
+        return () => {
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
+        };
+    }, [isLoading]);
+
+    // Update map when coordinates change (from link or manual)
+    useEffect(() => {
+        if (mapRef.current && markerRef.current) {
+            const lat = parseFloat(formData.latitude);
+            const lng = parseFloat(formData.longitude);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const currentCenter = mapRef.current.getCenter();
+                if (currentCenter.lat !== lat || currentCenter.lng !== lng) {
+                    mapRef.current.setView([lat, lng], mapRef.current.getZoom());
+                    markerRef.current.setLatLng([lat, lng]);
+                }
+            }
+        }
+    }, [formData.latitude, formData.longitude]);
 
     const handleAddKeyword = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && keywordInput.trim()) {
@@ -334,14 +511,35 @@ export default function ManageAttractionPage() {
                             )}
                         </div>
 
-                        <div className="dk-grid-2 mt-5">
-                            <div className="dk-input-group">
-                                <label>Enlik (Latitude)</label>
-                                <input type="number" step="any" name="latitude" className="dk-input" value={formData.latitude} onChange={handleChange} />
+                        <div className="dk-input-group mt-5">
+                            <label>Google Maps Linki (Koordinatları avtomatik çıxarmaq üçün)</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="text" 
+                                    className="dk-input flex-1" 
+                                    name="googleMapsUrl"
+                                    value={formData.googleMapsUrl} 
+                                    onChange={handleMapLinkChange}
+                                    placeholder="https://www.google.com/maps/place/..."
+                                />
+                                <button 
+                                    type="button" 
+                                    className="dk-btn-secondary" 
+                                    onClick={handleApplyMapLink}
+                                    style={{ whiteSpace: 'nowrap' }}
+                                >
+                                    Tətbiq Et
+                                </button>
                             </div>
-                            <div className="dk-input-group">
-                                <label>Uzunluq (Longitude)</label>
-                                <input type="number" step="any" name="longitude" className="dk-input" value={formData.longitude} onChange={handleChange} />
+                            <p className="text-xs text-slate-500 mt-1">Google Maps-dən götürdüyünüz linki bura yapışdırın və "Tətbiq Et" düyməsinə basın.</p>
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="mb-2 block text-sm font-medium">Məkanın Xəritədə Mövqeyi</label>
+                            <div id="map-picker" style={{ height: '300px', borderRadius: '12px', border: '1px solid #ddd', zIndex: 1 }}></div>
+                            <div className="flex gap-4 mt-2">
+                                <div className="text-xs text-slate-500">Lat: <span className="font-mono">{formData.latitude}</span></div>
+                                <div className="text-xs text-slate-500">Lng: <span className="font-mono">{formData.longitude}</span></div>
                             </div>
                         </div>
                     </div>
