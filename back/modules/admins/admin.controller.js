@@ -15,10 +15,10 @@ export const getAllUsers = async (req, res, next) => {
         vendorprofile: true,
         _count: {
           select: {
-            hotels: true,
-            restaurants: true,
-            tours: true,
-            vehicles: true
+            hotel: true,
+            restaurant: true,
+            tour: true,
+            vehicle: true
           }
         }
       }
@@ -117,15 +117,17 @@ export const getPendingBusinesses = async (req, res, next) => {
             include: { owner: { select: { email: true, phone: true } } }
         });
 
-        // Add Tour, Event, Attractions here when they get 'status' fields in Prisma
-        // const tours = [] ...
+        const tours = await prisma.tour.findMany({
+            where: { status: 'pending' },
+            include: { user: { select: { email: true, phone: true } } }
+        });
 
         res.status(200).json({
             success: true,
             data: {
                 hotels,
                 restaurants,
-                tours: [] // Placeholder until DB is migrated
+                tours
             }
         });
     } catch (error) {
@@ -193,6 +195,8 @@ export const approveBusiness = async (req, res, next) => {
             updated = await prisma.hotel.update({ where: { id }, data: { status: 'active' } });
         } else if (type === 'restaurant') {
             updated = await prisma.restaurant.update({ where: { id }, data: { status: 'active' } });
+        } else if (type === 'tour') {
+            updated = await prisma.tour.update({ where: { id }, data: { status: 'active' } });
         } else {
             throw ApiError.badRequest('Unknown business type for approval');
         }
@@ -217,6 +221,8 @@ export const rejectBusiness = async (req, res, next) => {
             updated = await prisma.hotel.update({ where: { id }, data: { status: 'rejected' } });
         } else if (type === 'restaurant') {
             updated = await prisma.restaurant.update({ where: { id }, data: { status: 'rejected' } });
+        } else if (type === 'tour') {
+            updated = await prisma.tour.update({ where: { id }, data: { status: 'rejected' } });
         } else {
             throw ApiError.badRequest('Unknown business type for rejection');
         }

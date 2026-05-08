@@ -3,6 +3,7 @@ import { hashPassword, comparePassword } from '../../utils/hash.util.js';
 import { signToken } from '../../utils/jwt.util.js';
 import { ApiError } from '../../core/api.error.js';
 import prisma from '../../config/db.js'; // Direct prisma access for transactions
+import crypto from 'crypto';
 
 const ROLE_PERMISSIONS = {
   tourist: [
@@ -41,15 +42,19 @@ class AuthService {
 
     // Transaction to create User + Profile
     const result = await prisma.$transaction(async (tx) => {
+      const userId = crypto.randomUUID();
+
       // 1. Create Base User
       const user = await tx.user.create({
         data: {
+          id: userId,
           email,
           password: hashedPassword,
           role: role || 'user',
           firstName,
           lastName,
           isApproved: role !== 'vendor', // Vendors need approval
+          updatedAt: new Date()
         },
       });
 
@@ -60,6 +65,7 @@ class AuthService {
 
         await tx.vendorprofile.create({
           data: {
+            id: crypto.randomUUID(),
             userId: user.id,
             companyName,
             category
@@ -68,12 +74,23 @@ class AuthService {
       } else if (role === 'tourist') {
         const { nationality, passportNumber, interests } = data;
         await tx.touristprofile.create({
-          data: { userId: user.id, nationality, passportNumber, interests }
+          data: { 
+            id: crypto.randomUUID(),
+            userId: user.id, 
+            nationality, 
+            passportNumber, 
+            interests 
+          }
         });
       } else if (role === 'resident') {
         const { permitNumber, localAddress } = data;
         await tx.residentprofile.create({
-          data: { userId: user.id, permitNumber, localAddress }
+          data: { 
+            id: crypto.randomUUID(),
+            userId: user.id, 
+            permitNumber, 
+            localAddress 
+          }
         });
       }
 
