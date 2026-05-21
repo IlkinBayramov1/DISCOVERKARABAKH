@@ -1,0 +1,190 @@
+openapi: 3.0.0
+info:
+  title: Hotel Core API
+  version: 1.0.0
+  description: Core APIs for searching and managing Hotels.
+
+paths:
+  /hotels/validate-coupon:
+    post:
+      summary: Validate a coupon code
+      tags: [Hotel]
+      description: Check if a coupon is valid for a specific booking amount and return discount details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, total]
+              properties:
+                code: { type: string, example: "KARABAKH2024" }
+                total: { type: number, example: 100 }
+                hotelId: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Coupon validation result
+          content:
+            application/json:
+              schema: { $ref: './schemas.yaml#/components/schemas/CouponValidation' }
+        '400':
+          description: Invalid or expired coupon code
+
+  /hotels:
+    get:
+      summary: Advanced Hotel Search
+      tags: [Hotel]
+      description: Search hotels by city, rating, price, amenities, and real-time availability.
+      parameters:
+        - name: checkIn
+          in: query
+          description: "Check-in date (YYYY-MM-DD). If provided with checkOut, enables real-time availability filtering."
+          schema: { type: string, format: date }
+        - name: checkOut
+          in: query
+          description: "Check-out date (YYYY-MM-DD)."
+          schema: { type: string, format: date }
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          description: Search by hotel name
+          schema: { type: string }
+        - name: starRating
+          in: query
+          description: Minimum star rating (1-5)
+          schema: { type: integer, minimum: 1, maximum: 5 }
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+        - name: amenityNames
+          in: query
+          description: "Vergul ilə ayrılmış amenity siyahısı (Məs: 'Pool,WiFi')."
+          schema: { type: string }
+        - name: lat
+          in: query
+          description: "Geospatial axtarış üçün enlik (Latitude)"
+          schema: { type: number }
+        - name: lng
+          in: query
+          description: "Geospatial axtarış üçün uzunluq (Longitude)"
+          schema: { type: number }
+        - name: radiusKm
+          in: query
+          description: "Axtarış radiusu (KM ilə). Defolt: 10 KM"
+          schema: { type: number, default: 10 }
+        - name: sortBy
+          in: query
+          description: "Sıralama meyarı"
+          schema:
+            type: string
+            enum: [price_asc, price_desc, rating_desc, recommended]
+      responses:
+        '200':
+          description: List of hotels matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: './schemas.yaml#/components/schemas/Hotel' }
+    post:
+      summary: Create a new hotel
+      tags: [Hotel]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/HotelCreate' }
+      responses:
+        '201':
+          description: Hotel created successfully and pending approval
+          content:
+            application/json:
+              schema: { $ref: './schemas.yaml#/components/schemas/Hotel' }
+
+  /hotels/vendor/my-hotels:
+    get:
+      summary: Get all hotels owned by the current vendor
+      tags: [Vendor]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of vendor's hotels
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: './schemas.yaml#/components/schemas/Hotel' }
+
+  /hotels/vendor/my-rooms:
+    get:
+      summary: Get all room types owned by the current vendor
+      tags: [Vendor]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of vendor's room types
+
+  /hotels/vendor/reviews:
+    get:
+      summary: Get all reviews for vendor's hotels
+      tags: [Vendor]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of reviews
+
+  /hotels/{id}:
+    get:
+      summary: Get hotel details
+      tags: [Hotel]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Detailed hotel information including room types
+          content:
+            application/json:
+              schema: { $ref: './schemas.yaml#/components/schemas/Hotel' }
+    put:
+      summary: Update a hotel
+      tags: [Hotel]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/HotelUpdate' }
+      responses:
+        '200':
+          description: Hotel updated successfully
+    delete:
+      summary: Delete a hotel
+      tags: [Hotel]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Hotel deleted successfully

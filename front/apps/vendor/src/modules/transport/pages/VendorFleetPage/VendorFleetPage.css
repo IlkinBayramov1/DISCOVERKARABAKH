@@ -1,0 +1,410 @@
+/* ============================================
+   ULTRA PREMIUM VENDOR FLEET CSS
+   ============================================ */
+:root {
+    --vk-primary: #6a28c7;
+    --vk-primary-hover: #561eb0;
+    --vk-accent: #9d65eb;
+    --vk-bg-main: #f8fafc;
+    --vk-card-bg: #ffffff;
+    --vk-border: #e2e8f0;
+    --vk-text-dark: #0f172a;
+    --vk-text-muted: #64748b;
+    --vk-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --vk-shadow-md: 0 10px 25px -5px rgba(106, 40, 199, 0.15);
+    --vk-radius-lg: 16px;
+    --vk-radius-md: 12px;
+}
+
+.dk-vendor-page {
+    padding: 32px;
+    background: var(--vk-bg-main);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--vk-text-dark);
+}
+
+/* ============================================
+   PAGE HEADER
+   ============================================ */
+.dk-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-text h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+}
+
+.header-text p {
+    color: var(--vk-text-muted);
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Primary Button */
+.dk-btn-primary {
+    background: linear-gradient(135deg, var(--vk-primary) 0%, var(--vk-accent) 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: var(--vk-shadow-md);
+    transition: all 0.3s ease;
+}
+
+.dk-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(106, 40, 199, 0.3);
+}
+
+.dk-btn-outline {
+    background: transparent;
+    color: var(--vk-primary);
+    border: 2px solid var(--vk-primary);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dk-btn-outline:hover {
+    background: var(--vk-primary);
+    color: white;
+}
+
+/* ============================================
+   SEGMENTED TABS
+   ============================================ */
+.dk-tabs-wrapper {
+    margin-bottom: 24px;
+}
+
+.dk-segmented-control {
+    display: inline-flex;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 14px;
+}
+
+.segment-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vk-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.segment-btn.active {
+    background: var(--vk-card-bg);
+    color: var(--vk-text-dark);
+    box-shadow: var(--vk-shadow-sm);
+}
+
+.segment-btn:hover:not(.active) {
+    color: var(--vk-text-dark);
+}
+
+/* ============================================
+   DATA TABLE
+   ============================================ */
+.dk-table-card {
+    background: var(--vk-card-bg);
+    border-radius: var(--vk-radius-lg);
+    border: 1px solid var(--vk-border);
+    overflow: hidden;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dk-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.dk-data-table th {
+    background: #f8fafc;
+    padding: 16px 24px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vk-text-muted);
+    border-bottom: 1px solid var(--vk-border);
+    white-space: nowrap;
+}
+
+.dk-data-table td {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--vk-border);
+    vertical-align: middle;
+}
+
+.dk-data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.dk-data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.dk-data-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Vehicle Cell Layout */
+.vehicle-cell {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.v-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f0efff;
+    color: var(--vk-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.v-icon-box.cargo {
+    background: #fff4e6;
+    color: #ea580c;
+}
+
+.v-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.v-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--vk-text-dark);
+}
+
+/* UI Elements inside table */
+.license-plate {
+    display: inline-block;
+    background: white;
+    border: 2px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace, sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: #1e293b;
+    letter-spacing: 1px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.info-pill {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.info-text {
+    font-size: 14px;
+    color: var(--vk-text-muted);
+}
+
+.info-text strong {
+    color: var(--vk-text-dark);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge.active {
+    background: #dcfce3;
+    color: #166534;
+}
+
+.status-badge.maintenance,
+.status-badge.inactive {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.icon-action-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--vk-text-muted);
+    transition: all 0.2s ease;
+}
+
+.icon-action-btn.edit:hover {
+    background: #f0efff;
+    color: var(--vk-primary);
+    border-color: #d8b4fe;
+}
+
+.icon-action-btn.delete:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+
+/* ============================================
+   STATES (Empty & Loading)
+   ============================================ */
+.dk-loading-state,
+.dk-empty-state {
+    background: var(--vk-card-bg);
+    border-radius: var(--vk-radius-lg);
+    border: 1px dashed #cbd5e1;
+    padding: 60px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dk-loading-state p {
+    margin-top: 16px;
+    font-weight: 600;
+    color: var(--vk-text-muted);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: var(--vk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.empty-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: #f8fafc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    margin-bottom: 24px;
+}
+
+.dk-empty-state h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--vk-text-dark);
+    margin: 0 0 8px 0;
+}
+
+.dk-empty-state p {
+    color: var(--vk-text-muted);
+    max-width: 400px;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   RESPONSIVENESS
+   ============================================ */
+@media (max-width: 768px) {
+    .dk-vendor-page {
+        padding: 20px;
+    }
+
+    .dk-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dk-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dk-segmented-control {
+        width: 100%;
+        display: flex;
+    }
+
+    .segment-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .dk-data-table th,
+    .dk-data-table td {
+        padding: 16px;
+    }
+}

@@ -1,0 +1,389 @@
+/* ============================================================
+   GLOBAL & CONTAINER
+   ============================================================ */
+.explore--articles {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+/* ============================================================
+   HERO (Refined Premium Purple Bloom)
+   ============================================================ */
+.aHero {
+  padding: 24px 0 32px;
+}
+
+.aHero__card {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 480px;
+  background: #f8fafc;
+  box-shadow: 0 24px 50px rgba(106, 40, 199, 0.15);
+}
+
+.aHero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.aHero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Identical Bloom Effect from other Explore pages */
+.aHero__shade {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(900px circle at 20% 30%, rgba(157, 101, 235, 0.45) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20, 10, 40, 0.15) 0%, rgba(38, 15, 75, 0.85) 100%);
+}
+
+.aHero__content {
+  position: relative;
+  z-index: 2;
+  padding: 80px 56px 24px;
+  max-width: 800px;
+}
+
+.aHero__k {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.aHero__t {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-size: clamp(36px, 4.5vw, 64px);
+  line-height: 1.1;
+  text-shadow: 0 12px 30px rgba(20, 10, 40, 0.5);
+}
+
+.aHero__s {
+  margin: 0 0 32px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 600px;
+  text-shadow: 0 4px 15px rgba(20, 10, 40, 0.4);
+}
+
+@media (max-width: 900px) {
+  .aHero__card { border-radius: 24px; min-height: auto; }
+  .aHero__content { padding: 60px 24px 80px; max-width: 100%; }
+}
+
+/* ============================================================
+   FILTER CONTROLS (Pristine White Surface)
+   ============================================================ */
+.aControls {
+  padding: 0 0 24px;
+  margin-top: -64px; /* Pulls the filter bar up to overlap the hero */
+  position: relative;
+  z-index: 10;
+}
+
+.aBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.aBar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aLabel {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 4px;
+}
+
+.aSelect,
+.aSearch {
+  height: 48px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  outline: none;
+  appearance: none;
+}
+
+.aSelect {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.aSearchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.aSearchIcon {
+  position: absolute;
+  left: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.aSearch {
+  padding-left: 44px; /* Space for the search icon */
+}
+
+.aSelect:focus,
+.aSearch:focus {
+  border-color: #6a28c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(106, 40, 199, 0.1);
+}
+
+.aSelect:hover,
+.aSearch:hover {
+  border-color: #cbd5e1;
+}
+
+@media (max-width: 768px) {
+  .aControls { margin-top: 0; padding-top: 24px; }
+  .aBar { grid-template-columns: 1fr; padding: 20px; }
+}
+
+/* ============================================================
+   ARTICLES GRID (Clean Premium Cards)
+   ============================================================ */
+.aGrid {
+  padding: 24px 0 80px;
+}
+
+.ttdMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ttdCount {
+  font-size: 15px;
+  color: #64748b;
+}
+
+.ttdCount strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.aCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.aCard {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.aCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.1);
+  border-color: #ddd6fe;
+}
+
+.aCard__img {
+  height: 220px;
+  overflow: hidden;
+}
+
+.aCard__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.aCard:hover .aCard__img img {
+  transform: scale(1.05);
+}
+
+.aCard__b {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.aCard__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pill--soft {
+  background: #f5f3ff;
+  color: #6a28c7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pill--rate {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* Text */
+.aCard__t {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.aCard__d {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.aCard__meta {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* CTA */
+.aCard__cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6a28c7;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: auto;
+}
+
+.aCard__cta svg {
+  transition: transform 0.2s ease;
+}
+
+.aCard:hover .aCard__cta svg {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .aCards { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.aEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 24px;
+  border: 1px dashed #e2e8f0;
+  margin-top: 24px;
+}
+
+.aEmptyState__icon {
+  color: #cbd5e1;
+  margin-bottom: 24px;
+}
+
+.aEmptyState h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.aEmptyState p {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 32px;
+  max-width: 400px;
+}
+
+.aEmptyState__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(106, 40, 199, 0.2);
+  transition: all 0.2s ease;
+}
+
+.aEmptyState__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(106, 40, 199, 0.3);
+}

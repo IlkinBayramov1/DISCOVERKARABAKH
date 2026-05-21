@@ -1,0 +1,199 @@
+import prisma from '../../../../config/db.js';
+import { ApiError } from '../../../../core/api.error.js';
+
+export class PricingEngine {
+
+    /**
+     * Central Method to execute Real-Estate level Hotel Booking pricing 
+     * Handles DailyPricing lookups, Min/Max Stay length, Tax calculations, and Promotions safely.
+     * 
+     * @param {Object} data 
+     * @param {Array} data.items - [{ roomTypeId, ratePlanId, checkIn, checkOut, adults, children }]
+     */
+    async calculateStayPrice(data) {
+        if (!data.items || data.items.length === 0) {
+            throw ApiError.badRequest('Booking items are required for price calculation');
+        }
+
+        let grossTotal = 0;
+        let nightlyBreakdowns = [];
+
+        // Iterate over requested cart items (Rooms)
+        for (const item of data.items) {
+            const checkInDate = new Date(item.checkIn + 'T00:00:00.000Z');
+            const checkOutDate = new Date(item.checkOut + 'T00:00:00.000Z');
+
+            if (checkInDate >= checkOutDate) {
+                throw ApiError.badRequest('Check-Out must be strictly after Check-In');
+            }
+
+            const totalNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+
+            // Load aggregate DailyPricing for this room across requested sequence
+            const pricingMatrix = await prisma.dailypricing.findMany({
+                where: {
+                    roomTypeId: item.roomTypeId,
+                    date: {
+                        gte: checkInDate,
+                        lt: checkOutDate // Checkout date itself does not accrue strictly.
+                    }
+                },
+                orderBy: { date: 'asc' }
+            });
+
+            // Load availability for occupancy calculation
+            const availabilityMatrix = await prisma.roomavailability.findMany({
+                where: {
+                    roomTypeId: item.roomTypeId,
+                    date: {
+                        gte: checkInDate,
+                        lt: checkOutDate
+                    }
+                }
+            });
+
+            // Load active Pricing Rules for this Hotel/Room
+            const { revenueService } = await import('./revenue.service.js');
+            const activeRules = await revenueService.getRules(data.entityId, item.roomTypeId);
+
+            if (pricingMatrix.length !== totalNights) {
+                throw ApiError.badRequest(`Missing pricing sequence rules for one or more requested dates.`);
+            }
+
+            let itemNightlyLog = [];
+            let itemTotal = 0;
+
+            // Sequential Iteration Validation for MinStays / Arrival Blocks
+            for (let i = 0; i < pricingMatrix.length; i++) {
+                const dayRules = pricingMatrix[i];
+                
+                // Find occupancy data for this specific day
+                const dayAvailability = availabilityMatrix.find(a => 
+                    a.date.toISOString().split('T')[0] === dayRules.date.toISOString().split('T')[0]
+                );
+                
+                let currentOccupancy = 0;
+                if (dayAvailability && dayAvailability.totalRooms > 0) {
+                    currentOccupancy = (dayAvailability.reservedRooms / dayAvailability.totalRooms) * 100;
+                }
+
+                if (i === 0 && dayRules.closedToArrival) {
+                    const dateStr = new Date(dayRules.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    throw ApiError.badRequest(`Check-in is not allowed on ${dateStr} (Closed to Arrival).`);
+                }
+
+                // Closed to departure evaluates only on the last *staying* night or the morning of checkout (depending on hotel policy)
+                // For now, we evaluate it on the last booked night index
+                if (i === pricingMatrix.length - 1 && dayRules.closedToDeparture) {
+                    const dateStr = new Date(checkOutDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    throw ApiError.badRequest(`Check-out is not allowed on ${dateStr} (Closed to Departure).`);
+                }
+
+                if (totalNights < dayRules.minStay) {
+                    throw ApiError.badRequest(`Minimum stay length violation. Requires at least ${dayRules.minStay} nights.`);
+                }
+                if (dayRules.maxStay && totalNights > dayRules.maxStay) {
+                    throw ApiError.badRequest(`Maximum stay length violation. Allowed max is ${dayRules.maxStay} nights.`);
+                }
+
+                // Child / Guest Surcharge Logic placeholder depending on RatePlan limits (Future Scope)
+
+                // Apply Revenue Management Rules
+                const { revenueService: revSvc } = await import('./revenue.service.js');
+                const finalPrice = revSvc.applyRules(dayRules.basePrice, activeRules, dayRules.date, currentOccupancy);
+
+                itemTotal += finalPrice;
+
+                itemNightlyLog.push({
+                    date: dayRules.date,
+                    originalPrice: dayRules.basePrice,
+                    finalPrice: finalPrice,
+                    isAdjusted: finalPrice !== dayRules.basePrice,
+                    occupancyAtBooking: Math.round(currentOccupancy * 10) / 10,
+                    currency: dayRules.currency || 'AZN'
+                });
+            }
+
+            grossTotal += itemTotal;
+
+            nightlyBreakdowns.push({
+                roomTypeId: item.roomTypeId,
+                log: itemNightlyLog,
+                subtotal: itemTotal
+            });
+        }
+
+        // Handle Coupon/Promotion Logic
+        let discountAmount = 0;
+        let appliedPromotion = null;
+        if (data.couponCode) {
+            const { promotionService } = await import('./promotion.service.js');
+            appliedPromotion = await promotionService.validateCoupon(data.couponCode, grossTotal, data.entityId);
+            discountAmount = promotionService.calculateDiscount(grossTotal, appliedPromotion);
+        }
+
+        const totalAfterDiscount = Math.max(0, grossTotal - discountAmount);
+
+        // Apply Global or Hotel bounded Taxes
+        const hotelId = data.entityId; 
+        const applicableTaxes = await prisma.taxrule.findMany({
+            where: {
+                OR: [
+                    { hotelId: hotelId },
+                    { hotelId: null }
+                ]
+            }
+        });
+
+        // Get total guest count and nights for specific tax types
+        const totalGuests = data.items.reduce((sum, item) => sum + (item.adults || 0) + (item.children || 0), 0);
+        const totalNightsAcrossRooms = data.items.reduce((sum, item) => {
+            const start = new Date(item.checkIn);
+            const end = new Date(item.checkOut);
+            return sum + Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        }, 0);
+
+        let totalTaxes = 0;
+        const mappedTaxes = applicableTaxes.map(tax => {
+            let taxAmount = 0;
+            const type = tax.type.toLowerCase();
+
+            if (type === 'percentage') {
+                taxAmount = totalAfterDiscount * (tax.value / 100);
+            } else if (type === 'fixed_per_stay' || type === 'fixed') {
+                taxAmount = tax.value; 
+            } else if (type === 'fixed_per_night') {
+                taxAmount = tax.value * totalNightsAcrossRooms;
+            } else if (type === 'fixed_per_person_per_night') {
+                taxAmount = tax.value * totalGuests * totalNightsAcrossRooms;
+            }
+
+            totalTaxes += taxAmount;
+            return { 
+                name: tax.name, 
+                type: tax.type,
+                value: tax.value,
+                amount: Math.round(taxAmount * 100) / 100 
+            };
+        });
+
+        const exactTotal = Math.round((totalAfterDiscount + totalTaxes) * 100) / 100;
+
+        return {
+            grossTotal,
+            discountAmount,
+            discountDetails: appliedPromotion ? {
+                id: appliedPromotion.id,
+                code: appliedPromotion.code,
+                name: appliedPromotion.name
+            } : null,
+            totalAfterDiscount,
+            taxes: mappedTaxes,
+            totalTaxes: Math.round(totalTaxes * 100) / 100,
+            exactTotal,
+            breakdowns: nightlyBreakdowns
+        };
+    }
+}
+
+export const pricingEngine = new PricingEngine();

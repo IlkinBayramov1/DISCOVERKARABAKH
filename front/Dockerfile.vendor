@@ -1,0 +1,25 @@
+FROM node:18-alpine
+
+# Step 1: Copy everything and install dependencies at the root
+WORKDIR /app
+COPY . .
+
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+RUN npm install
+
+ENV VITE_BASE_PATH="/"
+
+# Step 2: Navigate directly into the Vendor app folder
+WORKDIR /app/apps/vendor
+
+# Step 3: FORCE Vite to build into a local 'dist' folder, ignoring package.json rules
+RUN npx vite build --outDir ./dist --emptyOutDir
+
+# Step 4: Install serve
+RUN npm install -g serve
+EXPOSE 3000
+
+# Step 5: Serve the exact 'dist' folder we just forced Vite to create
+CMD ["serve", "-s", "dist", "-l", "3000"]

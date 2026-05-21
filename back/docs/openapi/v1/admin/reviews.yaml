@@ -1,0 +1,116 @@
+paths:
+  /admins/reviews:
+    get:
+      tags:
+        - Admin Reviews
+      summary: "Bütün rəyləri siyahılayır"
+      description: "Platformadakı ümumi, otaq və attraction rəylərini tip, status və reytinq üzrə süzgəcdən keçirərək görmək üçün istifadə olunur."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: 'schemas.yaml#/components/schemas/ReviewType'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: 'schemas.yaml#/components/schemas/ReviewStatus'
+        - name: rating
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+      responses:
+        '200':
+          description: "Uğurlu cavab"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas.yaml#/components/schemas/AdminReview'
+        '401':
+          $ref: 'schemas.yaml#/components/responses/UnauthorizedError'
+
+  /admins/reviews/{id}/status:
+    patch:
+      tags:
+        - Admin Reviews
+      summary: "Rəy statusunu yeniləyir"
+      description: "Admin tərəfindən rəyin təsdiqi və ya rədd edilməsi (pending -> approved/rejected)."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, type]
+              properties:
+                status:
+                  $ref: 'schemas.yaml#/components/schemas/ReviewStatus'
+                type:
+                  $ref: 'schemas.yaml#/components/schemas/ReviewType'
+                  description: "Rəyin tipi (general və ya attraction)"
+      responses:
+        '200':
+          description: "Status yeniləndi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminReview'
+        '404':
+          $ref: 'schemas.yaml#/components/responses/NotFoundError'
+
+  /admins/reviews/{id}:
+    delete:
+      tags:
+        - Admin Reviews
+      summary: "Rəyi silir"
+      description: "Qeyri-etik və ya saxta rəylərin tamamilə silinməsi üçün istifadə olunur."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: 'schemas.yaml#/components/schemas/ReviewType'
+      responses:
+        '200':
+          $ref: 'schemas.yaml#/components/schemas/GenericResponse'
+        '404':
+          $ref: 'schemas.yaml#/components/responses/NotFoundError'

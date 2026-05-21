@@ -1,0 +1,157 @@
+paths:
+  /api/v1/transport/cargo/shipments/me:
+    get:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Get My Shipments (Driver specific)
+      description: Returns shipments assigned to the currently authenticated driver.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of shipments
+
+  /api/v1/transport/cargo/shipments/{id}:
+    get:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Retrieve a specific shipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipment details
+
+  /api/v1/transport/cargo/shipments:
+    post:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Create a new shipment
+      description: Clients or Vendors can request a shipment by providing weight and location logistics.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pickupLocation
+                - dropoffLocation
+                - weightKg
+              properties:
+                idempotencyKey:
+                  type: string
+                pickupLocation:
+                  type: object
+                dropoffLocation:
+                  type: object
+                waypoints:
+                  type: array
+                  items:
+                    type: object
+                weightKg:
+                  type: number
+                volumeM3:
+                  type: number
+                dimensions:
+                  type: object
+                  properties:
+                    length:
+                      type: number
+                    width:
+                      type: number
+                    height:
+                      type: number
+                cargoDescription:
+                  type: string
+                isHazardous:
+                  type: boolean
+                requiresRefrigeration:
+                  type: boolean
+                declaredValue:
+                  type: number
+      responses:
+        '201':
+          description: Shipment created with Pending status
+
+    get:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Get all shipments (Admin/Vendor)
+      description: Returns shipments owned by the vendor, or all for admin.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of shipments
+
+  /api/v1/transport/cargo/shipments/{id}/assign:
+    post:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Assign a driver to a shipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cargoVehicleId
+                - driverProfileId
+              properties:
+                cargoVehicleId:
+                  type: string
+                driverProfileId:
+                  type: string
+      responses:
+        '200':
+          description: Shipment assigned successfully
+
+  /api/v1/transport/cargo/shipments/{id}/status:
+    patch:
+      tags:
+        - "[Cargo] Shipments"
+      summary: Advance shipment status
+      description: Drivers, Vendors, and Admins can move the shipment through its lifecycle (e.g., InTransit, Delivered).
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nextStatus
+              properties:
+                nextStatus:
+                  type: string
+                  enum: [DriverAssigned, VehicleArrived, PickedUp, InTransit, AtDropoff, Delivered, Completed, Cancelled, Failed]
+                extraPayload:
+                  type: object
+      responses:
+        '200':
+          description: Shipment status updated

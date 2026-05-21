@@ -1,0 +1,126 @@
+paths:
+  /hotels/{hotelId}/rooms/physical-rooms:
+    get:
+      summary: List all physical rooms in a hotel
+      tags: [Room Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [AVAILABLE, DIRTY, CLEANING, OUT_OF_ORDER] }
+          description: Filter rooms by housekeeping status
+        - name: roomTypeId
+          in: query
+          schema: { type: string }
+          description: Filter rooms by room type
+        - name: floor
+          in: query
+          schema: { type: string }
+          description: Filter rooms by floor number
+      responses:
+        '200':
+          description: List of physical rooms with their current status
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: './schemas.yaml#/components/schemas/PhysicalRoom' }
+    post:
+      summary: Add a new physical room (number/floor) to a room type
+      tags: [Room Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomNumber, roomTypeId]
+              properties:
+                roomNumber: { type: string, example: "101" }
+                floor: { type: string, example: "1" }
+                roomTypeId: { type: string }
+      responses:
+        '201':
+          description: Physical room created successfully
+
+  /hotels/{hotelId}/rooms/physical-rooms/bulk:
+    post:
+      summary: Bulk generate physical rooms (e.g., numbers 101-110)
+      description: Automatically generates a range of rooms for a specific room type and floor. Skips already existing room numbers.
+      tags: [Room Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomTypeId, startNumber, endNumber]
+              properties:
+                roomTypeId: { type: string }
+                floor: { type: string, example: "1" }
+                startNumber: { type: integer, example: 101 }
+                endNumber: { type: integer, example: 110 }
+                prefix: { type: string, example: "A-", description: "Optional prefix for room numbers" }
+      responses:
+        '201':
+          description: Rooms generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer, description: "Number of rooms actually created (skipping duplicates)" }
+
+  /hotels/{hotelId}/rooms/physical-rooms/{roomId}:
+    patch:
+      summary: Update room status or housekeeping notes
+      tags: [Room Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/PhysicalRoomUpdate' }
+      responses:
+        '200':
+          description: Status updated successfully
+    delete:
+      summary: Remove a physical room from the inventory
+      tags: [Room Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Room deleted

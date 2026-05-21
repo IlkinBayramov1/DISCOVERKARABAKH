@@ -1,0 +1,502 @@
+/* ============================================
+   ULTRA PREMIUM PROFILE PAGE CSS
+   ============================================ */
+
+:root {
+    --dk-primary: #6a28c7;
+    --dk-primary-light: #8b4ddb;
+    --dk-accent: #9d65eb;
+    --dk-bg-main: #f8fafc;
+    --dk-card-bg: #ffffff;
+    --dk-text-dark: #0f172a;
+    --dk-text-muted: #64748b;
+    --dk-border: #f1f5f9;
+    --dk-border-darker: #e2e8f0;
+    --dk-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.03);
+    --dk-shadow-md: 0 10px 25px rgba(106, 40, 199, 0.06);
+}
+
+.dk-profile-layout {
+    background: var(--dk-bg-main);
+    min-height: 100vh;
+    padding: 40px 24px 80px 24px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--dk-text-dark);
+}
+
+.dk-profile-container {
+    max-width: 1320px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.dk-profile-header {
+    margin-bottom: 32px;
+}
+
+.dk-title {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--dk-text-dark);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.dk-subtitle {
+    font-size: 16px;
+    color: var(--dk-text-muted);
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ============================================
+   GLOBAL CARD STYLING
+   ============================================ */
+.premium-card {
+    background: var(--dk-card-bg);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: var(--dk-shadow-sm);
+    border: 1px solid var(--dk-border);
+    margin-bottom: 24px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--dk-border);
+}
+
+.card-header h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+    margin: 0;
+}
+
+.header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #f5f3ff;
+    color: var(--dk-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-icon.amber { background: #fffbeb; color: #f59e0b; }
+.header-icon.emerald { background: #ecfdf5; color: #10b981; }
+
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.mt-5 { margin-top: 20px; }
+
+/* ============================================
+   HERO CARD (AVATAR & SUMMARY)
+   ============================================ */
+.dk-profile-hero-card {
+    padding: 40px 32px;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--dk-shadow-md);
+    position: relative;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-initials {
+    font-size: 40px;
+    font-weight: 900;
+    color: white;
+}
+
+.avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-avatar-action {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+}
+
+.btn-avatar-action.add { background: var(--dk-primary); }
+.btn-avatar-action.remove { background: #ef4444; }
+.btn-avatar-action:hover { transform: scale(1.1); }
+
+.user-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.user-info-section h2 {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--dk-text-dark);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.user-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--dk-text-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.role-badge {
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.role-badge.tourist { background: #e0f2fe; color: #2563eb; }
+.role-badge.resident { background: #fef3c7; color: #d97706; }
+
+.hero-action-section {
+    flex-shrink: 0;
+}
+
+.dk-btn-save {
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(106, 40, 199, 0.25);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dk-btn-save:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(106, 40, 199, 0.35);
+}
+
+.dk-btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   GRID & INPUTS
+   ============================================ */
+.dk-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.dk-profile-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.dk-input-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.dk-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.dk-input-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dk-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dk-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dk-primary);
+    pointer-events: none;
+}
+
+.dk-input {
+    background: #f8fafc;
+    border: 1px solid var(--dk-border-darker);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dk-text-dark);
+    font-family: inherit;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+select.dk-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 48px;
+    cursor: pointer;
+}
+
+input[type="date"].dk-input::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+.dk-input.with-icon {
+    padding-left: 44px;
+}
+
+.dk-input::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.dk-input:focus {
+    border-color: var(--dk-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(106, 40, 199, 0.1);
+}
+
+/* ============================================
+   STATUS / ALERTS
+   ============================================ */
+.dk-alert-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f0fdf4;
+    color: #166534;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid #dcfce3;
+}
+
+.dk-profile-loading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--dk-bg-main);
+    color: var(--dk-text-dark);
+    font-weight: 700;
+    font-size: 18px;
+    gap: 20px;
+}
+
+.dk-profile-error-layout {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dk-bg-main);
+}
+
+.dk-alert-error {
+    background: white;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: var(--dk-shadow-md);
+    text-align: center;
+}
+
+.dk-alert-error h2 { color: #ef4444; margin: 0 0 12px 0; }
+.dk-alert-error p { color: var(--dk-text-muted); margin: 0; }
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--dk-border-darker);
+    border-top-color: var(--dk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-small {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--dk-border-darker);
+    border-top-color: var(--dk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-small.white {
+    border-color: rgba(255,255,255,0.3);
+    border-top-color: white;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ULTIMATE RESPONSIVENESS (300px to Infinity)
+   ============================================ */
+
+/* 1. LARGE DESKTOPS & 4K (1440px+) */
+@media (min-width: 1440px) {
+    .dk-profile-container { max-width: 1320px; }
+}
+
+/* 2. STANDARD DESKTOPS (1025px - 1439px) */
+@media (max-width: 1200px) {
+    /* Fluid scaling down */
+}
+
+/* 3. TABLETS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .dk-profile-layout { padding: 32px 16px 80px 16px; }
+    
+    .dk-profile-grid { 
+        grid-template-columns: 1fr; /* Stack cards vertically */
+    }
+}
+
+/* 4. LARGE PHONES & SMALL TABLETS (481px - 768px) */
+@media (max-width: 768px) {
+    .dk-title { font-size: 28px; }
+    .dk-subtitle { font-size: 15px; }
+
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .user-info-section {
+        align-items: center;
+    }
+
+    .hero-action-section {
+        width: 100%;
+    }
+
+    .dk-btn-save {
+        width: 100%;
+    }
+
+    .premium-card {
+        padding: 24px;
+    }
+
+    .dk-input-grid-2 {
+        grid-template-columns: 1fr; /* Stack inputs inside cards */
+    }
+}
+
+/* 5. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .dk-profile-layout { padding: 24px 12px 60px 12px; }
+    
+    .dk-title { font-size: 24px; }
+    
+    .premium-card { padding: 20px; border-radius: 20px; }
+    .dk-profile-hero-card { padding: 32px 20px; }
+
+    .user-info-section h2 { font-size: 24px; }
+    
+    .card-header h3 { font-size: 18px; }
+}
+
+/* 6. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .dk-title { font-size: 20px; }
+    .user-info-section h2 { font-size: 20px; }
+    .dk-input { font-size: 14px; padding: 14px; }
+}

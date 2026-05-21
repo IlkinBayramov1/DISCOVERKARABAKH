@@ -1,0 +1,213 @@
+  /tours:
+    get:
+      tags: [Tours]
+      summary: Get all tours
+      description: Retrieve a paginated list of tours with optional filters.
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [Easy, Medium, Hard, Extreme]
+        - name: isFeatured
+          in: query
+          schema:
+            type: boolean
+        - name: ownerId
+          in: query
+          description: Filter by vendor ID
+          schema:
+            type: string
+            format: uuid
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        200:
+          description: List of tours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  count: { type: integer }
+                  data:
+                    type: array
+                    items:
+                      $ref: './schemas.yaml#/components/schemas/Tour'
+    post:
+      tags: [Tours]
+      summary: Create a new tour
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yaml#/components/schemas/TourCreate'
+      responses:
+        201:
+          description: Tour created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: './schemas.yaml#/components/schemas/Tour'
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+
+  /tours/vendor/my-tours:
+    get:
+      tags: [Tours]
+      summary: Get tours for authenticated vendor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        200:
+          description: List of vendor tours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: './schemas.yaml#/components/schemas/Tour'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden - Not a vendor
+
+  /tours/{id}:
+    get:
+      tags: [Tours]
+      summary: Get tour by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Tour details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: './schemas.yaml#/components/schemas/Tour'
+        404:
+          description: Tour not found
+    put:
+      tags: [Tours]
+      summary: Update a tour
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yaml#/components/schemas/TourUpdate'
+      responses:
+        200:
+          description: Tour updated
+        400:
+          description: Validation error
+        403:
+          description: Forbidden - Not owner or admin
+        404:
+          description: Tour not found
+    delete:
+      tags: [Tours]
+      summary: Delete a tour
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Tour deleted
+        403:
+          description: Forbidden - Not owner or admin
+        404:
+          description: Tour not found
+
+  /tours/slug/{slug}:
+    get:
+      tags: [Tours]
+      summary: Get tour by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Tour details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: './schemas.yaml#/components/schemas/Tour'
+        404:
+          description: Tour not found

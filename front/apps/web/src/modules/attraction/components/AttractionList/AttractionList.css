@@ -1,0 +1,58 @@
+/* AttractionList.css */
+
+.tour-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.skeleton-tour {
+    height: 380px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    border-radius: 24px;
+    animation: loadingPulse 1.5s infinite;
+}
+
+@keyframes loadingPulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.empty-state-premium {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.empty-text {
+    color: var(--text-muted);
+}
+
+.error-premium {
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: 1px solid #fee2e2;
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 1200px) {
+    .tour-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .tour-grid {
+        grid-template-columns: 1fr;
+    }
+}

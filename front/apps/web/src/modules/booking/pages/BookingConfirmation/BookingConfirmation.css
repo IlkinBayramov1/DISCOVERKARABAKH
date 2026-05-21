@@ -1,0 +1,688 @@
+/* ============================================
+   ULTRA PREMIUM BOOKING CONFIRMATION CSS
+   ============================================ */
+
+:root {
+    --dk-primary: #6a28c7;
+    --dk-primary-light: #8b4ddb;
+    --dk-accent: #9d65eb;
+    --dk-bg-main: #f8fafc;
+    --dk-card-bg: #ffffff;
+    --dk-text-dark: #0f172a;
+    --dk-text-muted: #64748b;
+    --dk-border: #f1f5f9;
+    --dk-border-darker: #e2e8f0;
+    --dk-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.03);
+    --dk-shadow-md: 0 10px 25px rgba(106, 40, 199, 0.06);
+    --dk-success: #10b981;
+    --dk-warning: #f59e0b;
+}
+
+.dk-bc-layout {
+    background: var(--dk-bg-main);
+    min-height: 100vh;
+    padding: 40px 24px 80px 24px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--dk-text-dark);
+    display: flex;
+    justify-content: center;
+}
+
+.dk-bc-container {
+    width: 100%;
+    max-width: 800px; /* Receipt-style max width */
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   THE RECEIPT CARD (Paper Effect)
+   ============================================ */
+.dk-bc-receipt-card {
+    background: var(--dk-card-bg);
+    border-radius: 24px;
+    padding: 48px;
+    box-shadow: var(--dk-shadow-md);
+    border: 1px solid var(--dk-border);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Top decorative line for the receipt */
+.dk-bc-receipt-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+}
+
+/* ============================================
+   SUCCESS BANNER
+   ============================================ */
+.dk-bc-success-banner {
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dk-bc-success-banner .banner-icon {
+    color: var(--dk-success);
+    margin-bottom: 16px;
+    background: #d1fae5;
+    border-radius: 50%;
+    padding: 12px;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+}
+
+.dk-bc-success-banner h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--dk-text-dark);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.dk-bc-success-banner p {
+    font-size: 15px;
+    color: var(--dk-text-muted);
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ============================================
+   QR CODE CORNER
+   ============================================ */
+.dk-bc-qr-corner {
+    position: absolute;
+    top: 48px;
+    right: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid var(--dk-border);
+    border-radius: 16px;
+    box-shadow: var(--dk-shadow-sm);
+    z-index: 10;
+}
+
+.dk-bc-qr-corner img {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+}
+
+.dk-bc-qr-corner span {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--dk-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Ensure the success banner doesn't collide with the QR code on desktop */
+.dk-bc-success-banner {
+    padding-top: 10px;
+}
+
+/* ============================================
+   HEADER ROW (Booking ID & Download)
+   ============================================ */
+.dk-bc-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 20px 24px;
+    border-radius: 16px;
+    border: 1px solid var(--dk-border-darker);
+}
+
+.booking-id-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.booking-id-block .label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dk-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.booking-id-block .value {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--dk-primary);
+    letter-spacing: 1px;
+}
+
+.dk-btn-download {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid var(--dk-border-darker);
+    color: var(--dk-text-dark);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--dk-shadow-sm);
+}
+
+.dk-btn-download:hover:not(.disabled) {
+    border-color: var(--dk-primary);
+    color: var(--dk-primary);
+    box-shadow: 0 6px 15px rgba(106, 40, 199, 0.1);
+}
+
+.dk-btn-download.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dk-bc-divider {
+    height: 1px;
+    background: var(--dk-border-darker);
+    border: none;
+    margin: 32px 0;
+}
+
+/* ============================================
+   OVERVIEW SECTION
+   ============================================ */
+.dk-bc-section {
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+    margin: 0 0 24px 0;
+}
+
+.dk-bc-overview-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+}
+
+.property-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.property-info h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+    margin: 0 0 12px 0;
+}
+
+.location-text, .room-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dk-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.location-text svg, .room-text svg {
+    color: var(--dk-primary);
+}
+
+.dk-bc-date-box {
+    background: #f8fafc;
+    border: 1px solid var(--dk-border-darker);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.date-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-divider {
+    height: 1px;
+    background: var(--dk-border-darker);
+}
+
+.date-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dk-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.date-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+}
+
+/* ============================================
+   GUEST BOX
+   ============================================ */
+.dk-bc-guest-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid var(--dk-border-darker);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 24px;
+}
+
+.guest-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.guest-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.guest-details h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+}
+
+.guest-details p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--dk-text-muted);
+    font-weight: 500;
+}
+
+.guest-status .status-pill {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-pill.confirmed, .status-pill.success { background: #dcfce3; color: #166534; }
+.status-pill.pending { background: #fef3c7; color: #b45309; }
+.status-pill.cancelled { background: #fee2e2; color: #991b1b; }
+
+/* ============================================
+   FINANCIAL SUMMARY
+   ============================================ */
+.dk-bc-payment-row {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px dashed var(--dk-border-darker);
+    font-size: 15px;
+}
+
+.pay-label {
+    color: var(--dk-text-muted);
+    font-weight: 600;
+}
+
+.pay-value {
+    font-weight: 700;
+    color: var(--dk-text-dark);
+}
+
+.pay-value.success { color: var(--dk-success); }
+.pay-value.warning { color: var(--dk-warning); }
+
+.dk-bc-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    background: #f8fafc;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid var(--dk-border);
+}
+
+.total-label {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+}
+
+.total-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--dk-primary);
+    line-height: 1;
+}
+
+.total-value .currency {
+    font-size: 18px;
+    color: var(--dk-text-muted);
+    margin-left: 4px;
+}
+
+/* ============================================
+   BOTTOM ACTIONS
+   ============================================ */
+.dk-bc-bottom-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    justify-content: center;
+}
+
+.dk-btn-ghost, .dk-btn-dark {
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dk-btn-ghost {
+    background: #ffffff;
+    border: 1px solid var(--dk-border-darker);
+    color: var(--dk-text-dark);
+    box-shadow: var(--dk-shadow-sm);
+}
+
+.dk-btn-ghost:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.dk-btn-dark {
+    background: var(--dk-text-dark);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+}
+
+.dk-btn-dark:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(15, 23, 42, 0.3);
+}
+
+/* ============================================
+   PDF SPECIFIC STYLES (Hidden on Web)
+   ============================================ */
+.pdf-only {
+    display: none; /* Crucial: Only visible during PDF Generation */
+    flex-direction: column;
+}
+
+.dk-pdf-header {
+    flex-direction: row !important;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--dk-text-dark);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+.pdf-logo {
+    height: 48px;
+}
+
+.pdf-header-text {
+    text-align: right;
+}
+
+.pdf-header-text h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: var(--dk-text-dark);
+    font-weight: 800;
+}
+
+.pdf-header-text p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--dk-text-muted);
+}
+
+.dk-pdf-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--dk-border-darker);
+    text-align: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.pdf-security-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--dk-success);
+    margin-bottom: 8px;
+}
+
+.dk-pdf-footer p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--dk-text-dark);
+    font-weight: 600;
+}
+
+.pdf-watermark {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   LOADING & ERROR STATES
+   ============================================ */
+.dk-bc-loading-layout, .dk-bc-error-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--dk-bg-main);
+    padding: 24px;
+    text-align: center;
+}
+
+.spin-loader {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--dk-border-darker);
+    border-top-color: var(--dk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 24px;
+}
+
+.spin-loader.small {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+    margin-bottom: 0;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.dk-bc-loading-layout p {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dk-text-muted);
+}
+
+.dk-bc-error-card {
+    background: white;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: var(--dk-shadow-md);
+    max-width: 400px;
+    width: 100%;
+}
+
+.error-icon {
+    width: 64px;
+    height: 64px;
+    background: #fef2f2;
+    color: #ef4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 900;
+    margin: 0 auto 24px;
+}
+
+.dk-bc-error-card h2 {
+    margin: 0 0 12px 0;
+    color: var(--dk-text-dark);
+}
+
+.dk-bc-error-card p {
+    color: var(--dk-text-muted);
+    margin: 0 0 24px 0;
+}
+
+.dk-btn-primary.full-width {
+    width: 100%;
+    background: var(--dk-primary);
+    color: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ============================================
+   ULTIMATE RESPONSIVENESS (300px to Infinity)
+   ============================================ */
+
+/* 1. TABLETS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .dk-bc-layout { padding: 32px 16px; }
+}
+
+/* 2. LARGE PHONES & SMALL TABLETS (481px - 768px) */
+@media (max-width: 768px) {
+    .dk-bc-receipt-card { padding: 32px; }
+    
+    .dk-bc-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    /* Add inside @media (max-width: 768px) */
+    .dk-bc-qr-corner {
+        position: relative; /* Removes absolute positioning */
+        top: 0;
+        right: 0;
+        margin: 0 auto 32px auto; /* Centers it */
+        width: fit-content;
+    }
+    .dk-btn-download { width: 100%; justify-content: center; }
+    
+    .dk-bc-overview-grid { grid-template-columns: 1fr; gap: 16px; }
+    
+    .dk-bc-bottom-actions { flex-direction: column; align-items: stretch; }
+    .dk-btn-ghost, .dk-btn-dark { max-width: 100%; }
+}
+
+/* 3. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .dk-bc-layout { padding: 16px 12px 40px 12px; }
+    
+    .dk-bc-receipt-card { 
+        padding: 24px 16px; 
+        border-radius: 20px; 
+    }
+    
+    .dk-bc-success-banner h1 { font-size: 24px; }
+    .dk-bc-success-banner .banner-icon { width: 48px; height: 48px; padding: 8px; }
+    
+    .dk-bc-guest-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .guest-status { width: 100%; }
+    .status-pill { display: block; text-align: center; }
+
+    .total-value { font-size: 26px; }
+    .total-value .currency { font-size: 16px; }
+    
+    .dk-btn-ghost, .dk-btn-dark { padding: 14px; font-size: 14px; }
+}
+
+/* 4. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .dk-bc-success-banner h1 { font-size: 20px; }
+    .booking-id-block .value { font-size: 16px; }
+    .total-value { font-size: 22px; }
+}
+
+/* 5. PRINT STYLES (Used by html2canvas & browser printing) */
+@media print {
+    body { background: white; }
+    .dk-bc-layout { padding: 0; background: white; }
+    .dk-bc-receipt-card { box-shadow: none; border: none; padding: 0; }
+    .dk-bc-receipt-card::before { display: none; }
+    .no-print { display: none !important; }
+    .pdf-only { display: flex !important; }
+}

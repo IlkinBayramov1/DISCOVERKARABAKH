@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: Discovery Karabakh - Attraction Module
+  description: |
+    Welcome to the **Discovery Karabakh Attraction API**. 
+    This module manages historical sites, natural wonders, and tourist attractions.
+    
+    **Features:**
+    - Multilingual Search (AZ, EN, RU)
+    - Deep Analytics (Hourly & Daily distribution)
+    - Virtual Tours (360 Video/Photo support)
+    - Real-time Event Linking by City
+    - User Reporting System for Reviews
+  version: 1.0.0
+servers:
+  - url: /api/v1/attractions
+    description: Base path for attractions
+
+paths:
+  # Categories
+  /categories:
+    $ref: './category.yaml#/paths/~1'
+  /categories/{id}:
+    $ref: './category.yaml#/paths/~1{id}'
+
+  # Attraction Core
+  /:
+    $ref: './attraction.yaml#/paths/~1'
+  /nearby:
+    $ref: './attraction.yaml#/paths/~1nearby'
+  /{id}:
+    $ref: './attraction.yaml#/paths/~1{id}'
+  /{id}/weather:
+    $ref: './attraction.yaml#/paths/~1{id}~1weather'
+
+  # Reviews & Reporting
+  /{id}/reviews:
+    $ref: './review.yaml#/paths/~1'
+  /{id}/reviews/{reviewId}:
+    $ref: './review.yaml#/paths/~1{reviewId}'
+  /{id}/reviews/{reviewId}/report:
+    $ref: './review.yaml#/paths/~1{reviewId}~1report'
+  /{id}/reviews/reports:
+    $ref: './review.yaml#/paths/~1reports'
+  /{id}/reviews/reports/{reportId}:
+    $ref: './review.yaml#/paths/~1reports~1{reportId}'
+
+  # Analytics
+  /{id}/analytics:
+    $ref: './analytics.yaml#/paths/~1'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

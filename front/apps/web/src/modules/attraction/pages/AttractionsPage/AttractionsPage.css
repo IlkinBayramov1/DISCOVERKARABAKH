@@ -1,0 +1,518 @@
+/* ROOT VARIABLES */
+:root {
+    --primary-blue: #1d4ed8;
+    --primary-blue-hover: #1e3a8a;
+    --dk-primary: #6a28c7;
+    --dk-accent: #9d65eb;
+    --bg-color: #f6f8fb;
+    --text-dark: #111827;
+    --text-muted: #6b7280;
+    --border-light: #e5e7eb;
+    --white: #ffffff;
+    --dk-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body {
+    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
+
+.attractions-search-page {
+    width: 100%;
+}
+
+.container {
+    max-width: 1320px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* HERO SECTION */
+.attractions-hero {
+    position: relative;
+    height: 260px;
+    border-radius: 26px;
+    /* Gormeli yerlere uygun ferqli bir shekil */
+    background-image: url('https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=1920');
+    background-size: cover;
+    background-position: center 30%;
+    overflow: hidden;
+}
+
+.attractions-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.attractions-hero-overlay {
+    position: absolute;
+    bottom: 32px;
+    left: 36px;
+    color: #fff;
+    z-index: 2;
+}
+
+.attractions-hero-overlay h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.attractions-hero-overlay p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* SEARCH SECTION (Eyni Tour dizayni) */
+.search-bar {
+    position: relative;
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 999px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+    margin-top: 28px;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: nowrap !important;
+}
+
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: text;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.search-item:hover {
+    background: rgba(106, 40, 199, 0.03);
+    border-radius: 16px;
+}
+
+.tour-name-item {
+    flex: 1.5;
+    min-width: 200px;
+}
+
+.location-item {
+    flex: 1;
+    min-width: 150px;
+    border-left: 1px solid #f1f5f9;
+}
+
+.search-item svg {
+    color: var(--dk-primary);
+    width: 22px;
+    height: 22px;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.search-item label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.search-value {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.search-input-naked {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 0;
+    letter-spacing: -0.02em;
+}
+
+.search-input-naked::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s var(--dk-ease-bounce);
+    box-shadow: 0 10px 20px rgba(106, 40, 199, 0.2);
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+.search-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.search-btn-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 3px;
+}
+
+.loading-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* RESULTS SECTION */
+.results-bar {
+    margin: 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.ghost-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.inline-sort-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-dark);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* ============================================
+   OFF-CANVAS SIDEBAR (BASE STYLES)
+   ============================================ */
+.sidebar-overlay {
+    position: fixed;
+    top: 80px;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.attractions-offcanvas-sidebar {
+    position: fixed;
+    top: 80px;
+    right: 0;
+    width: 360px;
+    height: calc(100vh - 80px);
+    background: #ffffff;
+    z-index: 85;
+    box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.05);
+    
+    /* Perfect Slide Animation */
+    transform: translateX(100%); 
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f1f5f9;
+    box-sizing: border-box;
+}
+
+.attractions-offcanvas-sidebar.active {
+    transform: translateX(0);
+}
+
+.sidebar-filter {
+    box-sizing: border-box;
+    width: 100%; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 10;
+}
+
+.sidebar-filter h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-close {
+    background: #f8fafc;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+    flex-shrink: 0; 
+    margin-left: 12px;
+}
+
+.sidebar-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+.sidebar-content {
+    padding: 30px 24px;
+}
+
+
+/* ============================================
+   ULTIMATE RESPONSIVENESS (300px to Infinity)
+   ============================================ */
+
+/* 1. LARGE SCREENS & 4K MONITORS (1440px+) */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1400px;
+    }
+    .attractions-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+    }
+}
+
+/* 2. LAPTOPS & STANDARD DESKTOPS (1025px - 1439px) */
+@media (max-width: 1439px) {
+    .attractions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 3. TABLETS & SMALL LAPTOPS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .attractions-hero {
+        height: 220px;
+    }
+    
+    .attractions-hero-overlay h1 {
+        font-size: 32px;
+    }
+
+    .search-bar {
+        padding: 8px;
+        gap: 5px;
+    }
+
+    .search-item {
+        padding: 10px 15px;
+        gap: 8px;
+    }
+
+    .search-value, .search-input-naked {
+        font-size: 13px;
+    }
+
+    .attractions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* 4. LARGE PHONES & SMALL TABLETS (481px - 768px) */
+@media (max-width: 768px) {
+    .attractions-hero {
+        height: 180px;
+        border-radius: 20px;
+    }
+
+    .attractions-hero-overlay {
+        left: 20px;
+        bottom: 20px;
+    }
+
+    .attractions-hero-overlay h1 {
+        font-size: 26px;
+    }
+
+    /* Stack Search Bar on Mobile */
+    .search-bar {
+        flex-direction: column !important;
+        border-radius: 24px;
+        padding: 16px;
+        gap: 0;
+        margin-top: 20px; /* Slight overlap on Hero */
+        z-index: 5;
+    }
+
+    .search-item {
+        width: 100%;
+        border-left: none !important;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 15px 10px;
+        flex: none;
+    }
+
+    .search-item:last-of-type {
+        border-bottom: none;
+    }
+
+    .search-input-naked {
+        width: 100% !important;
+        font-size: 15px;
+    }
+
+    .search-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 15px;
+        justify-content: center;
+        padding: 18px;
+    }
+
+    .results-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .results-bar .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .ghost-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .attractions-offcanvas-sidebar {
+        width: 100vw !important; /* Full screen sidebar on mobile */
+        top: 64px !important; /* Snaps right under the mobile header */
+        height: calc(100vh - 64px) !important;
+    }
+
+    .sidebar-overlay {
+        top: 64px !important;
+    }
+}
+
+/* 5. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
+
+    .attractions-hero-overlay h1 {
+        font-size: 22px;
+    }
+
+    .attractions-hero-overlay p {
+        font-size: 13px;
+    }
+
+    .attractions-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns side-by-side */
+        gap: 12px;
+    }
+
+    .sidebar-filter h2 {
+        font-size: 18px;
+    }
+}
+
+/* 6. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .attractions-hero-overlay h1 {
+        font-size: 19px;
+    }
+    
+    .results-bar .actions {
+        grid-template-columns: 1fr; /* Stack filter/sort on tiny screens */
+    }
+}
+
+/* 7. HEIGHT-SPECIFIC (Landscape Mobile) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .attractions-hero {
+        height: 140px;
+    }
+    .attractions-offcanvas-sidebar {
+        padding-bottom: 80px;
+    }
+}
+
+/* 8. REDUCED MOTION PREFERENCE */
+@media (prefers-reduced-motion: reduce) {
+    .search-btn, .ghost-btn, .attractions-offcanvas-sidebar {
+        transition: none !important;
+        animation: none !important;
+    }
+}

@@ -1,0 +1,1274 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model amenity {
+  id           String         @id
+  name         String         @unique(map: "Amenity_name_key")
+  icon         String?
+  hotelamenity hotelamenity[]
+}
+
+model attraction {
+  id                    String                  @id
+  name                  String
+  slug                  String                  @unique(map: "Attraction_slug_key")
+  description           String                  @db.Text
+  address               String
+  latitude              Float
+  longitude             Float
+  entryType             String                  @default("free")
+  price                 Float?
+  crowdLevel            String                  @default("low")
+  isFeatured            Boolean                 @default(false)
+  status                String                  @default("active")
+  vendorId              String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  city                  String?
+  audioUrl              String?
+  searchKeywords        String?                 @db.Text
+  virtualTourUrl        String?
+  category              attraction_category     @default(Muzey)
+  googleMapsUrl         String?
+  user                  user?                   @relation(fields: [vendorId], references: [id], map: "Attraction_vendorId_fkey")
+  attractionfavorite    attractionfavorite[]
+  attractionhourlystat  attractionhourlystat[]
+  attractionimage       attractionimage[]
+  attractionreview      attractionreview[]
+  attractionstat        attractionstat?
+  attractionworkinghour attractionworkinghour[]
+  booking               booking[]
+  hotelpoi              hotelpoi[]
+  review                review[]
+
+  @@index([category, status, isFeatured], map: "Attraction_category_status_isFeatured_idx")
+  @@index([latitude, longitude], map: "Attraction_latitude_longitude_idx")
+  @@index([vendorId], map: "Attraction_vendorId_fkey")
+  @@fulltext([name, description, searchKeywords], map: "Attraction_name_description_searchKeywords_idx")
+}
+
+model attractionfavorite {
+  id           String     @id
+  userId       String
+  attractionId String
+  createdAt    DateTime   @default(now())
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionFavorite_attractionId_fkey")
+  user         user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "AttractionFavorite_userId_fkey")
+
+  @@unique([userId, attractionId], map: "AttractionFavorite_userId_attractionId_key")
+  @@index([attractionId], map: "AttractionFavorite_attractionId_fkey")
+}
+
+model attractionhourlystat {
+  attractionId String
+  date         DateTime   @db.Date
+  hour         Int
+  count        Int        @default(0)
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionHourlyStat_attractionId_fkey")
+
+  @@id([attractionId, date, hour])
+}
+
+model attractionimage {
+  id           String     @id
+  attractionId String
+  url          String
+  type         String     @default("image")
+  isCover      Boolean    @default(false)
+  order        Int        @default(0)
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionImage_attractionId_fkey")
+
+  @@index([attractionId], map: "AttractionImage_attractionId_fkey")
+}
+
+model attractionreview {
+  id           String     @id
+  userId       String
+  attractionId String
+  rating       Int
+  comment      String?    @db.Text
+  status       String     @default("approved")
+  createdAt    DateTime   @default(now())
+  images       String?    @db.LongText
+  vendorReply  String?    @db.Text
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionReview_attractionId_fkey")
+  user         user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "AttractionReview_userId_fkey")
+
+  @@unique([userId, attractionId], map: "AttractionReview_userId_attractionId_key")
+  @@index([attractionId], map: "AttractionReview_attractionId_fkey")
+}
+
+model attractionstat {
+  attractionId    String     @id
+  averageRating   Float      @default(0)
+  viewCount       Int        @default(0)
+  favoriteCount   Int        @default(0)
+  popularityScore Float      @default(0)
+  attraction      attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionStat_attractionId_fkey")
+}
+
+model attractionworkinghour {
+  id           String     @id
+  attractionId String
+  dayOfWeek    Int
+  openTime     String?
+  closeTime    String?
+  isClosed     Boolean    @default(false)
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "AttractionWorkingHour_attractionId_fkey")
+
+  @@unique([attractionId, dayOfWeek], map: "AttractionWorkingHour_attractionId_dayOfWeek_key")
+}
+
+model blacklist {
+  id        String   @id
+  type      String
+  value     String   @unique(map: "Blacklist_value_key")
+  reason    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([value], map: "Blacklist_value_idx")
+}
+
+model booking {
+  id                 String               @id
+  bookingNumber      String               @unique(map: "Booking_bookingNumber_key")
+  bookingType        String
+  entityId           String
+  userId             String
+  vendorId           String
+  status             String               @default("draft")
+  paymentStatus      String               @default("initiated")
+  totalPrice         Float
+  currency           String               @default("AZN")
+  paymentMethod      String?
+  paymentId          String?
+  specialRequests    String?              @db.Text
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  hotelId            String?
+  tourId             String?
+  eventId            String?
+  attractionId       String?
+  vehicleId          String?
+  attraction         attraction?          @relation(fields: [attractionId], references: [id], map: "Booking_attractionId_fkey")
+  event              event?               @relation(fields: [eventId], references: [id], map: "Booking_eventId_fkey")
+  hotel              hotel?               @relation(fields: [hotelId], references: [id], map: "Booking_hotelId_fkey")
+  tour               tour?                @relation(fields: [tourId], references: [id], map: "Booking_tourId_fkey")
+  user               user                 @relation(fields: [userId], references: [id], map: "Booking_userId_fkey")
+  vehicle            vehicle?             @relation(fields: [vehicleId], references: [id], map: "Booking_vehicleId_fkey")
+  bookingauditlog    bookingauditlog[]
+  bookingitem        bookingitem[]
+  guest              guest[]
+  paymenttransaction paymenttransaction[]
+
+  @@index([attractionId], map: "Booking_attractionId_fkey")
+  @@index([bookingType, entityId], map: "Booking_bookingType_entityId_idx")
+  @@index([eventId], map: "Booking_eventId_fkey")
+  @@index([hotelId], map: "Booking_hotelId_fkey")
+  @@index([tourId], map: "Booking_tourId_fkey")
+  @@index([userId], map: "Booking_userId_idx")
+  @@index([vehicleId], map: "Booking_vehicleId_fkey")
+  @@index([vendorId], map: "Booking_vendorId_idx")
+}
+
+model bookingauditlog {
+  id        String   @id
+  bookingId String
+  action    String
+  meta      String?  @db.LongText
+  createdAt DateTime @default(now())
+  booking   booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "BookingAuditLog_bookingId_fkey")
+
+  @@index([bookingId], map: "BookingAuditLog_bookingId_fkey")
+}
+
+model bookingitem {
+  id               String    @id
+  bookingId        String
+  roomTypeId       String?
+  ratePlanId       String?
+  checkIn          DateTime?
+  checkOut         DateTime?
+  adults           Int       @default(1)
+  children         Int       @default(0)
+  price            Float
+  nightlyBreakdown String?   @db.LongText
+  booking          booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "BookingItem_bookingId_fkey")
+
+  @@index([bookingId], map: "BookingItem_bookingId_fkey")
+}
+
+model cancellationpolicy {
+  id                         String     @id
+  name                       String
+  freeCancellationUntilHours Int?
+  penaltyType                String
+  penaltyValue               Float
+  rateplan                   rateplan[]
+}
+
+model cargovehicle {
+  id                  String                 @id
+  vendorId            String
+  brand               String
+  model               String
+  year                Int
+  licensePlate        String
+  cargoType           cargovehicle_cargoType @default(Box)
+  maxWeightKg         Float
+  maxVolumeM3         Float
+  isRefrigerated      Boolean                @default(false)
+  temperatureRangeMin Float?
+  temperatureRangeMax Float?
+  insuranceValidUntil DateTime?
+  status              cargovehicle_status    @default(Available)
+  currentLoadWeight   Float                  @default(0)
+  currentLoadVolume   Float                  @default(0)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime
+  user                user                   @relation(fields: [vendorId], references: [id], map: "CargoVehicle_vendorId_fkey")
+  driverprofile       driverprofile?
+  shipment            shipment[]
+
+  @@index([vendorId], map: "CargoVehicle_vendorId_idx")
+}
+
+model cuisine {
+  id                String              @id
+  name              String              @unique(map: "Cuisine_name_key")
+  restaurantcuisine restaurantcuisine[]
+}
+
+model dailypricing {
+  id                String   @id
+  date              DateTime @db.Date
+  basePrice         Float
+  currency          String   @default("AZN")
+  minStay           Int      @default(1)
+  maxStay           Int?
+  closedToArrival   Boolean  @default(false)
+  closedToDeparture Boolean  @default(false)
+  roomTypeId        String
+  isStopped         Boolean  @default(false)
+  roomtype          roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "DailyPricing_roomTypeId_fkey")
+
+  @@unique([roomTypeId, date], map: "DailyPricing_roomTypeId_date_key")
+}
+
+model drivercapability {
+  id                  String                      @id
+  driverProfileId     String
+  capability          drivercapability_capability
+  expiryDate          DateTime?
+  certificationNumber String?
+  issuingAuthority    String?
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime
+  driverprofile       driverprofile               @relation(fields: [driverProfileId], references: [id], onDelete: Cascade, map: "DriverCapability_driverProfileId_fkey")
+
+  @@unique([driverProfileId, capability], map: "DriverCapability_driverProfileId_capability_key")
+}
+
+model driverprofile {
+  id                                   String               @id
+  userId                               String               @unique(map: "DriverProfile_userId_key")
+  managedById                          String?
+  status                               driverprofile_status @default(Pending)
+  firstName                            String
+  lastName                             String
+  phone                                String
+  licenseNumber                        String?
+  licenseImages                        String?              @db.LongText
+  idCardImages                         String?              @db.LongText
+  currentLocation                      String?              @db.LongText
+  rating                               Float                @default(5)
+  totalRides                           Int                  @default(0)
+  currentVehicleId                     String?              @unique(map: "DriverProfile_currentVehicleId_key")
+  currentCargoVehicleId                String?              @unique(map: "DriverProfile_currentCargoVehicleId_key")
+  drivercapability                     drivercapability[]
+  cargovehicle                         cargovehicle?        @relation(fields: [currentCargoVehicleId], references: [id], map: "DriverProfile_currentCargoVehicleId_fkey")
+  vehicle                              vehicle?             @relation(fields: [currentVehicleId], references: [id], map: "DriverProfile_currentVehicleId_fkey")
+  user_driverprofile_managedByIdTouser user?                @relation("driverprofile_managedByIdTouser", fields: [managedById], references: [id], map: "DriverProfile_managedById_fkey")
+  user_driverprofile_userIdTouser      user                 @relation("driverprofile_userIdTouser", fields: [userId], references: [id], onDelete: Cascade, map: "DriverProfile_userId_fkey")
+  ride                                 ride[]
+  shipment                             shipment[]
+
+  @@index([managedById], map: "DriverProfile_managedById_fkey")
+}
+
+model event {
+  id          String       @id
+  vendorId    String
+  title       String
+  description String       @db.Text
+  category    String
+  city        String
+  location    String
+  latitude    Float?
+  longitude   Float?
+  startDate   DateTime
+  endDate     DateTime
+  capacity    Int          @default(0)
+  ticketPrice Float        @default(0)
+  soldCount   Int          @default(0)
+  status      event_status @default(active)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  booking     booking[]
+  user        user         @relation(fields: [vendorId], references: [id], map: "Event_vendorId_fkey")
+  review      review[]
+  ticket      ticket[]
+
+  @@index([vendorId], map: "Event_vendorId_fkey")
+}
+
+model guest {
+  id          String  @id
+  bookingId   String
+  firstName   String
+  lastName    String
+  nationality String?
+  phone       String?
+  email       String?
+  booking     booking @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "Guest_bookingId_fkey")
+
+  @@index([bookingId], map: "Guest_bookingId_fkey")
+}
+
+model hotel {
+  id                  String               @id
+  name                String
+  slug                String?              @unique(map: "Hotel_slug_key")
+  description         String               @db.Text
+  starRating          Int?
+  propertyType        String               @default("hotel")
+  checkInTime         String?
+  checkOutTime        String?
+  address             String
+  latitude            Float?
+  longitude           Float?
+  phone               String?
+  email               String?
+  policies            String?              @db.LongText
+  status              String               @default("active")
+  isFeatured          Boolean              @default(false)
+  featuredUntil       DateTime?
+  featuredPriority    Int                  @default(0)
+  ownerId             String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  city                String?
+  cancellationPolicy  String?              @db.Text
+  childPolicy         String?              @db.Text
+  petPolicy           String?              @db.Text
+  booking             booking[]
+  user                user                 @relation(fields: [ownerId], references: [id], map: "Hotel_ownerId_fkey")
+  hotelamenity        hotelamenity[]
+  hotelcalendarnote   hotelcalendarnote[]
+  hoteldailystat      hoteldailystat[]
+  hotelfavorite       hotelfavorite[]
+  hotelimage          hotelimage[]
+  hotelpoi            hotelpoi[]
+  hotelsearchsnapshot hotelsearchsnapshot?
+  pricingrule         pricingrule[]
+  promotion           promotion[]
+  review              review[]
+  roomtype            roomtype[]
+
+  @@index([latitude, longitude], map: "Hotel_latitude_longitude_idx")
+  @@index([ownerId], map: "Hotel_ownerId_idx")
+}
+
+model hotelamenity {
+  id        String  @id
+  hotelId   String
+  amenityId String
+  amenity   amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade, map: "HotelAmenity_amenityId_fkey")
+  hotel     hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelAmenity_hotelId_fkey")
+
+  @@unique([hotelId, amenityId], map: "HotelAmenity_hotelId_amenityId_key")
+  @@index([amenityId], map: "HotelAmenity_amenityId_fkey")
+}
+
+model hotelcalendarnote {
+  id        String   @id
+  hotelId   String
+  date      DateTime @db.Date
+  note      String   @db.Text
+  type      String   @default("info")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  hotel     hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelCalendarNote_hotelId_fkey")
+
+  @@unique([hotelId, date], map: "HotelCalendarNote_hotelId_date_key")
+}
+
+model hoteldailystat {
+  id               String   @id
+  hotelId          String
+  date             DateTime @db.Date
+  impressions      Int      @default(0)
+  clicks           Int      @default(0)
+  totalBookings    Int      @default(0)
+  totalRevenue     Float    @default(0)
+  conversionRate   Float    @default(0)
+  cancellationRate Float    @default(0)
+  hotel            hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelDailyStat_hotelId_fkey")
+
+  @@unique([hotelId, date], map: "HotelDailyStat_hotelId_date_key")
+}
+
+model hotelfavorite {
+  id        String   @id
+  userId    String
+  hotelId   String
+  createdAt DateTime @default(now())
+  hotel     hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelFavorite_hotelId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "HotelFavorite_userId_fkey")
+
+  @@unique([userId, hotelId], map: "HotelFavorite_userId_hotelId_key")
+  @@index([hotelId], map: "HotelFavorite_hotelId_fkey")
+}
+
+model hotelimage {
+  id      String @id
+  hotelId String
+  url     String
+  order   Int    @default(0)
+  hotel   hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelImage_hotelId_fkey")
+
+  @@index([hotelId], map: "HotelImage_hotelId_fkey")
+}
+
+model hotelpoi {
+  id           String     @id
+  hotelId      String
+  attractionId String
+  distance     Float?
+  description  String?    @db.Text
+  order        Int        @default(0)
+  attraction   attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "HotelPOI_attractionId_fkey")
+  hotel        hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelPOI_hotelId_fkey")
+
+  @@unique([hotelId, attractionId], map: "HotelPOI_hotelId_attractionId_key")
+  @@index([attractionId], map: "HotelPOI_attractionId_fkey")
+}
+
+model hotelsearchsnapshot {
+  hotelId        String   @id
+  minPrice       Float
+  reviewScore    Float
+  availableToday Boolean
+  popularity     Int
+  updatedAt      DateTime
+  hotel          hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "HotelSearchSnapshot_hotelId_fkey")
+}
+
+model inventorylock {
+  id         String   @id
+  roomTypeId String
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date
+  userId     String   @default("anonymous")
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  roomtype   roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "InventoryLock_roomTypeId_fkey")
+
+  @@index([expiresAt], map: "InventoryLock_expiresAt_idx")
+  @@index([roomTypeId, startDate, endDate], map: "InventoryLock_roomTypeId_startDate_endDate_idx")
+}
+
+model investorprofile {
+  id              String  @id
+  investmentFocus String? @db.LongText
+  budgetRange     String? @db.LongText
+  companyName     String?
+  userId          String  @unique(map: "InvestorProfile_userId_key")
+  user            user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "InvestorProfile_userId_fkey")
+}
+
+model location {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(255)
+  lat           Float
+  lng           Float
+  type          String
+  popularity    Int      @default(0)
+  createdAt     DateTime @default(now())
+  address       String?  @db.VarChar(255)
+  googleMapsUrl String?  @db.Text
+  vendorId      String?
+  user          user?    @relation(fields: [vendorId], references: [id], map: "Location_vendorId_fkey")
+
+  @@index([vendorId], map: "Location_vendorId_fkey")
+  @@fulltext([name], map: "Location_name_idx")
+}
+
+model menucategory {
+  id           String     @id
+  name         String
+  description  String?
+  restaurantId String
+  sortOrder    Int        @default(0)
+  restaurant   restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, map: "MenuCategory_restaurantId_fkey")
+  menuitem     menuitem[]
+
+  @@index([restaurantId], map: "MenuCategory_restaurantId_fkey")
+}
+
+model menuitem {
+  id             String           @id
+  categoryId     String
+  name           String
+  description    String?
+  price          Float
+  imageUrl       String?
+  isAvailable    Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  menucategory   menucategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "MenuItem_categoryId_fkey")
+  menuitemoption menuitemoption[]
+
+  @@index([categoryId], map: "MenuItem_categoryId_fkey")
+}
+
+model menuitemoption {
+  id         String   @id
+  itemId     String
+  name       String
+  choices    String   @db.LongText
+  isRequired Boolean  @default(false)
+  maxSelect  Int      @default(1)
+  menuitem   menuitem @relation(fields: [itemId], references: [id], onDelete: Cascade, map: "MenuItemOption_itemId_fkey")
+
+  @@index([itemId], map: "MenuItemOption_itemId_fkey")
+}
+
+model paymenttransaction {
+  id              String   @id
+  bookingId       String
+  provider        String
+  providerTransId String?  @unique(map: "PaymentTransaction_providerTransId_key")
+  amount          Float
+  currency        String   @default("AZN")
+  status          String   @default("pending")
+  paymentUrl      String?  @db.Text
+  callbackUrl     String?  @db.Text
+  errorMessage    String?  @db.Text
+  rawResponse     String?  @db.LongText
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  booking         booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "PaymentTransaction_bookingId_fkey")
+
+  @@index([bookingId], map: "PaymentTransaction_bookingId_idx")
+}
+
+model pricingrule {
+  id                 String    @id
+  hotelId            String
+  roomTypeId         String?
+  name               String
+  description        String?   @db.Text
+  type               String
+  adjustment         String
+  value              Float
+  startDate          DateTime? @db.Date
+  endDate            DateTime? @db.Date
+  daysOfWeek         String?
+  priority           Int       @default(0)
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime
+  occupancyThreshold Float?
+  hotel              hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "PricingRule_hotelId_fkey")
+  roomtype           roomtype? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "PricingRule_roomTypeId_fkey")
+
+  @@index([hotelId, roomTypeId], map: "PricingRule_hotelId_roomTypeId_idx")
+  @@index([roomTypeId], map: "PricingRule_roomTypeId_fkey")
+}
+
+model promocode {
+  id                String     @id
+  restaurantId      String
+  code              String     @unique(map: "PromoCode_code_key")
+  discountType      String
+  discountValue     Float
+  minOrderValue     Float?
+  validFrom         DateTime
+  validUntil        DateTime
+  usageLimit        Int?
+  usedCount         Int        @default(0)
+  isStackable       Boolean    @default(false)
+  maxDiscountAmount Float?
+  isActive          Boolean    @default(true)
+  restaurant        restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, map: "PromoCode_restaurantId_fkey")
+
+  @@index([restaurantId], map: "PromoCode_restaurantId_fkey")
+}
+
+model promotion {
+  id              String   @id
+  name            String
+  discountType    String
+  discountValue   Float
+  validFrom       DateTime
+  validTo         DateTime
+  minStay         Int?
+  mobileOnly      Boolean  @default(false)
+  geniusOnly      Boolean  @default(false)
+  hotelId         String?
+  code            String   @unique(map: "Promotion_code_key")
+  isActive        Boolean  @default(true)
+  maxUses         Int      @default(0)
+  minBookingValue Float    @default(0)
+  usedCount       Int      @default(0)
+  hotel           hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Promotion_hotelId_fkey")
+
+  @@index([hotelId], map: "Promotion_hotelId_fkey")
+}
+
+model rateplan {
+  id                   String              @id
+  name                 String
+  mealPlan             String              @default("RO")
+  isRefundable         Boolean             @default(true)
+  prepaymentRequired   Boolean             @default(false)
+  active               Boolean             @default(true)
+  roomTypeId           String
+  cancellationPolicyId String?
+  cancellationpolicy   cancellationpolicy? @relation(fields: [cancellationPolicyId], references: [id], map: "RatePlan_cancellationPolicyId_fkey")
+  roomtype             roomtype            @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RatePlan_roomTypeId_fkey")
+
+  @@index([cancellationPolicyId], map: "RatePlan_cancellationPolicyId_fkey")
+  @@index([roomTypeId], map: "RatePlan_roomTypeId_fkey")
+}
+
+model residentprofile {
+  id            String  @id
+  permitNumber  String?
+  localAddress  String?
+  familyMembers String? @db.LongText
+  userId        String  @unique(map: "ResidentProfile_userId_key")
+  user          user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "ResidentProfile_userId_fkey")
+}
+
+model restaurant {
+  id                  String                @id
+  name                String
+  slug                String                @unique(map: "Restaurant_slug_key")
+  description         String?               @db.LongText
+  priceRange          Int
+  address             String
+  latitude            Float
+  longitude           Float
+  workingHours        String?               @db.LongText
+  isFeatured          Boolean               @default(false)
+  featuredUntil       DateTime?
+  featuredPriority    Int                   @default(0)
+  status              String                @default("active")
+  rating              Float                 @default(0)
+  reviewCount         Int                   @default(0)
+  vendorId            String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  city                String?
+  menucategory        menucategory[]
+  promocode           promocode[]
+  user                user                  @relation(fields: [vendorId], references: [id], map: "Restaurant_vendorId_fkey")
+  restaurantcuisine   restaurantcuisine[]
+  restaurantdailystat restaurantdailystat[]
+  review              review[]
+
+  @@index([latitude, longitude], map: "Restaurant_latitude_longitude_idx")
+  @@index([vendorId], map: "Restaurant_vendorId_idx")
+}
+
+model restaurantcuisine {
+  restaurantId String
+  cuisineId    String
+  cuisine      cuisine    @relation(fields: [cuisineId], references: [id], onDelete: Cascade, map: "RestaurantCuisine_cuisineId_fkey")
+  restaurant   restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, map: "RestaurantCuisine_restaurantId_fkey")
+
+  @@id([restaurantId, cuisineId])
+  @@index([cuisineId], map: "RestaurantCuisine_cuisineId_fkey")
+}
+
+model restaurantdailystat {
+  id           String     @id
+  restaurantId String
+  date         DateTime   @db.Date
+  totalOrders  Int        @default(0)
+  totalRevenue Float      @default(0)
+  restaurant   restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, map: "RestaurantDailyStat_restaurantId_fkey")
+
+  @@unique([restaurantId, date], map: "RestaurantDailyStat_restaurantId_date_key")
+}
+
+model review {
+  id               String      @id
+  rating           Float
+  cleanlinessScore Float?
+  locationScore    Float?
+  staffScore       Float?
+  comment          String?     @db.Text
+  userId           String
+  hotelId          String?
+  tourId           String?
+  eventId          String?
+  restaurantId     String?
+  status           String      @default("pending")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime
+  attractionId     String?
+  vendorReply      String?     @db.Text
+  attraction       attraction? @relation(fields: [attractionId], references: [id], onDelete: Cascade, map: "Review_attractionId_fkey")
+  event            event?      @relation(fields: [eventId], references: [id], map: "Review_eventId_fkey")
+  hotel            hotel?      @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Review_hotelId_fkey")
+  restaurant       restaurant? @relation(fields: [restaurantId], references: [id], map: "Review_restaurantId_fkey")
+  tour             tour?       @relation(fields: [tourId], references: [id], onDelete: Cascade, map: "Review_tourId_fkey")
+  user             user        @relation(fields: [userId], references: [id], map: "Review_userId_fkey")
+
+  @@unique([userId, attractionId], map: "Review_userId_attractionId_key")
+  @@unique([userId, eventId], map: "Review_userId_eventId_key")
+  @@unique([userId, hotelId], map: "Review_userId_hotelId_key")
+  @@unique([userId, tourId], map: "Review_userId_tourId_key")
+  @@index([attractionId], map: "Review_attractionId_fkey")
+  @@index([eventId], map: "Review_eventId_fkey")
+  @@index([hotelId], map: "Review_hotelId_fkey")
+  @@index([restaurantId, userId], map: "Review_restaurantId_userId_idx")
+  @@index([tourId], map: "Review_tourId_fkey")
+}
+
+model reviewreport {
+  id         String   @id
+  reviewId   String
+  reviewType String   @default("attraction")
+  reporterId String
+  reason     String?
+  customNote String?  @db.Text
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  user       user     @relation(fields: [reporterId], references: [id], map: "ReviewReport_reporterId_fkey")
+
+  @@index([reporterId], map: "ReviewReport_reporterId_fkey")
+  @@index([reviewId], map: "ReviewReport_reviewId_idx")
+}
+
+model ride {
+  id              String         @id
+  passengerId     String
+  driverId        String?
+  vehicleId       String?
+  status          ride_status    @default(Pending)
+  pickupLocation  String         @db.LongText
+  dropoffLocation String         @db.LongText
+  price           Float?
+  distanceKm      Float?
+  durationMin     Float?
+  pricingRuleId   String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  startTime       DateTime?
+  endTime         DateTime?
+  waypoints       String?        @db.LongText
+  bookingNumber   String?        @unique(map: "Ride_bookingNumber_key")
+  scheduledAt     DateTime?
+  paxCount        Int            @default(1)
+  driverprofile   driverprofile? @relation(fields: [driverId], references: [id], map: "Ride_driverId_fkey")
+  user            user           @relation(fields: [passengerId], references: [id], map: "Ride_passengerId_fkey")
+  ridepricing     ridepricing?   @relation(fields: [pricingRuleId], references: [id], map: "Ride_pricingRuleId_fkey")
+  vehicle         vehicle?       @relation(fields: [vehicleId], references: [id], map: "Ride_vehicleId_fkey")
+
+  @@index([driverId], map: "Ride_driverId_fkey")
+  @@index([passengerId], map: "Ride_passengerId_fkey")
+  @@index([pricingRuleId], map: "Ride_pricingRuleId_fkey")
+  @@index([vehicleId], map: "Ride_vehicleId_fkey")
+}
+
+model ridepricing {
+  id          String           @id
+  name        String
+  type        ridepricing_type
+  basePrice   Float
+  pricePerKm  Float?
+  pricePerMin Float?
+  minPrice    Float?
+  config      String?          @db.LongText
+  ride        ride[]
+}
+
+model room {
+  id               String    @id
+  roomNumber       String
+  floor            String?
+  status           String    @default("AVAILABLE")
+  roomTypeId       String
+  housekeepingNote String?   @db.Text
+  lastCleanedAt    DateTime?
+  roomtype         roomtype  @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "Room_roomTypeId_fkey")
+
+  @@index([roomTypeId], map: "Room_roomTypeId_fkey")
+}
+
+model roomamenity {
+  id          String   @id
+  roomTypeId  String
+  amenityName String
+  category    String   @default("General")
+  roomtype    roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RoomAmenity_roomTypeId_fkey")
+
+  @@index([roomTypeId], map: "RoomAmenity_roomTypeId_fkey")
+}
+
+model roomavailability {
+  id             String   @id
+  date           DateTime @db.Date
+  totalRooms     Int
+  reservedRooms  Int      @default(0)
+  availableRooms Int
+  version        Int      @default(1)
+  roomTypeId     String
+  roomtype       roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RoomAvailability_roomTypeId_fkey")
+
+  @@unique([roomTypeId, date], map: "RoomAvailability_roomTypeId_date_key")
+}
+
+model roomimage {
+  id         String   @id
+  roomTypeId String
+  url        String
+  order      Int      @default(0)
+  roomtype   roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RoomImage_roomTypeId_fkey")
+
+  @@index([roomTypeId], map: "RoomImage_roomTypeId_fkey")
+}
+
+model roomreview {
+  id          String   @id
+  roomTypeId  String
+  userId      String
+  rating      Float
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now())
+  vendorReply String?  @db.Text
+  roomtype    roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RoomReview_roomTypeId_fkey")
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "RoomReview_userId_fkey")
+
+  @@index([roomTypeId], map: "RoomReview_roomTypeId_fkey")
+  @@index([userId], map: "RoomReview_userId_fkey")
+}
+
+model roomtype {
+  id               String             @id
+  name             String
+  description      String?            @db.Text
+  maxAdults        Int                @default(2)
+  maxChildren      Int                @default(0)
+  baseOccupancy    Int                @default(2)
+  bedType          String?
+  roomSizeM2       Int?
+  totalInventory   Int                @default(1)
+  overbookingLimit Int                @default(0)
+  hotelId          String
+  isActive         Boolean            @default(true)
+  basePrice        Float?
+  category         String             @default("Standard")
+  dailypricing     dailypricing[]
+  inventorylock    inventorylock[]
+  pricingrule      pricingrule[]
+  rateplan         rateplan[]
+  room             room[]
+  roomamenity      roomamenity[]
+  roomavailability roomavailability[]
+  roomimage        roomimage[]
+  roomreview       roomreview[]
+  hotel            hotel              @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "RoomType_hotelId_fkey")
+
+  @@index([hotelId], map: "RoomType_hotelId_fkey")
+}
+
+model shipment {
+  id                      String           @id
+  idempotencyKey          String?          @unique(map: "Shipment_idempotencyKey_key")
+  senderId                String
+  driverId                String?
+  cargoVehicleId          String?
+  status                  shipment_status  @default(Pending)
+  pickupLocation          String           @db.LongText
+  dropoffLocation         String           @db.LongText
+  weightKg                Float
+  volumeM3                Float?
+  dimensions              String?          @db.LongText
+  cargoDescription        String?          @db.Text
+  isHazardous             Boolean          @default(false)
+  requiresRefrigeration   Boolean          @default(false)
+  declaredValue           Float?
+  deliveredByDriverId     String?
+  deliveredAt             DateTime?
+  estimatedDeliveryTime   DateTime?
+  actualDeliveryTime      DateTime?
+  proofOfDeliveryImages   String?          @db.LongText
+  signatureUrl            String?
+  customerConfirmationUrl String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime
+  waypoints               String?          @db.LongText
+  cargovehicle            cargovehicle?    @relation(fields: [cargoVehicleId], references: [id], map: "Shipment_cargoVehicleId_fkey")
+  driverprofile           driverprofile?   @relation(fields: [driverId], references: [id], map: "Shipment_driverId_fkey")
+  user                    user             @relation(fields: [senderId], references: [id], map: "Shipment_senderId_fkey")
+  shipmentpricing         shipmentpricing?
+
+  @@index([cargoVehicleId], map: "Shipment_cargoVehicleId_fkey")
+  @@index([driverId], map: "Shipment_driverId_fkey")
+  @@index([senderId], map: "Shipment_senderId_fkey")
+}
+
+model shipmentpricing {
+  id           String   @id
+  shipmentId   String   @unique(map: "ShipmentPricing_shipmentId_key")
+  basePrice    Float    @default(0)
+  distanceFee  Float    @default(0)
+  weightFee    Float    @default(0)
+  insuranceFee Float    @default(0)
+  urgencyFee   Float    @default(0)
+  tax          Float    @default(0)
+  totalPrice   Float    @default(0)
+  createdAt    DateTime @default(now())
+  shipment     shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade, map: "ShipmentPricing_shipmentId_fkey")
+}
+
+model taxrule {
+  id      String  @id
+  name    String
+  type    String
+  value   Float
+  hotelId String?
+}
+
+model ticket {
+  id          String        @id
+  eventId     String
+  userId      String
+  price       Float
+  status      ticket_status @default(pending)
+  paymentId   String?       @unique(map: "Ticket_paymentId_key")
+  qrCode      String?       @unique(map: "Ticket_qrCode_key")
+  purchasedAt DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  event       event         @relation(fields: [eventId], references: [id], onDelete: Cascade, map: "Ticket_eventId_fkey")
+  user        user          @relation(fields: [userId], references: [id], map: "Ticket_userId_fkey")
+
+  @@index([eventId], map: "Ticket_eventId_fkey")
+  @@index([userId], map: "Ticket_userId_fkey")
+}
+
+model tour {
+  id               String             @id
+  name             String
+  slug             String?
+  description      String             @db.Text
+  address          String
+  phone            String?
+  email            String?
+  images           String?            @db.LongText
+  durationDays     Int
+  durationNights   Int
+  difficulty       tour_difficulty    @default(Medium)
+  groupSizeMin     Int                @default(1)
+  groupSizeMax     Int
+  pricePerPerson   Float
+  itinerary        String?            @db.LongText
+  inclusions       String?            @db.LongText
+  exclusions       String?            @db.LongText
+  ownerId          String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  city             String?
+  startDate        DateTime?
+  availableSlots   Int?
+  meetingPoint     String?            @db.Text
+  mapLink          String?            @db.Text
+  meetingAddress   String?            @db.Text
+  destinationLink  String?            @db.Text
+  booking          booking[]
+  review           review[]
+  user             user               @relation(fields: [ownerId], references: [id], map: "Tour_ownerId_fkey")
+  touravailability touravailability[]
+  tourcalendarnote tourcalendarnote[]
+  tourfavorite     tourfavorite[]
+
+  @@index([ownerId], map: "Tour_ownerId_fkey")
+}
+
+model touravailability {
+  id            String   @id
+  date          DateTime @db.Date
+  maxSeats      Int?
+  isStopped     Boolean  @default(false)
+  priceOverride Float?
+  tourId        String
+  tour          tour     @relation(fields: [tourId], references: [id], onDelete: Cascade, map: "TourAvailability_tourId_fkey")
+
+  @@unique([tourId, date], map: "TourAvailability_tourId_date_key")
+}
+
+model tourcalendarnote {
+  id        String   @id
+  tourId    String
+  date      DateTime @db.Date
+  note      String   @db.Text
+  type      String   @default("info")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  tour      tour     @relation(fields: [tourId], references: [id], onDelete: Cascade, map: "TourCalendarNote_tourId_fkey")
+
+  @@unique([tourId, date], map: "TourCalendarNote_tourId_date_key")
+}
+
+model tourfavorite {
+  id        String   @id
+  userId    String
+  tourId    String
+  createdAt DateTime @default(now())
+  tour      tour     @relation(fields: [tourId], references: [id], onDelete: Cascade, map: "TourFavorite_tourId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "TourFavorite_userId_fkey")
+
+  @@unique([userId, tourId], map: "TourFavorite_userId_tourId_key")
+  @@index([tourId], map: "TourFavorite_tourId_fkey")
+}
+
+model touristprofile {
+  id               String  @id
+  nationality      String?
+  passportNumber   String?
+  interests        String? @db.LongText
+  userId           String  @unique(map: "TouristProfile_userId_key")
+  emergencyContact String? @db.LongText
+  user             user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "TouristProfile_userId_fkey")
+}
+
+model user {
+  id                                            String               @id
+  email                                         String               @unique(map: "User_email_key")
+  password                                      String
+  role                                          user_role            @default(user)
+  isActive                                      Boolean              @default(true)
+  isBanned                                      Boolean              @default(false)
+  isTransportBanned                             Boolean              @default(false)
+  isApproved                                    Boolean              @default(true)
+  createdAt                                     DateTime             @default(now())
+  updatedAt                                     DateTime
+  phone                                         String?
+  avatarUrl                                     String?
+  birthDate                                     DateTime?
+  firstName                                     String?
+  gender                                        String?
+  language                                      String?              @default("AZ")
+  lastName                                      String?
+  balance                                       Float                @default(0)
+  attraction                                    attraction[]
+  attractionfavorite                            attractionfavorite[]
+  attractionreview                              attractionreview[]
+  booking                                       booking[]
+  cargovehicle                                  cargovehicle[]
+  driverprofile_driverprofile_managedByIdTouser driverprofile[]      @relation("driverprofile_managedByIdTouser")
+  driverprofile_driverprofile_userIdTouser      driverprofile?       @relation("driverprofile_userIdTouser")
+  event                                         event[]
+  hotel                                         hotel[]
+  hotelfavorite                                 hotelfavorite[]
+  investorprofile                               investorprofile?
+  location                                      location[]
+  residentprofile                               residentprofile?
+  restaurant                                    restaurant[]
+  review                                        review[]
+  reviewreport                                  reviewreport[]
+  ride                                          ride[]
+  roomreview                                    roomreview[]
+  shipment                                      shipment[]
+  ticket                                        ticket[]
+  tour                                          tour[]
+  tourfavorite                                  tourfavorite[]
+  touristprofile                                touristprofile?
+  vehicle                                       vehicle[]
+  vehiclefavorite                               vehiclefavorite[]
+  vendorprofile                                 vendorprofile?
+  wishlist                                      wishlist[]
+}
+
+model vehicle {
+  id              String            @id
+  vendorId        String
+  brand           String
+  model           String
+  year            Int
+  color           String
+  plateNumber     String
+  category        vehicle_category
+  seats           Int
+  luggage         Int
+  description     String?           @db.Text
+  images          String?           @db.LongText
+  status          vehicle_status    @default(Active)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  basePrice       Float?
+  pricePerKm      Float?
+  booking         booking[]
+  driverprofile   driverprofile?
+  ride            ride[]
+  user            user              @relation(fields: [vendorId], references: [id], map: "Vehicle_vendorId_fkey")
+  vehiclefavorite vehiclefavorite[]
+
+  @@index([vendorId], map: "Vehicle_vendorId_idx")
+}
+
+model vehiclefavorite {
+  id        String   @id
+  userId    String
+  vehicleId String
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "VehicleFavorite_userId_fkey")
+  vehicle   vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade, map: "VehicleFavorite_vehicleId_fkey")
+
+  @@unique([userId, vehicleId], map: "VehicleFavorite_userId_vehicleId_key")
+  @@index([vehicleId], map: "VehicleFavorite_vehicleId_fkey")
+}
+
+model vendorprofile {
+  id          String @id
+  companyName String
+  category    String
+  userId      String @unique(map: "VendorProfile_userId_key")
+  user        user   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "VendorProfile_userId_fkey")
+}
+
+model wishlist {
+  id      String @id
+  userId  String
+  hotelId String
+  user    user   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Wishlist_userId_fkey")
+
+  @@index([userId], map: "Wishlist_userId_fkey")
+}
+
+enum drivercapability_capability {
+  PASSENGER
+  CARGO_LIGHT
+  CARGO_HEAVY
+  HAZARDOUS
+  REFRIGERATED
+}
+
+enum ridepricing_type {
+  Fixed
+  PerKm
+  Hourly
+}
+
+enum driverprofile_status {
+  Pending
+  Approved
+  Rejected
+  Online
+  Offline
+  Busy
+}
+
+enum user_role {
+  user
+  vendor
+  tourist
+  resident
+  investor
+  admin
+  driver
+}
+
+enum ride_status {
+  Pending
+  DriverAssigned
+  OnWayToPickup
+  ArrivedAtPickup
+  Ongoing
+  Completed
+  Cancelled
+}
+
+enum ticket_status {
+  pending
+  active
+  cancelled
+  used
+}
+
+enum shipment_status {
+  Pending
+  DriverAssigned
+  VehicleArrived
+  PickedUp
+  InTransit
+  AtDropoff
+  Delivered
+  Completed
+  Cancelled
+  Failed
+}
+
+enum cargovehicle_cargoType {
+  Box
+  Refrigerated
+  Flatbed
+  Liquid
+}
+
+enum vehicle_category {
+  Economy
+  Business
+  Premium
+  Minivan
+  Bus
+}
+
+enum tour_difficulty {
+  Easy
+  Medium
+  Hard
+  Extreme
+}
+
+enum vehicle_status {
+  Active
+  Inactive
+  Maintenance
+}
+
+enum cargovehicle_status {
+  Available
+  Reserved
+  Maintenance
+}
+
+enum event_status {
+  active
+  cancelled
+  completed
+}
+
+enum attraction_category {
+  Muzey
+  Park
+  Tarixi_Mekan
+  Tebiet_Abidesi
+  Memorial_Kompleks
+  Idman_Eylence
+}

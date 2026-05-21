@@ -1,0 +1,182 @@
+/* ============================================
+   ULTRA PREMIUM WEATHER WIDGET
+   ============================================ */
+
+.dk-weather-wrapper {
+    min-width: 320px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.dk-weather-widget {
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    border-radius: 16px;
+    padding: 10px 24px 10px 20px;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 2px 5px rgba(0, 0, 0, 0.02);
+    border: 1px solid #e2e8f0;
+    gap: 20px;
+    height: 56px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.dk-weather-widget.loading {
+    width: 100%;
+    justify-content: center;
+}
+
+.dk-weather-widget.error {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #e11d48;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    gap: 8px;
+    padding: 0 16px;
+    cursor: help;
+}
+
+.weather-pulse-loader {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #cbd5e1;
+    border-top-color: var(--dk-primary, #6a28c7);
+    border-radius: 50%;
+    animation: weatherSpin 1s linear infinite;
+}
+
+@keyframes weatherSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* Left Block (City & Temp) */
+.weather-primary-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.weather-city {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--dk-primary, #6a28c7);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.weather-temp-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.temp-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+/* Dynamic Weather Icons */
+.weather-icon.sun { color: #f59e0b; fill: #fcf3c7; }
+.weather-icon.cloud { color: #94a3b8; fill: #f1f5f9; }
+.weather-icon.rain { color: #3b82f6; fill: #dbeafe; }
+.weather-icon.storm { color: #6366f1; fill: #e0e7ff; }
+
+/* Divider */
+.weather-divider {
+    width: 1px;
+    height: 32px;
+    background: #cbd5e1;
+    opacity: 0.6;
+}
+
+/* Right Block (Stats) */
+.weather-stats-block {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.w-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.w-stat-icon {
+    color: #3b82f6;
+    opacity: 0.8;
+}
+
+/* ============================================
+   WEATHER WIDGET RESPONSIVENESS
+   ============================================ */
+
+/* 1. TALL SCREENS / DESKTOP OPTIMIZATION */
+@media (min-width: 1440px) {
+    .dk-weather-widget:hover {
+        border-color: var(--dk-primary);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
+    }
+}
+
+/* 2. LARGE TABLETS (1025px - 1280px) */
+@media (max-width: 1280px) {
+    .dk-weather-wrapper {
+        min-width: auto;
+    }
+    .w-stat-item[title="Visibility"],
+    .w-stat-item[title="Pressure"] {
+        display: none;
+    }
+}
+
+/* 3. TABLETS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .weather-stats-block,
+    .weather-divider {
+        display: none; /* Only show City & Temp */
+    }
+    .dk-weather-widget {
+        padding: 10px 14px;
+        gap: 0;
+    }
+}
+
+/* 4. MOBILE (300px - 768px) */
+@media (max-width: 768px) {
+    /* HIDDEN IN TOP HEADER */
+    .web-header .dk-weather-wrapper,
+    .web-header .dk-weather-widget {
+        display: none !important; 
+    }
+
+    /* VISIBLE IN SIDEBAR MENU */
+    .sidebar-nav .dk-weather-wrapper {
+        display: flex !important;
+        width: 100%;
+        min-width: 100%;
+        justify-content: center;
+    }
+    
+    .sidebar-nav .dk-weather-widget {
+        display: flex !important;
+        width: 100%;
+        justify-content: center;
+        margin: 0;
+    }
+}

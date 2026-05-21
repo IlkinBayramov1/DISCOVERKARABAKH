@@ -1,0 +1,279 @@
+/* ============================================
+   ULTRA PREMIUM LIGHT THEME HEADER
+   ============================================ */
+:root {
+  --dk-primary: #6a28c7;
+  --dk-accent: #9d65eb;
+  --dk-bg-header: #ffffff;
+  --dk-header-text: #0f172a;
+  --dk-header-muted: #64748b;
+  --dk-header-border: #f1f5f9;
+  --dk-header-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+/* ============================================
+   HEADER CONTAINER
+   ============================================ */
+.web-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px 0 0; /* Removed left padding so the logo box touches the edge */
+  background: var(--dk-bg-header);
+  border-bottom: 1px solid var(--dk-header-border);
+  min-height: 80px;
+  box-sizing: border-box;
+  box-shadow: var(--dk-header-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+/* NEW: The Logo Box that matches the sidebar width */
+.header-logo-container {
+  width: 240px; /* Exactly matches sidebar width */
+  height: 80px; /* Matches header height */
+  display: flex;
+  align-items: center;
+  padding-left: 24px; /* Indents the logo slightly */
+  box-sizing: border-box;
+  border-right: 1px solid var(--dk-header-border); /* Creates the clean separation line */
+}
+
+.web-header__left {
+  display: flex;
+  align-items: center;
+  gap: 32px; /* Adds beautiful spacing between the logo box and the weather widget */
+  height: 100%;
+}
+
+/* --- LOGO & TOGGLE STYLES --- */
+.mobile-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--dk-header-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: none; /* Hidden on Desktop */
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: #f1f5f9;
+}
+
+.header-logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.header-logo {
+  height: 65px; /* Crisp logo size */
+  object-fit: contain;
+}
+
+/* Hide Weather widget on very small screens if it clutters */
+.header-weather-wrapper {
+  display: flex;
+}
+
+/* --- ACTION STYLES --- */
+.web-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.header-link {
+  color: var(--dk-header-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.header-link:hover {
+  color: var(--dk-primary);
+  transform: translateY(-1px);
+}
+
+.header-logout-btn {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-logout-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.header-btn-primary {
+  background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-accent) 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(106, 40, 199, 0.2);
+}
+
+.header-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(106, 40, 199, 0.3);
+}
+
+.header-btn-outline {
+  background: transparent;
+  color: var(--dk-header-text);
+  border: 1px solid #cbd5e1;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.header-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.header-balance-card {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 4px 6px 4px 14px;
+  gap: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.header-balance-card:hover {
+  background: #ffffff;
+  border-color: var(--dk-primary);
+  box-shadow: 0 4px 15px rgba(106, 40, 199, 0.1);
+}
+
+.balance-icon { color: var(--dk-primary); }
+.balance-amount { font-weight: 800; font-size: 14px; color: var(--dk-header-text); }
+.deposit-btn {
+  background: var(--dk-primary);
+  color: #ffffff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* ============================================
+   RESPONSIVENESS
+   ============================================ */
+@media (max-width: 1100px) {
+  .user-profile-menu { gap: 12px; }
+  .header-link span, .header-logout-btn span { display: none; }
+  .header-link, .header-logout-btn { padding: 8px; justify-content: center; }
+}
+
+@media (max-width: 1024px) {
+  .mobile-menu-btn { display: flex; } /* Show toggle on Mobile/Tablet */
+  .web-header__left { gap: 16px; }
+  .header-weather-wrapper { display: none; } /* Saves space on mobile */
+}
+
+/* 2. MOBILE (300px - 768px) */
+@media (max-width: 768px) {
+    .web-header {
+        padding: 0 16px;
+        min-height: 64px;
+        position: relative; /* Allows absolute centering of logo */
+    }
+
+    .web-header__left {
+        gap: 0; /* Remove gap so hamburger sits flush left */
+    }
+
+    /* CENTER THE LOGO ON MOBILE */
+    .header-logo-link {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .header-logo {
+        height: 60px; /* Slightly smaller for mobile elegance */
+    }
+
+    /* CLEAN UP THE CLUTTER: Hide all links (Profile, Trips, Favs) and Logout */
+    .header-link,
+    .header-logout-btn {
+        display: none !important; 
+    }
+
+    /* SHOW WALLET WIDGET ON MOBILE */
+    .header-balance-card {
+        display: flex !important;
+        padding: 6px 12px !important;
+        border-radius: 12px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        gap: 6px !important;
+    }
+
+    /* Keep the amount visible, but slightly smaller */
+    .balance-amount {
+        display: block !important;
+        font-size: 13px !important;
+    }
+
+    /* Hide the deposit "+" button to save space on tiny screens */
+    .deposit-btn {
+        display: none !important;
+    }
+
+    .web-header__actions {
+        gap: 0;
+    }
+
+    /* Auth buttons (if logged out) */
+    .header-btn-primary, 
+    .header-btn-outline {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,128 @@
+paths:
+  /admins/bookings:
+    get:
+      tags:
+        - Admin Bookings
+      summary: "Platforma üzrə bütün bronları siyahılayır"
+      description: "Admin panelində bütün sifarişləri status, tip, satıcı və ya istifadəçi üzrə süzgəcdən keçirərək görmək üçün istifadə olunur."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: 'schemas.yaml#/components/schemas/BookingStatus'
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "hotel"
+        - name: vendorId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Uğurlu cavab"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas.yaml#/components/schemas/AdminBooking'
+        '401':
+          $ref: 'schemas.yaml#/components/responses/UnauthorizedError'
+
+  /admins/bookings/{id}:
+    get:
+      tags:
+        - Admin Bookings
+      summary: "Bron detallarını gətirir"
+      description: "Sifarişin daxilindəki otaqlar, qonaqlar və bütün hərəkət tarixçəsini (audit loqları) qaytarır."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Bronun ətraflı məlumatı"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminBooking'
+        '404':
+          $ref: 'schemas.yaml#/components/responses/NotFoundError'
+
+  /admins/bookings/{id}/status:
+    patch:
+      tags:
+        - Admin Bookings
+      summary: "Bron statusunu yeniləyir"
+      description: "Admin tərəfindən sifarişin statusu əllə dəyişdirilir (məsələn: ləğv edilmə və ya təsdiq)."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: 'schemas.yaml#/components/schemas/BookingStatus'
+                note:
+                  type: string
+                  description: "Dəyişiklik haqqında qeyd (audit log üçün)"
+      responses:
+        '200':
+          description: "Status yeniləndi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/AdminBooking'
+        '404':
+          $ref: 'schemas.yaml#/components/responses/NotFoundError'
+        '400':
+          description: "Yanlış status keçidi"

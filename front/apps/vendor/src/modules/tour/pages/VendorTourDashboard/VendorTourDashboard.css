@@ -1,0 +1,580 @@
+/* ==========================================================================
+   ULTRA PREMIUM VENDOR TOUR DASHBOARD (DK DESIGN)
+   ========================================================================== */
+
+:root {
+  --dk-td-primary: #6a28c7;
+  --dk-td-accent: #9d65eb;
+  --dk-td-bg: #f8fafc;
+  --dk-td-surface: #ffffff;
+  --dk-td-border: #e2e8f0;
+  --dk-td-text-main: #0f172a;
+  --dk-td-text-muted: #64748b;
+  --dk-td-danger: #ef4444;
+  --dk-td-danger-bg: #fef2f2;
+  --dk-td-success: #10b981;
+  --dk-td-warning: #f59e0b;
+  --dk-td-shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.03);
+  --dk-td-shadow-md: 0 10px 25px rgba(106, 40, 199, 0.06);
+  --dk-td-shadow-lg: 0 20px 40px rgba(106, 40, 199, 0.1);
+  --dk-td-radius-md: 16px;
+  --dk-td-radius-lg: 24px;
+}
+
+.dk-tour-dash-layout {
+  background-color: var(--dk-td-bg);
+  min-height: 100vh;
+  padding: 40px 32px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--dk-td-text-main);
+}
+
+/* --- HEADER --- */
+.dk-tour-dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.dk-td-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--dk-td-text-main);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.dk-td-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dk-td-text-muted);
+  margin: 0;
+}
+
+.dk-td-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Buttons */
+.dk-btn-refresh {
+  background: var(--dk-td-surface);
+  border: 1px solid var(--dk-td-border);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--dk-td-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dk-td-text-muted);
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: var(--dk-td-shadow-sm);
+}
+
+.dk-btn-refresh:hover {
+  color: var(--dk-td-primary);
+  border-color: var(--dk-td-primary);
+  transform: translateY(-2px);
+}
+
+.dk-btn-primary {
+  background: linear-gradient(135deg, var(--dk-td-primary) 0%, var(--dk-td-accent) 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(106, 40, 199, 0.25);
+  transition: all 0.3s ease;
+}
+
+.dk-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(106, 40, 199, 0.35);
+}
+
+.dk-alert-error {
+  background: var(--dk-td-danger-bg);
+  color: var(--dk-td-danger);
+  padding: 16px 24px;
+  border-radius: var(--dk-td-radius-md);
+  border: 1px solid #fecaca;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+/* --- STATES --- */
+.dk-td-loading,
+.dk-td-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.spin-icon {
+  animation: td-spin 1s linear infinite;
+  color: var(--dk-td-primary);
+  margin-bottom: 16px;
+}
+
+@keyframes td-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.dk-td-empty h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dk-td-text-main);
+  margin: 0 0 8px 0;
+}
+
+.dk-td-empty p {
+  color: var(--dk-td-text-muted);
+  font-size: 15px;
+  max-width: 400px;
+  margin: 0;
+}
+
+/* --- TOUR GRID & CARDS --- */
+.dk-tour-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.dk-tour-card {
+  background: var(--dk-td-surface);
+  border-radius: var(--dk-td-radius-lg);
+  border: 1px solid var(--dk-td-border);
+  box-shadow: var(--dk-td-shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.dk-tour-card:hover {
+  box-shadow: var(--dk-td-shadow-lg);
+  transform: translateY(-6px);
+  border-color: rgba(106, 40, 199, 0.15);
+}
+
+/* Media & Slider */
+.dk-tour-media {
+  position: relative;
+  height: 240px;
+  background: #f1f5f9;
+}
+
+.dk-image-slider {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.dk-slider-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.dk-tour-card:hover .dk-slider-img {
+  transform: scale(1.05);
+}
+
+.dk-slider-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+}
+
+.dk-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dk-td-text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dk-tour-media:hover .dk-slider-btn {
+  opacity: 1;
+}
+
+.dk-slider-btn:hover {
+  background: var(--dk-td-primary);
+  color: white;
+}
+
+.dk-slider-btn.prev {
+  left: 16px;
+}
+
+.dk-slider-btn.next {
+  right: 16px;
+}
+
+.dk-slider-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.dk-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: 0.3s;
+}
+
+.dk-dot.active {
+  background: white;
+  transform: scale(1.4);
+}
+
+/* Badges */
+.dk-tour-badges-top {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.dk-badge-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dk-badge-status.approved {
+  color: var(--dk-td-success);
+}
+
+.dk-badge-status.pending {
+  color: var(--dk-td-warning);
+}
+
+.dk-badge-featured {
+  background: #f59e0b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Body */
+.dk-tour-body {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dk-tour-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.dk-tour-title-row h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--dk-td-text-main);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.dk-action-icons {
+  display: flex;
+  gap: 8px;
+}
+
+.dk-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid var(--dk-td-border);
+  color: var(--dk-td-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dk-icon-btn.danger:hover {
+  background: var(--dk-td-danger-bg);
+  border-color: #fecaca;
+  color: var(--dk-td-danger);
+}
+
+.dk-tour-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dk-td-text-muted);
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.dk-tour-location.clickable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.dk-tour-location.clickable:hover {
+  color: var(--dk-td-primary);
+  text-decoration: underline;
+}
+
+.dk-tour-desc {
+  font-size: 14px;
+  color: var(--dk-td-text-muted);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Specs Pills */
+.dk-tour-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.dk-spec-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--dk-td-border);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dk-td-text-main);
+}
+
+.dk-spec-pill svg {
+  color: var(--dk-td-primary);
+}
+
+.dk-spec-pill.difficulty {
+  background: rgba(106, 40, 199, 0.05);
+  border-color: rgba(106, 40, 199, 0.1);
+  color: var(--dk-td-primary);
+}
+
+/* Card Footer (Price & CTA) */
+.dk-tour-footer {
+  padding: 24px;
+  border-top: 1px dashed var(--dk-td-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: #ffffff;
+  border-bottom-left-radius: var(--dk-td-radius-lg);
+  border-bottom-right-radius: var(--dk-td-radius-lg);
+}
+
+.dk-price-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 800;
+  color: var(--dk-td-text-muted);
+  margin-bottom: 4px;
+}
+
+.price-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #10b981;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+}
+
+.price-value .currency {
+  font-size: 18px;
+  margin-right: 2px;
+}
+
+.dk-btn-manage {
+  background: white;
+  border: 2px solid var(--dk-td-border);
+  color: var(--dk-td-text-main);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+  box-shadow: var(--dk-td-shadow-sm);
+}
+
+.dk-btn-manage:hover {
+  border-color: var(--dk-td-primary);
+  background: rgba(106, 40, 199, 0.02);
+  color: var(--dk-td-primary);
+  transform: translateY(-2px);
+}
+
+/* --- PAGINATION --- */
+.dk-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.dk-page-btn {
+  background: white;
+  border: 1px solid var(--dk-td-border);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dk-td-text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.dk-page-btn:hover:not(:disabled) {
+  border-color: var(--dk-td-primary);
+  color: var(--dk-td-primary);
+}
+
+.dk-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dk-page-info {
+  font-size: 14px;
+  color: var(--dk-td-text-muted);
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 768px) {
+  .dk-tour-dash-layout {
+    padding: 24px 16px;
+  }
+
+  .dk-tour-dash-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .dk-td-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dk-tour-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dk-tour-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .dk-btn-manage {
+    width: 100%;
+    justify-content: center;
+  }
+}

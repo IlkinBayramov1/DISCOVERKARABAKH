@@ -1,0 +1,304 @@
+import prisma from '../../../../config/db.js';
+import { ApiError } from '../../../../core/api.error.js';
+import { hotelEvents, PRICING_UPDATED, AVAILABILITY_UPDATED } from '../hotel.events.js';
+import crypto from 'crypto';
+
+class CalendarService {
+
+    /**
+     * Fetches all daily pricing and availability for a hotel's room types within a date range.
+     */
+    async getCalendarData(hotelId, startDateStr, endDateStr) {
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            throw ApiError.badRequest('Invalid date format');
+        }
+
+        // 1. Get all room types for this hotel
+        const roomTypes = await prisma.roomtype.findMany({
+            where: { hotelId },
+            select: { id: true, name: true, totalInventory: true }
+        });
+
+        const roomTypeIds = roomTypes.map(rt => rt.id);
+
+        if (roomTypeIds.length === 0) {
+            return [];
+        }
+
+        // 2. Fetch Pricing
+        const pricing = await prisma.dailypricing.findMany({
+            where: {
+                roomTypeId: { in: roomTypeIds },
+                date: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            }
+        });
+
+        // 3. Fetch Availability
+        const availability = await prisma.roomavailability.findMany({
+            where: {
+                roomTypeId: { in: roomTypeIds },
+                date: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            }
+        });
+
+        // 4. Fetch Calendar Notes
+        const notes = await prisma.hotelcalendarnote.findMany({
+            where: {
+                hotelId,
+                date: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            }
+        });
+
+        // Combine logic (for frontend consumption)
+        // Group by roomType
+        const result = roomTypes.map(rt => {
+            const rtPricing = pricing.filter(p => p.roomTypeId === rt.id);
+            const rtAvail = availability.filter(a => a.roomTypeId === rt.id);
+
+            // Construct a map by Date "YYYY-MM-DD"
+            const daysMap = {};
+
+            // Initialize all dates in range with default mapping
+            let current = new Date(startDate);
+            while (current <= endDate) {
+                const dateKey = current.toISOString().split('T')[0];
+                const dayNote = notes.find(n => n.date.toISOString().split('T')[0] === dateKey);
+
+                daysMap[dateKey] = {
+                    date: dateKey,
+                    note: dayNote ? { text: dayNote.note, type: dayNote.type } : null,
+                    basePrice: null, // Signals no explicit override
+                    minStay: 1,
+                    maxStay: null,
+                    isStopped: false,
+                    closedToArrival: false,
+                    closedToDeparture: false,
+                    availableRooms: rt.totalInventory,
+                    reservedRooms: 0
+                };
+                current.setDate(current.getDate() + 1);
+            }
+
+            // Overlay actual database records
+            rtPricing.forEach(p => {
+                const dateKey = p.date.toISOString().split('T')[0];
+                if (daysMap[dateKey]) {
+                    daysMap[dateKey].basePrice = p.basePrice;
+                    daysMap[dateKey].minStay = p.minStay;
+                    daysMap[dateKey].maxStay = p.maxStay;
+                    daysMap[dateKey].isStopped = p.isStopped;
+                    daysMap[dateKey].closedToArrival = p.closedToArrival;
+                    daysMap[dateKey].closedToDeparture = p.closedToDeparture;
+
+                    // Calculate active restrictions
+                    const restrictions = [];
+                    if (p.isStopped) restrictions.push('SS');
+                    if (p.closedToArrival) restrictions.push('CTA');
+                    if (p.closedToDeparture) restrictions.push('CTD');
+                    if (p.minStay > 1) restrictions.push('MLOS');
+                    
+                    daysMap[dateKey].hasRestrictions = restrictions.length > 0;
+                    daysMap[dateKey].activeRestrictions = restrictions;
+                }
+            });
+
+            rtAvail.forEach(a => {
+                const dateKey = a.date.toISOString().split('T')[0];
+                if (daysMap[dateKey]) {
+                    daysMap[dateKey].availableRooms = a.availableRooms;
+                    daysMap[dateKey].reservedRooms = a.reservedRooms;
+                    
+                    // Professional Analytics: Occupancy Rate and Thresholds
+                    const occupancyRate = rt.totalInventory > 0 
+                        ? Math.round((a.reservedRooms / rt.totalInventory) * 100) 
+                        : 0;
+                    
+                    daysMap[dateKey].occupancyRate = occupancyRate;
+                    daysMap[dateKey].isLowInventory = a.availableRooms <= 1;
+                }
+            });
+
+            return {
+                roomTypeId: rt.id,
+                roomTypeName: rt.name,
+                totalInventory: rt.totalInventory,
+                days: Object.values(daysMap).sort((a, b) => new Date(a.date) - new Date(b.date))
+            };
+        });
+
+        return result;
+    }
+
+    /**
+     * Bulk Upserts DailyPricing and RoomAvailability for a single RoomType over a date range.
+     * Payload expected:
+     * {
+     *   roomTypeId: "uuid",
+     *   startDate: "YYYY-MM-DD",
+     *   endDate: "YYYY-MM-DD",
+     *   days: [ "Mon", "Tue", ... ] // optional days of week filter
+     *   basePrice: 150,
+     *   availableRooms: 5,
+     *   minStay: 2,
+     *   closedToArrival: false,
+     *   closedToDeparture: false
+     * }
+     */
+    async bulkUpdateCalendar(hotelId, payload) {
+        const { roomTypeId, startDate, endDate, days, basePrice, priceAdjustment, availableRooms, minStay, maxStay, isStopped, closedToArrival, closedToDeparture } = payload;
+
+        if (!roomTypeId || !startDate || !endDate) {
+            throw ApiError.badRequest('roomTypeId, startDate, and endDate are required');
+        }
+
+        // Verify hotel ownership of roomType
+        const roomType = await prisma.roomtype.findFirst({
+            where: { id: roomTypeId, hotelId }
+        });
+
+        if (!roomType) {
+            throw ApiError.notFound('Room Type not found for this hotel');
+        }
+
+        // Ensure dates are at 00:00:00 UTC for consistent matching with @db.Date
+        const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setUTCHours(0, 0, 0, 0);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            throw ApiError.badRequest('Invalid date range');
+        }
+
+        // If priceAdjustment is used, fetch current prices first
+        let currentPrices = [];
+        if (priceAdjustment) {
+            currentPrices = await prisma.dailypricing.findMany({
+                where: {
+                    roomTypeId,
+                    date: { gte: start, lte: end }
+                }
+            });
+        }
+
+        const dateArray = [];
+        let current = new Date(start);
+
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        while (current <= end) {
+            const dayName = daysOfWeek[current.getDay()];
+            // If specific days of week are targeted, filter here
+            if (!days || days.length === 0 || days.includes(dayName)) {
+                dateArray.push(new Date(current)); // clone
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        // We use transactions to reliably upsert all dates
+        const transactionOps = [];
+
+        dateArray.forEach(dateObj => {
+            let finalPrice = basePrice;
+
+            // Apply Price Adjustment if specified
+            if (priceAdjustment) {
+                const dateKey = dateObj.toISOString().split('T')[0];
+                const existing = currentPrices.find(p => p.date.toISOString().split('T')[0] === dateKey);
+                const sourcePrice = existing ? existing.basePrice : (basePrice || 0);
+
+                if (priceAdjustment.type === 'percentage') {
+                    finalPrice = sourcePrice + (sourcePrice * (priceAdjustment.value / 100));
+                } else if (priceAdjustment.type === 'fixed') {
+                    finalPrice = sourcePrice + priceAdjustment.value;
+                }
+            }
+
+            // Pricing Upsert
+            if (finalPrice !== undefined || minStay !== undefined || maxStay !== undefined || isStopped !== undefined || closedToArrival !== undefined || closedToDeparture !== undefined) {
+                const pricingUpdate = {};
+                if (finalPrice !== undefined) pricingUpdate.basePrice = finalPrice;
+                if (minStay !== undefined) pricingUpdate.minStay = minStay;
+                if (maxStay !== undefined) pricingUpdate.maxStay = maxStay;
+                if (isStopped !== undefined) pricingUpdate.isStopped = isStopped;
+                if (closedToArrival !== undefined) pricingUpdate.closedToArrival = closedToArrival;
+                if (closedToDeparture !== undefined) pricingUpdate.closedToDeparture = closedToDeparture;
+
+                transactionOps.push(
+                    prisma.dailypricing.upsert({
+                        where: {
+                            roomTypeId_date: {
+                                roomTypeId: roomTypeId,
+                                date: dateObj
+                            }
+                        },
+                        update: pricingUpdate,
+                        create: {
+                            id: crypto.randomUUID(),
+                            roomTypeId,
+                            date: dateObj,
+                            basePrice: finalPrice !== undefined ? finalPrice : 0,
+                            minStay: minStay !== undefined ? minStay : 1,
+                            maxStay: maxStay !== undefined ? maxStay : null,
+                            isStopped: isStopped || false,
+                            closedToArrival: closedToArrival || false,
+                            closedToDeparture: closedToDeparture || false
+                        }
+                    })
+                );
+            }
+
+            // Availability Upsert
+            if (availableRooms !== undefined) {
+                transactionOps.push(
+                    prisma.roomavailability.upsert({
+                        where: {
+                            roomTypeId_date: {
+                                roomTypeId: roomTypeId,
+                                date: dateObj
+                            }
+                        },
+                        update: {
+                            availableRooms: availableRooms,
+                            totalRooms: roomType.totalInventory
+                        },
+                        create: {
+                            id: crypto.randomUUID(),
+                            roomTypeId,
+                            date: dateObj,
+                            totalRooms: roomType.totalInventory,
+                            availableRooms: availableRooms,
+                            reservedRooms: 0
+                        }
+                    })
+                );
+            }
+        });
+
+        if (transactionOps.length > 0) {
+            await prisma.$transaction(transactionOps);
+            
+            // Trigger snapshot update
+            hotelEvents.emit(PRICING_UPDATED, { hotelId, roomTypeId });
+            if (availableRooms !== undefined) {
+                hotelEvents.emit(AVAILABILITY_UPDATED, { hotelId });
+            }
+        }
+
+        return true;
+    }
+}
+
+export const calendarService = new CalendarService();

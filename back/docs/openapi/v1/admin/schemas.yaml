@@ -1,0 +1,497 @@
+components:
+  securitySchemes:
+    AdminAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Admin girişi üçün JWT token tələb olunur."
+
+  responses:
+    UnauthorizedError:
+      description: "Yetkiləndirmə xətası (Token yoxdur və ya yanlışdır)"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              message: "Yetkiləndirmə xətası"
+              status: 401
+
+    NotFoundError:
+      description: "Resurs tapılmadı"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    GenericResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Əməliyyat uğurla tamamlandı"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Tapılmadı"
+            status:
+              type: integer
+              example: 404
+
+    AdminUserRole:
+      type: string
+      enum: [admin, vendor, user]
+
+    UserStats:
+      type: object
+      properties:
+        hotels:
+          type: integer
+        restaurants:
+          type: integer
+        tours:
+          type: integer
+        vehicles:
+          type: integer
+      example:
+        hotels: 2
+        restaurants: 1
+        tours: 0
+        vehicles: 0
+
+    VendorProfile:
+      type: object
+      properties:
+        companyName:
+          type: string
+        category:
+          type: string
+      example:
+        companyName: "Karabakh Travel LLC"
+        category: "tour"
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/AdminUserRole'
+        isBanned:
+          type: boolean
+        isApproved:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        vendorProfile:
+          $ref: '#/components/schemas/VendorProfile'
+          nullable: true
+        _count:
+          $ref: '#/components/schemas/UserStats'
+          nullable: true
+
+    BusinessType:
+      type: string
+      enum: [hotel, restaurant, tour]
+
+    BusinessStatus:
+      type: string
+      enum: [pending, active, rejected, inactive]
+
+    AdminBusiness:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/BusinessType'
+        status:
+          $ref: '#/components/schemas/BusinessStatus'
+        address:
+          type: string
+        rating:
+          type: number
+        owner:
+          type: object
+          properties:
+            email:
+              type: string
+            phone:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    PendingBusinesses:
+      type: object
+      properties:
+        hotels:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBusiness'
+        restaurants:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBusiness'
+        tours:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBusiness'
+
+    BookingStatus:
+      type: string
+      enum: [draft, pending_payment, confirmed, checked_in, checked_out, cancelled, no_show, refunded]
+
+    BookingItem:
+      type: object
+      properties:
+        id:
+          type: string
+        roomTypeId:
+          type: string
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        adults:
+          type: integer
+        children:
+          type: integer
+        price:
+          type: number
+
+    BookingGuest:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    BookingAuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        meta:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminBooking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingNumber:
+          type: string
+        bookingType:
+          type: string
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        totalPrice:
+          type: number
+        currency:
+          type: string
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+        hotel:
+          type: object
+          properties:
+            name:
+              type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingItem'
+        guests:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingGuest'
+        auditLogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingAuditLog'
+        createdAt:
+          type: string
+          format: date-time
+
+    ReviewStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    ReviewType:
+      type: string
+      enum: [general, room, attraction]
+
+    AdminReview:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rating:
+          type: number
+        comment:
+          type: string
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+        hotel:
+          type: object
+          properties:
+            name:
+              type: string
+        restaurant:
+          type: object
+          properties:
+            name:
+              type: string
+        tour:
+          type: object
+          properties:
+            name:
+              type: string
+        roomType:
+          type: object
+          properties:
+            name:
+              type: string
+        attraction:
+          type: object
+          properties:
+            name:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    TransactionStatus:
+      type: string
+      enum: [pending, success, failed, reversed]
+
+    AdminTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          example: "pasha"
+        providerTransId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+          example: "AZN"
+        status:
+          $ref: '#/components/schemas/TransactionStatus'
+        paymentUrl:
+          type: string
+        errorMessage:
+          type: string
+        rawResponse:
+          type: object
+        booking:
+          type: object
+          properties:
+            bookingNumber:
+              type: string
+            totalPrice:
+              type: number
+            currency:
+              type: string
+            user:
+              type: object
+              properties:
+                email:
+                  type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminPromotion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        discountType:
+          type: string
+          enum: [percentage, fixed]
+        discountValue:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        hotelId:
+          type: string
+          format: uuid
+          nullable: true
+        hotel:
+          type: object
+          properties:
+            name:
+              type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    BlacklistEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [email, ip, phone]
+        value:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    RiskLog:
+      type: object
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+          example: "risk_evaluation"
+        details:
+          type: object
+          properties:
+            score:
+              type: integer
+            reasons:
+              type: array
+              items:
+                type: string
+            isApproved:
+              type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    PlatformAnalytics:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            totalRevenue:
+              type: number
+            bookingCount:
+              type: integer
+            occupancyRate:
+              type: number
+            impressions:
+              type: integer
+        trends:
+          type: object
+          properties:
+            revenue:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  amount:
+                    type: number
+
+    PricingRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        hotelId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [increase, decrease]
+        valueType:
+          type: string
+          enum: [percentage, fixed]
+        value:
+          type: number
+        priority:
+          type: integer
+          description: "Yüksək rəqəm daha yüksək prioritet deməkdir"
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time

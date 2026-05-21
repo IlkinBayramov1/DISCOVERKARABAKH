@@ -1,0 +1,28 @@
+paths:
+  /:
+    get:
+      tags: [Analytics]
+      summary: Get deep analytics for an attraction (Audit/Vendor Only)
+      description: Returns view distribution by day of week and hour of day for the specified period.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: days
+          in: query
+          description: Analysis period in days
+          schema:
+            type: integer
+            default: 90
+      responses:
+        200:
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: './schemas.yaml#/components/schemas/DeepAnalyticsResponse'

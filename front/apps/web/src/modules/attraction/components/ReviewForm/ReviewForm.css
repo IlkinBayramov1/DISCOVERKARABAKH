@@ -1,0 +1,157 @@
+/* ============================================
+   PREMIUM REVIEW FORM
+   ============================================ */
+
+.premium-review-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: transparent;
+}
+
+.review-error-box {
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid #fee2e2;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* --- Interactive Stars --- */
+.rating-selector-premium {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.rating-label-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stars-interactive {
+    display: flex;
+    gap: 4px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #e2e8f0; /* Default empty star color */
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+    line-height: 1;
+}
+
+.star-btn.active {
+    color: #f59e0b; /* Golden Yellow */
+}
+
+/* Beautiful hover effects for stars */
+.star-btn:hover {
+    transform: scale(1.15);
+}
+
+.stars-interactive:hover .star-btn {
+    color: #f59e0b;
+}
+
+.star-btn:hover ~ .star-btn {
+    color: #e2e8f0; /* Turns stars after the hovered one gray */
+}
+
+/* --- Text Area --- */
+.form-group-premium {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.form-group-premium textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    font-family: inherit;
+    font-size: 15px;
+    color: #0f172a;
+    resize: vertical;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group-premium textarea::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.form-group-premium textarea:focus {
+    outline: none;
+    border-color: #6a28c7; /* Primary Purple */
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(106, 40, 199, 0.1);
+}
+
+/* --- Submit Button --- */
+.submit-btn-premium {
+    background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 32px;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 20px rgba(106, 40, 199, 0.2);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit-btn-premium:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(106, 40, 199, 0.3);
+}
+
+.submit-btn-premium:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* ============================================
+   RESPONSIVENESS FOR REVIEW FORM
+   ============================================ */
+@media (max-width: 480px) {
+    .rating-selector-premium {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .star-btn {
+        font-size: 40px; /* Makes stars easier to tap on mobile */
+    }
+
+    .form-group-premium textarea {
+        padding: 12px;
+    }
+
+    .submit-btn-premium {
+        padding: 14px 20px;
+    }
+}

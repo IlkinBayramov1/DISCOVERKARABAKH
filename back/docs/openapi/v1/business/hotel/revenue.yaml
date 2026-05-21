@@ -1,0 +1,123 @@
+paths:
+  /hotels/{hotelId}/pricing-rules:
+    get:
+      summary: Get all automated pricing rules for a hotel
+      tags: [Revenue Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of pricing rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PricingRule'
+    post:
+      summary: Create a new pricing rule (e.g., Weekend Markup)
+      tags: [Revenue Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingRuleCreate'
+      responses:
+        '201':
+          description: Rule created successfully
+
+  /hotels/{hotelId}/pricing-rules/{ruleId}:
+    patch:
+      summary: Update an existing pricing rule
+      tags: [Revenue Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: ruleId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingRuleUpdate'
+      responses:
+        '200':
+          description: Rule updated successfully
+    delete:
+      summary: Delete a pricing rule
+      tags: [Revenue Management]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: ruleId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Rule deleted successfully
+
+components:
+  schemas:
+    PricingRule:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string, enum: [WEEKEND, SEASONAL, HOLIDAY, OCCUPANCY_BASED, SPECIAL] }
+        adjustment: { type: string, enum: [PERCENTAGE, FIXED_OVERRIDE, FIXED_ADDITION] }
+        value: { type: number }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        daysOfWeek: { type: string, description: 'Comma separated days, e.g., "Fri,Sat"' }
+        occupancyThreshold: { type: number, description: "Trigger threshold for occupancy based rules (0-100)" }
+        priority: { type: number }
+        isActive: { type: boolean }
+
+    PricingRuleCreate:
+      type: object
+      required: [name, type, adjustment, value]
+      properties:
+        name: { type: string }
+        roomTypeId: { type: string, nullable: true }
+        type: { type: string, enum: [WEEKEND, SEASONAL, HOLIDAY, OCCUPANCY_BASED, SPECIAL] }
+        adjustment: { type: string, enum: [PERCENTAGE, FIXED_OVERRIDE, FIXED_ADDITION] }
+        value: { type: number }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        daysOfWeek: { type: string }
+        occupancyThreshold: { type: number }
+        priority: { type: number }
+
+    PricingRuleUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [WEEKEND, SEASONAL, HOLIDAY, OCCUPANCY_BASED, SPECIAL] }
+        adjustment: { type: string, enum: [PERCENTAGE, FIXED_OVERRIDE, FIXED_ADDITION] }
+        value: { type: number }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        daysOfWeek: { type: string }
+        occupancyThreshold: { type: number }
+        priority: { type: number }
+        isActive: { type: boolean }

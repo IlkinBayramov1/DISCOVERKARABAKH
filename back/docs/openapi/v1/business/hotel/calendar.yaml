@@ -1,0 +1,115 @@
+paths:
+  /hotels/{hotelId}/calendar:
+    get:
+      summary: Get calendar data (pricing and availability)
+      tags: [Calendar]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          description: "Otel ID-si"
+          schema: { type: string }
+        - name: startDate
+          in: query
+          required: true
+          description: "Məlumatın başlama tarixi (YYYY-MM-DD)"
+          schema: { type: string, format: date }
+        - name: endDate
+          in: query
+          required: true
+          description: "Məlumatın bitmə tarixi (YYYY-MM-DD)"
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Calendar data for the specified range
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: './schemas.yaml#/components/schemas/RoomCalendar'
+
+  /hotels/{hotelId}/calendar/bulk-update:
+    post:
+      summary: Bulk update pricing and availability
+      tags: [Calendar]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yaml#/components/schemas/CalendarBulkUpdate'
+      responses:
+        '200':
+          description: Calendar updated successfully
+
+  /hotels/{hotelId}/notes:
+    get:
+      summary: Get calendar notes for a date range
+      tags: [Calendar]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: startDate
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: endDate
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: './schemas.yaml#/components/schemas/CalendarNote' }
+    post:
+      summary: Create or update a calendar note
+      tags: [Calendar]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/CalendarNoteCreate' }
+      responses:
+        '200':
+          description: Note saved successfully
+    delete:
+      summary: Delete a calendar note by date
+      tags: [Calendar]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Note deleted successfully

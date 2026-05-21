@@ -1,0 +1,466 @@
+/* ============================================
+   ULTRA PREMIUM VENDOR LOGIN CSS
+   ============================================ */
+:root {
+    --vk-primary: #6a28c7;
+    --vk-primary-hover: #561eb0;
+    --vk-accent: #9d65eb;
+    --vk-bg-form: #ffffff;
+    --vk-bg-input: #f8fafc;
+    --vk-border: #e2e8f0;
+    --vk-text-dark: #0f172a;
+    --vk-text-muted: #64748b;
+    --vk-error-bg: #fef2f2;
+    --vk-error-text: #dc2626;
+    --vk-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --vk-shadow-md: 0 10px 25px -5px rgba(106, 40, 199, 0.15);
+}
+
+.vendor-auth-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: var(--vk-bg-form);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ============================================
+   LEFT PANEL (HERO)
+   ============================================ */
+.auth-hero-panel {
+    flex: 1.2;
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=2000');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(106, 40, 199, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 60px;
+}
+
+.hero-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.hero-text-wrapper h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0 0 24px 0;
+    letter-spacing: -0.02em;
+}
+
+.hero-text-wrapper p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 480px;
+    margin: 0;
+}
+
+.hero-footer span {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   RIGHT PANEL (FORM)
+   ============================================ */
+.auth-form-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background: var(--vk-bg-form);
+}
+
+.form-container {
+    width: 100%;
+    max-width: 440px;
+}
+
+/* Brand Header inside Form */
+.brand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+/* Brand Header inside Form */
+.brand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+}
+
+/* Şəkilli Loqo üçün yeni dizayn */
+.dk-main-logo {
+    height: 60px;
+    /* Loqonuzun hündürlüyünə uyğun olaraq 40px və ya 56px edə bilərsiniz */
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.portal-badge {
+    background: #f1f5f9;
+    color: var(--vk-text-muted);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.form-header {
+    margin-bottom: 32px;
+}
+
+.form-header h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--vk-text-dark);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.03em;
+}
+
+.form-header p {
+    color: var(--vk-text-muted);
+    margin: 0;
+    font-size: 16px;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+.auth-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.auth-alert.error {
+    background: var(--vk-error-bg);
+    color: var(--vk-error-text);
+    border: 1px solid #fecaca;
+}
+
+.pulse-anim {
+    animation: gentlePulse 0.3s ease;
+}
+
+@keyframes gentlePulse {
+    0% {
+        transform: scale(0.98);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   FORM INPUTS (FLOATING LABELS)
+   ============================================ */
+.premium-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+.input-group input {
+    width: 100%;
+    background: var(--vk-bg-input);
+    border: 2px solid transparent;
+    padding: 24px 16px 10px 50px;
+    /* Space for icon and floating label */
+    border-radius: 16px;
+    font-size: 16px;
+    color: var(--vk-text-dark);
+    font-weight: 600;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    background: #ffffff;
+    border-color: var(--vk-primary);
+    box-shadow: 0 0 0 4px rgba(106, 40, 199, 0.1);
+}
+
+.input-group input:focus~.input-icon {
+    color: var(--vk-primary);
+}
+
+.input-group label {
+    position: absolute;
+    left: 50px;
+    top: 18px;
+    color: var(--vk-text-muted);
+    font-size: 16px;
+    font-weight: 500;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+/* Floating Label Animation */
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label {
+    top: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--vk-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-group input:not(:focus):not(:placeholder-shown)~label {
+    color: var(--vk-text-muted);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--vk-primary);
+    background: #f1f5f9;
+}
+
+/* ============================================
+   ACTIONS ROW (Remember Me / Forgot)
+   ============================================ */
+.form-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vk-text-dark);
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-me input {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--vk-border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remember-me input:checked~.checkmark {
+    background: var(--vk-primary);
+    border-color: var(--vk-primary);
+}
+
+.remember-me input:checked~.checkmark::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.forgot-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vk-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+    color: var(--vk-primary-hover);
+    text-decoration: underline;
+}
+
+/* ============================================
+   SUBMIT BUTTON
+   ============================================ */
+.auth-submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--vk-primary) 0%, var(--vk-accent) 100%);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--vk-shadow-md);
+    margin-top: 12px;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(106, 40, 199, 0.4);
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.auth-footer {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.auth-footer p {
+    color: var(--vk-text-muted);
+    font-size: 15px;
+    margin: 0;
+}
+
+.auth-footer a {
+    color: var(--vk-primary);
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: color 0.2s ease;
+}
+
+.auth-footer a:hover {
+    color: var(--vk-primary-hover);
+    text-decoration: underline;
+}
+
+/* ============================================
+   RESPONSIVENESS
+   ============================================ */
+@media (max-width: 1024px) {
+    .auth-hero-panel {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .vendor-auth-layout {
+        flex-direction: column;
+    }
+
+    .auth-hero-panel {
+        display: none;
+        /* Mobildə şəkli gizlədirik ki, login əsas fokus olsun */
+    }
+
+    .auth-form-panel {
+        padding: 24px;
+    }
+
+    .brand-header {
+        margin-bottom: 32px;
+    }
+
+    .form-header h2 {
+        font-size: 28px;
+    }
+}

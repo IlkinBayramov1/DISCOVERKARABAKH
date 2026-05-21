@@ -1,0 +1,86 @@
+paths:
+  /hotels/{hotelId}/booking/calculate-price:
+    post:
+      summary: Calculate total stay price with taxes and discounts
+      tags: [Booking & Pricing]
+      description: |
+        Calculates the complete price breakdown for a potential booking. 
+        It evaluates:
+        * Nightly base prices from DailyPricing
+        * Active Revenue Management rules (Weekends, Seasonality, Occupancy)
+        * Min/Max stay restrictions
+        * Coupon/Promotion validation
+        * Context-aware Tax calculation (VAT, City Tax, etc.)
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/PricingCalculationRequest' }
+      responses:
+        '200':
+          description: Detailed price breakdown
+          content:
+            application/json:
+              schema: { $ref: './schemas.yaml#/components/schemas/PricingCalculationResponse' }
+        '400':
+          description: Invalid dates, failed restrictions, or missing pricing data
+
+  /hotels/{hotelId}/rooms/{roomId}/lock:
+    post:
+      summary: Acquire a temporary inventory lock
+      tags: [Booking & Pricing]
+      description: |
+        Locks a room for a specific period (usually 10 minutes) to prevent overbooking during checkout.
+        Required for processing payments.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: roomId
+          in: path
+          required: true
+          description: "Room Type ID to lock"
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas.yaml#/components/schemas/InventoryLockRequest' }
+      responses:
+        '201':
+          description: Lock acquired successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lockId: { type: string }
+                  expiresAt: { type: string, format: date-time }
+        '409':
+          description: No availability for the selected dates
+
+  /hotels/{hotelId}/rooms/locks/{lockId}:
+    delete:
+      summary: Release an inventory lock
+      tags: [Booking & Pricing]
+      description: Manually release a lock (e.g., if user cancels the payment process).
+      parameters:
+        - name: hotelId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: lockId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Lock released

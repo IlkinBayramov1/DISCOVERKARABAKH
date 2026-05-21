@@ -1,0 +1,107 @@
+paths:
+  /:
+    get:
+      tags: [Category]
+      summary: List all attraction categories
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas.yaml#/components/schemas/AttractionCategory'
+
+  /{id}:
+    get:
+      tags: [Category]
+      summary: Get category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: './schemas.yaml#/components/schemas/AttractionCategory'
+    put:
+      tags: [Category]
+      summary: Update category (Admin Only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                image:
+                  type: string
+                  format: uri
+                description:
+                  type: string
+                order:
+                  type: integer
+      responses:
+        200:
+          description: Updated
+    delete:
+      tags: [Category]
+      summary: Delete category (Admin Only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Deleted
+
+  /:
+    post:
+      tags: [Category]
+      summary: Create new category (Admin Only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                slug:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 1000
+      responses:
+        201:
+          description: Created

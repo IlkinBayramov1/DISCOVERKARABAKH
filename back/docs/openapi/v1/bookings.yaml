@@ -1,0 +1,155 @@
+openapi: 3.0.0
+info:
+  title: Core Booking API
+  version: 1.0.0
+  description: Polymorphic booking engine for Hotels, Tours, and Events.
+
+paths:
+  /bookings:
+    post:
+      summary: Create a new booking (Hotel, Tour, or Event)
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas.yaml#/components/schemas/BookingCreateRequest' }
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }
+
+  /bookings/preview:
+    post:
+      summary: Preview booking price and availability
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas.yaml#/components/schemas/BookingCreateRequest' }
+      responses:
+        '200':
+          description: Booking preview with exact pricing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exactTotal: { type: number }
+                  pricingResult: { type: object, description: "Detailed breakdown for hotels" }
+
+  /bookings/lock:
+    post:
+      summary: Acquire inventory locks (Hotels only)
+      tags: [Bookings]
+      description: Acquires temporary locks for selected room types to prevent overbooking during payment.
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas.yaml#/components/schemas/BookingCreateRequest' }
+      responses:
+        '200':
+          description: Inventory locked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locked: { type: boolean }
+                  lockIds: { type: array, items: { type: string } }
+                  expiresAt: { type: string, format: date-time }
+
+  /bookings/my:
+    get:
+      summary: List current user's bookings
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }
+
+  /bookings/my/{id}:
+    get:
+      summary: Get details of a specific booking
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Booking details including items and guests
+          content:
+            application/json:
+              schema: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }
+
+  /bookings/{id}/cancel:
+    patch:
+      summary: Cancel a booking
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Booking cancelled
+          content:
+            application/json:
+              schema: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }
+
+  /bookings/vendor:
+    get:
+      summary: Vendor view of all bookings for their entities
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: List of bookings for the vendor
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }
+
+  /bookings/vendor/{id}/status:
+    patch:
+      summary: Approve or Reject a booking (Vendor action)
+      tags: [Bookings]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [approve, reject] }
+      responses:
+        '200':
+          description: Booking status updated
+          content:
+            application/json:
+              schema: { $ref: '../components/schemas.yaml#/components/schemas/Booking' }

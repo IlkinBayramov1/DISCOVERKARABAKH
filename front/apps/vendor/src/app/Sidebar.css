@@ -1,0 +1,267 @@
+/* ==========================================================================
+   ULTRA PREMIUM VENDOR SIDEBAR (DK DESIGN)
+   ========================================================================== */
+
+:root {
+    --dk-sb-primary: #6a28c7;
+    --dk-sb-primary-light: #8b4ddb;
+    --dk-sb-accent: #9d65eb;
+    --dk-sb-bg: #ffffff;
+    --dk-sb-bg-hover: rgba(106, 40, 199, 0.04);
+    --dk-sb-bg-active: rgba(106, 40, 199, 0.08);
+    --dk-sb-text-main: #0f172a;
+    --dk-sb-text-muted: #64748b;
+    --dk-sb-border: #e2e8f0;
+    
+    /* Layout match with VendorLayout.css */
+    --dk-sidebar-width: 280px; 
+}
+
+.dk-vendor-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--dk-sidebar-width);
+    height: 100vh;
+    background: var(--dk-sb-bg);
+    border-right: 1px solid var(--dk-sb-border);
+    /* Soft right shadow for depth */
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.03); 
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- BRANDING / HEADER --- */
+.dk-sidebar-brand {
+    min-height: 100px;
+    padding: 5px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--dk-sb-border);
+    gap: 12px;
+}
+
+.dk-sidebar-logo {
+    height: 48px;
+    object-fit: contain;
+}
+
+.dk-vendor-badge {
+    background: var(--dk-sb-bg-active);
+    color: var(--dk-sb-primary);
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* --- NAVIGATION --- */
+.dk-sidebar-nav {
+    flex: 1;
+    padding: 20px 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+    /* Premium Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.dk-sidebar-nav::-webkit-scrollbar { width: 4px; }
+.dk-sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.dk-sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+.dk-sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Space between sections */
+}
+
+/* --- SECTION LABELS --- */
+.dk-sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dk-sidebar-section-label {
+    padding: 0 16px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--dk-sb-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+}
+
+/* --- NAV LINKS --- */
+.dk-sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    color: var(--dk-sb-text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    overflow: hidden;
+}
+
+/* Left Indicator Line */
+.dk-sidebar-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 0;
+    background: var(--dk-sb-primary);
+    border-radius: 0 4px 4px 0;
+    transition: height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dk-sidebar-link:hover {
+    background: var(--dk-sb-bg-hover);
+    color: var(--dk-sb-primary);
+    transform: translateX(4px); /* Slight shift to right */
+}
+
+.dk-sidebar-link:hover::before {
+    height: 18px;
+}
+
+.dk-sidebar-link.active {
+    background: linear-gradient(90deg, var(--dk-sb-bg-active) 0%, transparent 100%);
+    color: var(--dk-sb-primary);
+    font-weight: 800; /* Bolder for active state */
+}
+
+.dk-sidebar-link.active::before {
+    height: 24px;
+    box-shadow: 0 0 12px rgba(106, 40, 199, 0.4); /* Glow effect on active */
+}
+
+/* Icons */
+.dk-sidebar-icon {
+    margin-right: 14px;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: #94a3b8;
+}
+
+.dk-sidebar-link:hover .dk-sidebar-icon {
+    color: var(--dk-sb-primary);
+    transform: scale(1.1) rotate(-5deg); /* Slight tilt bounce */
+}
+
+.dk-sidebar-link.active .dk-sidebar-icon {
+    color: var(--dk-sb-primary);
+}
+
+/* --- FOOTER & UPGRADE CARD --- */
+.dk-sidebar-footer {
+    padding: 24px 20px;
+    border-top: 1px solid var(--dk-sb-border);
+    background: var(--dk-sb-bg);
+}
+
+.dk-upgrade-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid var(--dk-sb-border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.dk-upgrade-icon {
+    width: 44px; height: 44px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+}
+
+.dk-upgrade-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dk-sb-text-main);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.dk-btn-upgrade {
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+    transition: all 0.3s ease;
+}
+
+.dk-btn-upgrade:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.4);
+}
+
+/* Animations for Links Loading */
+@keyframes sbSlideInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dk-sidebar-nav ul li { animation: sbSlideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+.dk-sidebar-nav ul li:nth-child(1) { animation-delay: 0.05s; }
+.dk-sidebar-nav ul li:nth-child(2) { animation-delay: 0.1s; }
+.dk-sidebar-nav ul li:nth-child(3) { animation-delay: 0.15s; }
+.dk-sidebar-nav ul li:nth-child(4) { animation-delay: 0.2s; }
+.dk-sidebar-nav ul li:nth-child(5) { animation-delay: 0.25s; }
+.dk-sidebar-nav ul li:nth-child(6) { animation-delay: 0.3s; }
+.dk-sidebar-nav ul li:nth-child(7) { animation-delay: 0.35s; }
+.dk-sidebar-nav ul li:nth-child(8) { animation-delay: 0.4s; }
+
+/* RESPONSIVENESS FOR MOBILE / TABLETS */
+@media (max-width: 1024px) {
+    .dk-vendor-sidebar {
+        /* On screens smaller than 1024px, the sidebar shifts off-screen.
+           You would typically toggle a class (e.g. '.mobile-open') to bring it back in via hamburger menu. */
+        transform: translateX(-100%);
+    }
+    
+    /* If a mobile toggle is applied later via state: */
+    .dk-vendor-sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    }
+}

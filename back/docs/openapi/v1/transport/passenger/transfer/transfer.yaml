@@ -1,0 +1,208 @@
+paths:
+  /api/v1/transport/rides/search:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Search for available scheduled taxis
+      description: Returns a list of vendor-owned active VIP vehicles capable of fulfilling the requested capacity and distance. Sorted by price.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pickupLocation
+                - dropoffLocation
+                - scheduledAt
+              properties:
+                paxCount:
+                  type: integer
+                  description: Number of passengers
+                distanceKm:
+                  type: number
+                  description: OSRM evaluated distance in Kilometers
+                scheduledAt:
+                  type: string
+                  format: date-time
+                pickupLocation:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+                dropoffLocation:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+      responses:
+        '200':
+          description: List of available taxis with exact pricing
+
+  /api/v1/transport/rides:
+    get:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Get My Rides
+      description: Returns all transfers requested by the authenticated passenger.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of rides
+
+  /api/v1/transport/rides/me:
+    get:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Get Assigned Rides for Driver
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of driver assigned rides
+
+  /api/v1/transport/rides/all:
+    get:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Get All Rides (Admin/Vendor)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Global rides data
+
+  /api/v1/transport/rides/{id}:
+    get:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Get specific ride details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ride data
+
+  /api/v1/transport/rides/{id}/status:
+    patch:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Update ride status natively
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Status changed
+
+  /api/v1/transport/rides/{id}/accept:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Driver Accepts Ride
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ride Accepted
+
+  /api/v1/transport/rides/{id}/reject:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Driver Rejects Ride
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ride Rejected
+
+  /api/v1/transport/rides/{id}/arrive:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Driver Arrived at Pickup
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: State moved to ARRIVED
+
+  /api/v1/transport/rides/{id}/start:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Driver Starts Ride
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: State moved to STARTED
+
+  /api/v1/transport/rides/{id}/complete:
+    post:
+      tags:
+        - "[Passenger] Transfers"
+      summary: Driver Completes Ride
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: State moved to COMPLETED

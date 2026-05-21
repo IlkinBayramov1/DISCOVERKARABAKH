@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: Tour Module API
+  version: 1.0.0
+  description: API for managing Tours, Itineraries, and Availability. Modular structure.
+
+# Domain Events
+x-events:
+  $ref: './events.yaml'
+
+paths:
+  /tours:
+    get:
+      $ref: './tour.yaml#/paths/~1tours/get'
+    post:
+      $ref: './tour.yaml#/paths/~1tours/post'
+  
+  /tours/vendor/my-tours:
+    get:
+      $ref: './tour.yaml#/paths/~1tours~1vendor~1my-tours/get'
+
+  /tours/{id}:
+    get:
+      $ref: './tour.yaml#/paths/~1tours~1{id}/get'
+    put:
+      $ref: './tour.yaml#/paths/~1tours~1{id}/put'
+    delete:
+      $ref: './tour.yaml#/paths/~1tours~1{id}/delete'
+
+  /tours/slug/{slug}:
+    get:
+      $ref: './tour.yaml#/paths/~1tours~1slug~1{slug}/get'
+
+  /tours/{id}/availability:
+    get:
+      $ref: './availability.yaml#/paths/~1tours~1{id}~1availability/get'
+
+components:
+  schemas:
+    Activity:
+      $ref: './schemas.yaml#/components/schemas/Activity'
+    DayItinerary:
+      $ref: './schemas.yaml#/components/schemas/DayItinerary'
+    Tour:
+      $ref: './schemas.yaml#/components/schemas/Tour'
+    TourCreate:
+      $ref: './schemas.yaml#/components/schemas/TourCreate'
+    TourUpdate:
+      $ref: './schemas.yaml#/components/schemas/TourUpdate'
+    TourAvailabilityResponse:
+      $ref: './schemas.yaml#/components/schemas/TourAvailabilityResponse'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

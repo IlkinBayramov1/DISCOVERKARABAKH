@@ -1,0 +1,163 @@
+paths:
+  /api/v1/transport/passenger/location/search:
+    get:
+      tags:
+        - "[Passenger] Locations"
+      summary: Search for passenger custom/shared pickup locations
+      description: Returns matching locations for the given query. Can be used for autocomplete maps feature.
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+          description: Search term (e.g. airport or generic street name)
+      responses:
+        '200':
+          description: List of matched locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        address:
+                          type: string
+                        type:
+                          type: string
+                        coordinates:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            lng:
+                              type: number
+
+  /api/v1/transport/passenger/location/{id}/select:
+    post:
+      tags:
+        - "[Passenger] Locations"
+      summary: Mark a location as selected (Increment Popularity)
+      description: Publicly called when a user picks this location from standard options, boosting its autocomplete popularity.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Popularity incremented
+
+  /api/v1/transport/passenger/location:
+    post:
+      tags:
+        - "[Passenger] Locations"
+      summary: Create a new predefined Location (Admin/Vendor)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - address
+                - coordinates
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                type:
+                  type: string
+                  example: Custom
+                coordinates:
+                  type: object
+                  required:
+                    - lat
+                    - lng
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+      responses:
+        '201':
+          description: Location successfully created
+
+  /api/v1/transport/passenger/location/manage:
+    get:
+      tags:
+        - "[Passenger] Locations"
+      summary: Retrieve predefined locations
+      description: If calling as Vendor, only returns the locations created by that Vendor. Admins see all.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of locations
+
+  /api/v1/transport/passenger/location/{id}:
+    put:
+      tags:
+        - "[Passenger] Locations"
+      summary: Update a specific location
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                type:
+                  type: string
+                coordinates:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+      responses:
+        '200':
+          description: Successfully updated Location
+    delete:
+      tags:
+        - "[Passenger] Locations"
+      summary: Delete a specific Location
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted Location

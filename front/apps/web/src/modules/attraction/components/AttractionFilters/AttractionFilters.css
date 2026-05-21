@@ -1,0 +1,132 @@
+/* Əgər root dəyişənləriniz başqa yerdə təyin olunmayıbsa, bunları istifadə edəcək */
+:root {
+    --filter-primary: #6a28c7;
+    /* Şəkildəki bənövşəyi rəng */
+    --filter-bg-active: #f0efff;
+    /* Seçilmiş elementin arxa planı */
+    --filter-border: #e2e8f0;
+    --filter-text-dark: #334155;
+    --filter-text-muted: #94a3b8;
+}
+
+.filter-block {
+    margin-bottom: 32px;
+}
+
+.filter-heading {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--filter-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* KART DİZAYNI */
+.filter-card-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--filter-border);
+    border-radius: 12px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-card-item:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}
+
+/* Orijinal radio düyməsini gizlədirik */
+.hidden-radio {
+    display: none;
+}
+
+/* CUSTOM RADİO DAİRƏSİ */
+.custom-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.filter-label-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--filter-text-dark);
+}
+
+/* ====== AKTİV (SEÇİLMİŞ) VƏZİYYƏT ====== */
+.filter-card-item.active {
+    background-color: var(--filter-bg-active);
+    border-color: var(--filter-primary);
+}
+
+/* Şəkildəki sol tərəfdəki qalın vurğu xətti */
+.filter-card-item.active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    bottom: -1px;
+    width: 5px;
+    background-color: var(--filter-primary);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+/* Aktiv radio dairəsinin rənglənməsi */
+.filter-card-item.active .custom-radio {
+    border-color: var(--filter-primary);
+}
+
+/* Aktiv radio dairəsinin içindəki nöqtə */
+.filter-card-item.active .custom-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--filter-primary);
+}
+
+.filter-card-item.active .filter-label-text {
+    color: var(--filter-primary);
+}
+
+/* Clear Filter düyməsi */
+.clear-filter-btn {
+    background: transparent;
+    border: none;
+    color: var(--filter-text-muted);
+    padding: 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.clear-filter-btn:hover {
+    color: #ef4444;
+    /* Qırmızı hover effekti */
+}

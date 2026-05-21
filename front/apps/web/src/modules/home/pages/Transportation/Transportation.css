@@ -1,0 +1,655 @@
+/* ============================================================
+   GLOBAL & CONTAINER
+   ============================================================ */
+.explore--transportation {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+/* ============================================================
+   HERO (Refined Premium Purple Bloom)
+   ============================================================ */
+.transportation-hero {
+  padding: 24px 0 32px;
+  margin-top: 60px;
+}
+
+.transportation-heroCard {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 560px;
+  background: #f8fafc;
+  box-shadow: 0 24px 50px rgba(106, 40, 199, 0.15);
+}
+
+.transportation-heroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.transportation-heroMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Premium purple bloom + plum fade overlay */
+.transportation-heroShade {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(900px circle at 20% 30%, rgba(157, 101, 235, 0.45) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20, 10, 40, 0.15) 0%, rgba(38, 15, 75, 0.85) 100%);
+}
+
+.transportation-heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 80px 56px 40px;
+  max-width: 800px;
+}
+
+.transportation-heroKicker {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.transportation-heroTitle {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-size: clamp(36px, 4.5vw, 64px);
+  line-height: 1.1;
+  text-shadow: 0 12px 30px rgba(20, 10, 40, 0.5);
+}
+
+.transportation-heroSub {
+  margin: 0 0 32px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 600px;
+  text-shadow: 0 4px 15px rgba(20, 10, 40, 0.4);
+}
+
+/* CTAs */
+.transportation-heroCtas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(106, 40, 199, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(106, 40, 199, 0.35);
+}
+
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Hero Play/Navigation Button (Premium Glassmorphism) */
+.transportation-heroPlay {
+  position: absolute;
+  right: 56px;
+  bottom: 40px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  padding: 12px 20px 12px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.transportation-heroPlay:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.playIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #6a28c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(106, 40, 199, 0.3);
+}
+
+.playText {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .transportation-heroCard { border-radius: 24px; min-height: auto; }
+  .transportation-heroContent { padding: 60px 24px 100px; max-width: 100%; }
+  .transportation-heroPlay { right: auto; left: 24px; bottom: 24px; }
+}
+
+/* ============================================================
+   ARTICLE INTRO & HEADERS (Clean Light SaaS Theme)
+   ============================================================ */
+
+.articleHead {
+  max-width: 800px;
+  margin-bottom: 60px;
+}
+
+.articleTitle {
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.articleLead {
+  font-size: 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   ARRIVAL OPTIONS GRID (Pristine White UI)
+   ============================================================ */
+.cards {
+  padding: 60px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.cardsHead {
+  margin-bottom: 40px;
+}
+
+.cardsTitle {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.cardsSub {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.placeCard {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.placeCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.1);
+  border-color: #ddd6fe;
+}
+
+.placeCard__img {
+  height: 220px;
+  overflow: hidden;
+}
+
+.placeCard__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.placeCard:hover .placeCard__img img {
+  transform: scale(1.05);
+}
+
+.placeCard__b {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.placeCard__k {
+  align-self: flex-start;
+  background: #f5f3ff;
+  color: #6a28c7;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.placeCard__t {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.placeCard__d {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.placeCard__cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6a28c7;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  margin-top: auto;
+  transition: transform 0.2s ease;
+}
+
+.placeCard:hover .placeCard__cta {
+  transform: translateX(4px);
+}
+
+/* ============================================================
+   BLOCKS (Flights, VIP, Rental)
+   ============================================================ */
+.block {
+  padding: 40px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.blockRow {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.blockRow--reverse {
+  grid-template-columns: 0.8fr 1.2fr;
+}
+
+.blockRow--reverse .blockText { order: 2; }
+.blockRow--reverse .blockAside { order: 1; }
+
+.blockH {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.blockP {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+/* Mini Grid (Flights) */
+.miniGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.miniCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.miniCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+  border-color: #cbd5e1;
+}
+
+.miniCard__k {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #6a28c7;
+  margin-bottom: 8px;
+}
+
+.miniCard__t {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.miniCard__p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Bullet Columns (VIP) & TwoUp (Rental) */
+.bulletCols, .twoUp {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.bulletCol, .twoUp__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.bulletH, .twoUp__t {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+.bulletList, .twoUp__ul {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bulletList li, .twoUp__ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.bulletIcon {
+  color: #6a28c7;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ASIDE COMPONENTS */
+.blockAside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.asideMedia {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+  height: 280px;
+}
+
+.asideMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asideCallout {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.asideCallout__k {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #6a28c7;
+  margin-bottom: 8px;
+}
+
+.asideCallout__t {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.asideCallout__p {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.asideLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #6a28c7;
+  text-decoration: none;
+  font-size: 15px;
+  transition: transform 0.2s ease;
+}
+
+.asideLink:hover {
+  transform: translateX(4px);
+}
+
+@media (max-width: 980px) {
+  .blockRow, .blockRow--reverse { grid-template-columns: 1fr; gap: 40px; }
+  .blockRow--reverse .blockText { order: 1; }
+  .blockRow--reverse .blockAside { order: 2; }
+  .asideMedia { height: 320px; }
+}
+
+/* ============================================================
+   TIPS / INFO GRID
+   ============================================================ */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.infoCard {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.infoCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.1);
+  border-color: #ddd6fe;
+}
+
+.infoCard__t {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.infoCard__d {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.infoCard__cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6a28c7;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: auto;
+  transition: transform 0.2s ease;
+}
+
+.infoCard:hover .infoCard__cta {
+  transform: translateX(4px);
+}
+
+/* ============================================================
+   END CTA (Vibrant Purple Banner)
+   ============================================================ */
+.endCta {
+  padding: 40px 0 80px;
+}
+
+.endCta__card {
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  border-radius: 32px;
+  padding: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.2);
+}
+
+.endCta__text h3 {
+  color: #ffffff;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.endCta__text p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.endCta__actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.linkBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.linkBtn--primary {
+  background: #ffffff;
+  color: #6a28c7;
+  border-color: #ffffff;
+}
+
+.linkBtn--primary:hover {
+  background: #f8fafc;
+}
+
+@media (max-width: 980px) {
+  .endCta__card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 40px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cardGrid, .infoGrid { grid-template-columns: 1fr; }
+  .endCta__actions { flex-direction: column; width: 100%; }
+  .endCta__actions .linkBtn { justify-content: center; }
+}

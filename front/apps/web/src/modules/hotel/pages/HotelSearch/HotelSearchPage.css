@@ -1,0 +1,777 @@
+/* ROOT VARIABLES */
+:root {
+    --primary-blue: #1d4ed8;
+    --primary-blue-hover: #1e3a8a;
+    --bg-color: #f6f8fb;
+    --text-dark: #111827;
+    --text-muted: #6b7280;
+    --border-light: #e5e7eb;
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+}
+
+.hotel-search-page {
+    width: 100%;
+}
+
+.container {
+    max-width: 1320px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* HERO SECTION */
+.hotel-hero {
+    position: relative;
+    height: 260px;
+    border-radius: 26px;
+    background-image: url('https://www.maritim.com/fileadmin/_processed_/0/1/csm_Bpa_363_Superior_500a005b62.jpg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.hotel-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    /* Image brightness filter */
+}
+
+.hotel-hero-overlay {
+    position: absolute;
+    bottom: 32px;
+    left: 36px;
+    color: #fff;
+    z-index: 2;
+}
+
+.hotel-hero-overlay h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.hotel-hero-overlay p {
+    font-size: 16px;
+    margin: 0;
+}
+
+
+/* SEARCH SECTION */
+/* Əsas axtarış paneli */
+.search-bar {
+    position: relative;
+    display: flex;
+    flex-direction: row !important;
+    /* Qəti olaraq yan-yana düzmək üçün */
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 999px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+    margin-top: 28px;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: nowrap !important;
+    /* Elementlərin alt-alta düşməsinin qarşısını alır */
+}
+
+/* Daxilindəki hər bir blok (Location, Check-in, Guests) */
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.search-item:hover {
+    background: rgba(106, 40, 199, 0.03);
+    border-radius: 16px;
+}
+
+/* 0. HOTEL NAME */
+.hotel-name-item {
+    flex: 1.2;
+    min-width: 200px;
+}
+
+/* 1. LOCATION */
+.location-item {
+    flex: 0.8;
+    min-width: 150px;
+    border-left: 1px solid #f1f5f9;
+}
+
+/* 2. DATE SECTION */
+.date-item {
+    flex: 1;
+    border-left: 1px solid #f1f5f9;
+}
+
+/* 3. GUESTS SECTION */
+.guest-item {
+    flex: 1;
+    min-width: 180px;
+    border-left: 1px solid #f1f5f9;
+}
+
+.search-item svg {
+    color: var(--dk-primary, #6a28c7);
+    /* Sidebar rəngi */
+    width: 22px;
+    height: 22px;
+    opacity: 0.8;
+}
+
+.search-item label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.search-value {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.search-input-naked {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    width: fit-content; /* 👈 Shrinks tightly around the text */
+    padding: 0;
+    letter-spacing: -0.02em;
+}
+
+/* Completely hide the default calendar icon since the whole text is clickable */
+.search-input-naked::-webkit-calendar-picker-indicator {
+    opacity: 0; 
+    position: absolute;
+    width: 100%;
+    cursor: pointer;
+    pointer-events: none; /* Let the click pass through to the input */
+}
+
+/* Reset internal padding */
+.search-input-naked::-webkit-datetime-edit {
+    padding: 0;
+}
+
+/* Force text colors in Chrome/Safari/Edge */
+.search-input-naked::-webkit-datetime-edit-fields-wrapper,
+.search-input-naked::-webkit-datetime-edit-text,
+.search-input-naked::-webkit-datetime-edit-month-field,
+.search-input-naked::-webkit-datetime-edit-day-field,
+.search-input-naked::-webkit-datetime-edit-year-field {
+    color: #1e293b !important;
+}
+
+.search-input-naked::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Axtarış düyməsi */
+.search-btn {
+    background: linear-gradient(135deg, var(--dk-primary, #6a28c7) 0%, var(--dk-accent, #9d65eb) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 20px rgba(106, 40, 199, 0.2);
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+.search-btn:hover {
+    /* Lift the button up */
+    transform: translateY(-3px) scale(1.02);
+    
+    /* Intesify the gradient - shifted slightly for a "light" effect */
+    background: linear-gradient(135deg, var(--dk-accent, #9d65eb) 0%, var(--dk-primary, #6a28c7) 100%);
+    
+    /* Make the shadow deeper and more spread out for depth */
+    box-shadow: 0 15px 30px rgba(106, 40, 199, 0.35);
+}
+
+.search-btn:active {
+    /* Press down effect when clicked */
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 5px 15px rgba(106, 40, 199, 0.2);
+}
+
+.search-btn-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 3px;
+}
+
+/* ============================================
+   ULTRA-PREMIUM GUEST DROPDOWN
+   ============================================ */
+.guest-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    /* Paneldən bir az aralı durması üçün */
+    right: 0;
+    /* Sağ tərəfə hizalanması daha nizamlı görünür */
+    background: #ffffff;
+    border-radius: 24px;
+    /* Daha yuvarlaq künclər */
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(106, 40, 199, 0.05);
+    /* Çox incə bənövşəyi border effekti */
+    padding: 24px;
+    width: 320px;
+    z-index: 1000;
+    animation: dropdownFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.city-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 0;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    padding: 12px;
+    width: 200px;
+    z-index: 1000;
+    animation: dropdownFadeIn 0.3s ease;
+}
+
+.city-option {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.city-option:hover {
+    background: #f1f5f9;
+    color: var(--dk-primary, #6a28c7);
+}
+
+/* Üst hissədəki kiçik üçbucaq (Arrow) */
+.city-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 30px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+/* Üst hissədəki kiçik üçbucaq (Arrow) */
+.guest-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 40px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    border-left: 1px solid rgba(106, 40, 199, 0.05);
+    border-top: 1px solid rgba(106, 40, 199, 0.05);
+}
+
+.guest-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.guest-row:last-of-type {
+    border-bottom: none;
+}
+
+.guest-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.guest-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.guest-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Kontrol Düymələri Sistemi */
+.guest-controls {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    /* Düymələrin arxa fonu */
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+}
+
+.guest-controls button {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.guest-controls button:hover {
+    background: var(--dk-primary, #6a28c7);
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(106, 40, 199, 0.2);
+}
+
+.guest-controls button:active {
+    transform: scale(0.95);
+}
+
+/* Düymə deaktiv olduqda (Məsələn: 0 uşaq) */
+.guest-controls button:disabled {
+    background: #f1f5f9;
+    color: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.guest-controls span {
+    width: 40px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+    /* Rəqəmlərin titrəməməsi üçün */
+}
+
+/* Dropdown-un aşağısına təmizləmə və ya tətbiq etmə düyməsi (Opsional amma Premium görünür) */
+.guest-dropdown-footer {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.guest-apply-btn {
+    background: transparent;
+    color: var(--dk-primary, #6a28c7);
+    border: none;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.guest-apply-btn:hover {
+    background: rgba(106, 40, 199, 0.05);
+    text-decoration: underline;
+}
+
+/* RESULTS SECTION */
+.results-bar {
+    margin: 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.ghost-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.inline-sort-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-dark);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+/* HOTEL LIST SECTION */
+.hotel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.skeleton-hotel {
+    height: 380px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    border-radius: 24px;
+    animation: loadingPulse 1.5s infinite;
+}
+
+@keyframes loadingPulse {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.empty-state-premium {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.empty-text {
+    color: var(--text-muted);
+}
+
+/* ============================================
+   SCOPED OFF-CANVAS SIDEBAR (FILTERS)
+   ============================================ */
+.hotel-search-page .sidebar-overlay {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.hotel-search-page .sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.hotel-search-page .hotel-offcanvas-sidebar {
+    position: fixed;
+    top: 80px;
+    right: 0; /* Lock to right edge */
+    width: 360px;
+    height: calc(100vh - 80px);
+    background: #ffffff;
+    z-index: 85;
+    box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.05);
+    
+    /* Perfect Slide Animation */
+    transform: translateX(100%); 
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f1f5f9;
+    box-sizing: border-box; /* Crucial for mobile */
+}
+
+.hotel-search-page .hotel-offcanvas-sidebar.active {
+    transform: translateX(0); /* Slides perfectly into view */
+}
+
+.hotel-search-page .sidebar-filter {
+    box-sizing: border-box;
+    width: 100%; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 10;
+}
+
+.hotel-search-page .sidebar-filter h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hotel-search-page .sidebar-close {
+    background: #f8fafc;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+    flex-shrink: 0; /* Prevents button from squishing */
+    margin-left: 12px; 
+}
+
+.hotel-search-page .sidebar-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+.hotel-search-page .sidebar-content {
+    padding: 30px 24px;
+}
+
+/* Sidebar filter items */
+.hotel-search-page .filter-block { margin-bottom: 35px; }
+.hotel-search-page .filter-heading { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; display: block; }
+.hotel-search-page .filter-list { display: flex; flex-direction: column; gap: 14px; }
+.hotel-search-page .filter-checkbox-item { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; font-weight: 500; color: #475569; transition: all 0.2s ease; padding: 4px 0; }
+.hotel-search-page .filter-checkbox-item:hover { color: var(--dk-primary); transform: translateX(4px); }
+
+/* Native inputs */
+.hotel-search-page .filter-checkbox-item input[type="checkbox"],
+.hotel-search-page .filter-checkbox-item input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s var(--dk-ease-bounce);
+}
+.hotel-search-page .filter-checkbox-item input[type="radio"] { border-radius: 50%; }
+.hotel-search-page .filter-checkbox-item input:checked { background: var(--dk-primary); border-color: var(--dk-primary); }
+.hotel-search-page .filter-checkbox-item input:checked::after {
+    content: "✓"; position: absolute; color: #fff; font-size: 12px;
+    top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800;
+}
+.hotel-search-page .filter-checkbox-item input[type="radio"]:checked::after {
+    content: ""; width: 8px; height: 8px; background: #ffffff; border-radius: 50%;
+}
+
+.hotel-search-page .clear-filter-btn {
+    background: rgba(106, 40, 199, 0.05); border: none; color: var(--dk-primary);
+    padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+    margin-top: 12px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
+}
+.hotel-search-page .clear-filter-btn:hover { background: var(--dk-primary); color: #ffffff; }
+
+/* Scrollbar */
+.hotel-search-page .hotel-offcanvas-sidebar::-webkit-scrollbar { width: 5px; }
+.hotel-search-page .hotel-offcanvas-sidebar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+
+/* ============================================
+   ULTIMATE RESPONSIVE DESIGN (300px to Infinity)
+   ============================================ */
+
+/* 1. LARGE SCREENS & ULTRA-WIDE (1440px+) */
+@media (min-width: 1440px) {
+    .hotel-search-page .container { max-width: 1400px; }
+    .hotel-search-page .hotel-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+}
+
+/* 2. LAPTOPS & DESKTOPS (1025px - 1439px) */
+@media (max-width: 1439px) {
+    .hotel-search-page .hotel-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 3. TABLETS & SMALL LAPTOPS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .hotel-search-page .hotel-hero { height: 220px; }
+    .hotel-search-page .hotel-hero-overlay h1 { font-size: 32px; }
+    
+    .hotel-search-page .search-bar { padding: 8px; gap: 5px; }
+    .hotel-search-page .search-item { padding: 10px 15px; gap: 8px; }
+    .hotel-search-page .search-value, 
+    .hotel-search-page .search-input-naked { font-size: 13px; width: 110px; }
+}
+
+/* 4. MOBILE LANDSCAPE & LARGE PHONES (481px - 768px) */
+@media (max-width: 768px) {
+    .hotel-search-page .container { padding: 15px; }
+
+    /* Fix Search Bar Overlap */
+    .hotel-search-page .search-bar {
+        flex-direction: column !important;
+        border-radius: 24px;
+        padding: 16px;
+        gap: 0;
+        margin-top: 20px; /* POSITIVE MARGIN: Pushes it safely below the hero */
+        z-index: 5;
+    }
+
+    .hotel-search-page .search-item {
+        width: 100%;
+        border-left: none !important;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 15px 10px;
+        flex: none;
+    }
+    .hotel-search-page .search-item:last-of-type { border-bottom: none; }
+    .hotel-search-page .search-input-naked { width: 100%; font-size: 15px; }
+    .hotel-search-page .search-btn { width: 100%; margin-left: 0; margin-top: 15px; justify-content: center; padding: 18px; }
+
+    .hotel-search-page .hotel-grid { grid-template-columns: 1fr; gap: 20px; }
+    
+    .hotel-search-page .results-bar { flex-direction: column; align-items: stretch; gap: 15px; }
+    .hotel-search-page .results-bar .actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .hotel-search-page .ghost-btn { justify-content: center; }
+
+    /* Full Screen Sidebar Fixes */
+    .hotel-search-page .hotel-offcanvas-sidebar {
+        width: 100vw !important; 
+        top: 64px !important; 
+        height: calc(100vh - 64px) !important;
+    }
+    .hotel-search-page .sidebar-overlay { top: 64px !important; }
+
+    .hotel-search-page .guest-dropdown { width: calc(100vw - 60px); right: 0; left: 0; margin: auto; }
+}
+
+/* 5. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .hotel-search-page .hotel-hero { height: 180px; border-radius: 16px; }
+    .hotel-search-page .hotel-hero-overlay { left: 20px; bottom: 20px; }
+    .hotel-search-page .hotel-hero-overlay h1 { font-size: 24px; }
+    .hotel-search-page .hotel-hero-overlay p { font-size: 14px; }
+
+    /* Fix Search Bar Overlap */
+    .hotel-search-page .search-bar {
+        margin-top: 16px; /* Clean spacing for small screens */
+    }
+
+    .hotel-search-page .search-item label { font-size: 9px; }
+    .hotel-search-page .search-value { font-size: 14px; }
+    .hotel-search-page .results-bar span { font-size: 14px; }
+    
+    /* 2 COLUMNS ON MOBILE (Consistent with Tours/Attractions) */
+    .hotel-search-page .hotel-grid {
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+    }
+
+    .hotel-search-page .sidebar-content { padding: 20px 15px; }
+    .hotel-search-page .filter-checkbox-item { font-size: 14px; }
+}
+
+/* 6. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .hotel-search-page .hotel-hero-overlay h1 { font-size: 20px; }
+    .hotel-search-page .results-bar .actions { grid-template-columns: 1fr; }
+}
+
+/* 7. HEIGHT-SPECIFIC (Mobile Landscape) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hotel-search-page .hotel-hero { height: 140px; }
+    .hotel-search-page .hotel-offcanvas-sidebar { padding-bottom: 80px; }
+}

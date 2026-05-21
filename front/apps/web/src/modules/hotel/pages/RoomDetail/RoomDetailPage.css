@@ -1,0 +1,805 @@
+/* ============================================
+   DISCOVER KARABAKH - ROOM DETAIL GLOBAL STYLES (SCALED TO 80% PROPORTIONS)
+   ============================================ */
+:root {
+  --dk-primary: #6a28c7;
+  --dk-primary-light: #8b4ddb;
+  --dk-accent: #ffb800;
+  --dk-bg-main: #f8fafc;
+  --dk-card-bg: #ffffff;
+  --dk-text-dark: #0f172a;
+  --dk-text-muted: #64748b;
+  --dk-border: #e2e8f0;
+  
+  --dk-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.04);
+  --dk-shadow-md: 0 12px 30px rgba(106, 40, 199, 0.08);
+  --dk-shadow-lg: 0 20px 50px rgba(106, 40, 199, 0.15);
+  
+  --dk-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--dk-bg-main);
+  color: var(--dk-text-dark);
+  font-family: var(--dk-font-family);
+  margin: 0;
+}
+
+.container {
+  max-width: 1100px; /* 1320px-dən 1100px-ə endirildi ki, ekrana tam sığsın */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Reusable Premium Card Style */
+.premium-card {
+  background: var(--dk-card-bg);
+  border-radius: 20px; /* 24px-dən 20px-ə */
+  border: 1px solid var(--dk-border);
+  box-shadow: var(--dk-shadow-sm);
+  transition: all 0.3s ease;
+}
+
+/* State Styles */
+.room-detail-loading, .room-detail-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+  gap: 16px;
+  color: var(--dk-text-muted);
+  font-weight: 500;
+}
+
+.room-detail-loading i {
+  font-size: 40px;
+  color: var(--dk-primary);
+}
+
+.room-detail-error h2 {
+  font-size: 32px;
+  color: var(--dk-text-dark);
+  margin: 0;
+}
+
+.back-btn-premium {
+  background: var(--dk-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.back-btn-premium:hover {
+  background: var(--dk-primary-light);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   PREMIUM HERO SECTION (NO THUMBNAILS)
+   ============================================ */
+.room-hero-premium {
+  position: relative;
+  margin-bottom: 30px; /* Changed from -60px to a positive 30px for clean separation */
+  width: 100%;
+}
+
+.hero-gallery-container {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  min-height: 400px;
+  max-height: 600px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+/* Şəkil dəyişərkən işə düşən axıcı animasiya */
+.hero-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: heroImgFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes heroImgFade {
+  from { transform: scale(1.05); opacity: 0.6; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* -------------------------------------
+   Yuxarı Qradient & Geri Düyməsi
+   ------------------------------------- */
+.hero-top-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  padding: 30px 0 80px 0;
+  z-index: 10;
+}
+
+.back-link-btn-premium {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.back-link-btn-premium:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* -------------------------------------
+   Naviqasiya Oxları (Fixed Clicks)
+   ------------------------------------- */
+.hero-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20; /* INCREASED from 10 to 20 so it sits above everything */
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.hero-nav-arrow:hover {
+  background: #ffffff;
+  color: var(--dk-primary);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+.hero-nav-arrow.prev { left: max(20px, calc((100% - 1100px) / 2)); }
+.hero-nav-arrow.next { right: max(20px, calc((100% - 1100px) / 2)); }
+
+
+/* -------------------------------------
+   Overlays (Made Click-Through)
+   ------------------------------------- */
+.hero-top-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  padding: 30px 0 80px 0;
+  z-index: 10;
+  pointer-events: none; /* PREVENTS the gradient from blocking clicks */
+}
+
+.hero-bottom-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  padding: 80px 0 80px 0;
+  z-index: 10;
+  pointer-events: none; /* PREVENTS the gradient from blocking clicks */
+}
+
+/* Reactivates clicks ONLY for the buttons inside the overlays */
+.hero-top-overlay .container,
+.hero-bottom-overlay .container {
+  pointer-events: auto; 
+}
+
+.hero-counter-pill {
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 13px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+
+/* ============================================
+   MAIN CONTENT & LAYOUT
+   ============================================ */
+.room-main-content {
+  position: relative;
+  z-index: 5;
+  padding-bottom: 80px;
+}
+
+.room-grid-layout {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr; /* Daha uyğun sidebar nisbəti */
+  gap: 24px; /* 40px-dən 24px-ə endirildi */
+  align-items: flex-start;
+}
+
+.room-info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 30px-dən 20px-ə */
+}
+
+/* ============================================
+   LEFT COLUMN CARDS
+   ============================================ */
+.room-header-card {
+  padding: 24px 30px; /* 40px-dən kiçildildi */
+}
+
+.hotel-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--dk-text-muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.hotel-link {
+  color: var(--dk-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.hotel-link:hover {
+  text-decoration: underline;
+}
+
+.room-title {
+  font-size: 32px; /* 42px-dən 32px-ə endirildi */
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  color: var(--dk-text-dark);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.room-badges-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--dk-border);
+  padding-top: 16px;
+}
+
+.badge-premium-suite {
+  background: rgba(106, 40, 199, 0.08);
+  color: var(--dk-primary);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-premium-suite i {
+  color: var(--dk-accent);
+}
+
+.hotel-stars-premium {
+  display: flex;
+  gap: 4px;
+  font-size: 15px;
+  color: var(--dk-accent);
+}
+
+/* Specs Bar */
+.room-specs-premium-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px; /* 20px-dən 12px-ə */
+}
+
+.spec-item-premium {
+  background: var(--dk-card-bg);
+  padding: 16px; /* 25px-dən 16px-ə */
+  border-radius: 16px;
+  border: 1px solid var(--dk-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--dk-shadow-sm);
+}
+
+.spec-item-premium i {
+  font-size: 20px;
+  color: var(--dk-primary);
+  background: rgba(106, 40, 199, 0.08);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.spec-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.spec-texts label {
+  font-size: 11px; /* Kiçildildi */
+  color: var(--dk-text-muted);
+  font-weight: 600;
+}
+
+.spec-texts strong {
+  font-size: 15px; /* 18px-dən 15px-ə */
+  font-weight: 800;
+  color: var(--dk-text-dark);
+}
+
+/* Description & Amenities */
+.room-description-card, .room-amenities-card {
+  padding: 24px 30px; /* 35px 40px-dən kiçildildi */
+}
+
+.room-description-card h3, .room-amenities-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-description-card h3 i, .room-amenities-card h3 i {
+  color: var(--dk-primary);
+}
+
+.room-description-card p {
+  color: var(--dk-text-muted);
+  line-height: 1.6;
+  font-size: 14px; /* 16px-dən 14px-ə */
+  margin: 0;
+}
+
+/* Amenities Grid */
+.amenities-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.am-item-premium {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dk-text-dark);
+}
+
+.icon-wrapper {
+  background: #f1f5f9;
+  color: var(--dk-primary-light);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+/* ============================================
+   LOCATION / MAP SECTION
+   ============================================ */
+.room-location-card-wrapper {
+  margin-top: 10px;
+}
+
+.section-title-premium {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title-premium i {
+  color: var(--dk-primary);
+}
+
+.clickable-map-card-horizontal {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.clickable-map-card-horizontal:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--dk-shadow-md);
+  border-color: var(--dk-primary-light);
+}
+
+.map-embed-container {
+  height: 240px; /* 320px-dən 240px-ə endirildi */
+  width: 100%;
+  position: relative;
+  background: #eee;
+}
+
+.map-premium-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(106, 40, 199, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.clickable-map-card-horizontal:hover .map-premium-overlay {
+  background: rgba(106, 40, 199, 0);
+}
+
+.map-pin-animation {
+  width: 20px;
+  height: 20px;
+  background: var(--dk-primary);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 10px rgba(106, 40, 199, 0.15);
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(106, 40, 199, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(106, 40, 199, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(106, 40, 199, 0); }
+}
+
+.map-action-text {
+  margin-top: 12px;
+  background: white;
+  color: var(--dk-primary);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.map-info-pane {
+  padding: 20px 24px;
+}
+
+.location-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dk-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.map-info-pane h4 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: var(--dk-text-dark);
+}
+
+.map-info-pane p {
+  color: var(--dk-text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ============================================
+   RIGHT SIDEBAR (BOOKING CARD)
+   ============================================ */
+.room-booking-sidebar {
+  position: sticky;
+  top: 90px;
+  z-index: 10;
+}
+
+.booking-sticky-card-premium {
+  background: var(--dk-card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--dk-border);
+  padding: 24px; /* 35px-dən 24px-ə endirildi */
+  box-shadow: var(--dk-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Pricing Header */
+.card-pricing-header {
+  border-bottom: 1px solid var(--dk-border);
+  padding-bottom: 16px;
+}
+
+.tax-fees-notice {
+  font-size: 11px;
+  color: var(--dk-text-muted);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.price-main {
+  font-size: 32px; /* 40px-dən 32px-ə endirildi */
+  font-weight: 900;
+  color: var(--dk-primary);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.price-sub {
+  font-size: 13px;
+  color: var(--dk-text-muted);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* States */
+.preview-calculating, .preview-error {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.preview-calculating { color: var(--dk-primary-light); }
+.preview-error { color: #ef4444; }
+
+/* Selectors Container */
+.booking-selectors-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.premium-input-group {
+  background: #f1f5f9;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Dates Picker */
+.dates-picker {
+  display: flex;
+  align-items: center;
+}
+
+.date-input-wrapper {
+  flex: 1;
+  padding: 12px 16px; /* Kiçildildi */
+}
+
+.input-divider {
+  width: 1px;
+  height: 30px;
+  background: #cbd5e1;
+}
+
+.date-input-wrapper label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.date-input-wrapper label i {
+  color: var(--dk-primary-light);
+}
+
+.date-input-wrapper input {
+  background: transparent;
+  border: none;
+  font-family: var(--dk-font-family);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dk-text-dark);
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Guests Picker */
+.guests-picker {
+  padding: 8px 16px;
+}
+
+.guest-control-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.guest-control-block:first-child {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.label-with-icon i {
+  color: var(--dk-primary-light);
+  width: 14px;
+  text-align: center;
+}
+
+.stepper-controls-premium {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 4px;
+  border-radius: 50px;
+  border: 1px solid #e2e8f0;
+}
+
+.stepper-controls-premium button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: var(--dk-text-dark);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepper-controls-premium button:hover:not(:disabled) {
+  background: var(--dk-primary);
+  color: white;
+}
+
+.stepper-controls-premium button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.current-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dk-text-dark);
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Final Actions */
+.date-hint-premium {
+  font-size: 12px;
+  background: rgba(255, 184, 0, 0.1);
+  color: #b28000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reserve-btn-premium-final {
+  background: linear-gradient(135deg, var(--dk-primary) 0%, var(--dk-primary-light) 100%);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(106, 40, 199, 0.2);
+}
+
+.reserve-btn-premium-final:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(106, 40, 199, 0.3);
+}
+
+.no-immediate-charge {
+  font-size: 12px;
+  color: #16a34a; /* Green */
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1200px) {
+  .room-title { font-size: 28px; }
+  .room-specs-premium-bar { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 992px) {
+  .room-grid-layout { grid-template-columns: 1fr; }
+  .room-booking-sidebar { position: static; margin-top: 30px; }
+  .hero-gallery-container { height: 40vh; }
+}
+
+@media (max-width: 768px) {
+  .room-header-card { padding: 20px; }
+  .room-title { font-size: 24px; }
+  .amenities-grid-premium { grid-template-columns: 1fr; }
+  .room-specs-premium-bar { gap: 10px; }
+  .spec-item-premium { padding: 12px; }
+  .map-info-pane { padding: 16px; }
+  .map-embed-container { height: 200px; }
+  .room-badges-row { flex-direction: column; gap: 12px; align-items: flex-start; }
+}

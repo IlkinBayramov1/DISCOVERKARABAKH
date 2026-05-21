@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Test - Tracking</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 45%;
+        }
+
+        #logs {
+            margin-top: 20px;
+            background: #f0f0f0;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+            font-family: monospace;
+        }
+
+        input,
+        button {
+            margin: 5px 0;
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🚗 Enterprise Dispatch Engine Test Tool</h2>
+    <p>Open this file in your browser to test the full lifecycle: Location Search -> Dispatch Allocation -> Socket
+        tracking.</p>
+
+    <div class="container">
+        <!-- DRIVER SECTION -->
+        <div class="box">
+            <h3>👨‍✈️ Driver Simulator</h3>
+            <label>Auth Token (Driver):</label>
+            <input type="text" id="driverToken" placeholder="Paste Bearer Driver Token">
+            <button onclick="connectDriver()">Connect as Driver</button>
+            <hr>
+            <label>Ride ID:</label>
+            <input type="text" id="rideId" placeholder="e.g. 123" value="123">
+            <button onclick="joinRoomDriver()">Join Room (ride_123)</button>
+            <hr>
+            <label>Simulate Movement:</label>
+            <button onclick="startSendingLocation()">Start Sending Location</button>
+            <button onclick="stopSendingLocation()">Stop</button>
+            <p id="driverStatus">Status: Disconnected</p>
+        </div>
+
+        <!-- PASSENGER SECTION -->
+        <div class="box">
+            <h3>🧍 Passenger Simulator</h3>
+            <label>Auth Token (Passenger):</label>
+            <input type="text" id="passengerToken" placeholder="Paste Bearer Passenger Token">
+            <button onclick="connectPassenger()">Connect as Passenger</button>
+            <hr>
+            <label>Ride ID:</label>
+            <input type="text" id="passengerRideId" placeholder="e.g. 123" value="123">
+            <button onclick="joinRoomPassenger()">Join Room (ride_123)</button>
+            <hr>
+            <label>Trip Locations (Search backend DB):</label>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <input type="text" id="pickupSearch" placeholder="Where from? (e.g. Hazi)">
+                <button onclick="searchBackendLocation('pickup')">Search</button>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="dropoffSearch" placeholder="Where to? (e.g. Port)">
+                <button onclick="searchBackendLocation('dropoff')">Search</button>
+            </div>
+            <!-- Search Results Dropdown Simulation -->
+            <div id="searchResults" style="margin-top: 10px; background: #eee; padding: 5px; min-height: 20px;">
+                <em>Search results will appear here...</em>
+            </div>
+
+            <hr>
+            <button onclick="triggerDispatchRide()" style="background: green; color: white;">🚀 Trigger Dispatch Ride
+                (API)</button>
+
+            <div id="mapMock" style="height: 300px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
+            <p id="passengerStatus">Status: Disconnected</p>
+        </div>
+    </div>
+
+    <div id="logs"></div>
+
+    <script>
+        let driverSocket, passengerSocket;
+        let intervalId;
+
+        // Leaflet Map Initialization
+        let map;
+        let driverMarker;
+        let routingControl;
+        let routeCoordinates = [];
+        let simulationStep = 0;
+        let geocoder;
+
+        let pickupPoint = null; // Wait for search selection
+        let dropoffPoint = null;
+
+        // Base Map Center
+        const defaultCenter = [40.4093, 49.8671];
+
+        function initMap() {
+            // Default center around Baku
+            map = L.map('mapMock').setView([40.4093, 49.8671], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            const carIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/3204/3204018.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            // Add marker at default position
+            driverMarker = L.marker(pickupPoint, { icon: carIcon }).addTo(map);
+
+            // Initialize Routing Control empty initially
+            routingControl = L.Routing.control({
+                waypoints: [],
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+                createMarker: function () { return null; },
+                routeWhileDragging: false,
+                addWaypoints: false,
+                show: false
+            }).addTo(map);
+
+            routingControl.on('routesfound', function (e) {
+                const routes = e.routes;
+                routeCoordinates = routes[0].coordinates;
+                simulationStep = 0; // Reset simulation if route changes
+                log(`🛣️ System plotted a real road route with ${routeCoordinates.length} points.`);
+
+                // Jump driver marker to new start
+                driverMarker.setLatLng(routeCoordinates[0]);
+                map.panTo(routeCoordinates[0]);
+            });
+
+            geocoder = L.Control.Geocoder.nominatim();
+        }
+
+        // Enterprise Custom Search directly from Node.js Location Module
+        async function searchBackendLocation(type) {
+            const inputId = type === 'pickup' ? 'pickupSearch' : 'dropoffSearch';
+            const query = document.getElementById(inputId).value;
+            if (!query) return alert('Enter a location name first.');
+
+            log(`🔍 Searching Enterprise Dispatch DB for: ${query}...`);
+
+            const token = document.getElementById('passengerToken').value;
+
+            try {
+                // Hitting the newly minted @@fulltext Location endpoint
+                const response = await fetch(`http://localhost:4004/api/v1/transport/passenger/location/search?q=${query}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const json = await response.json();
+                const resultsContainer = document.getElementById('searchResults');
+
+                if (json.success && json.data.length > 0) {
+                    let html = `<strong>Matches:</strong><ul>`;
+                    json.data.forEach(loc => {
+                        html += `<li>
+                                    <a href="#" onclick="selectLocation(${loc.id}, ${loc.lat}, ${loc.lng}, '${loc.name}', '${type}')">
+                                      ${loc.name} (${loc.type}) - Score: ${loc.popularity}
+                                    </a>
+                                 </li>`;
+                    });
+                    html += `</ul>`;
+                    resultsContainer.innerHTML = html;
+                    log(`✅ Found ${json.data.length} locations matching ${query}. Select from list.`);
+                } else {
+                    resultsContainer.innerHTML = '<em>No locations found matching that query.</em>';
+                    log(`❌ Location ${query} not found in DB.`);
+                }
+
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`);
+            }
+        }
+
+        async function selectLocation(locId, lat, lng, name, type) {
+            document.getElementById('searchResults').innerHTML = '<em>Selection locked. Search another if needed.</em>';
+            const newPoint = L.latLng(lat, lng);
+            const token = document.getElementById('passengerToken').value;
+
+            if (type === 'pickup') {
+                pickupPoint = newPoint;
+                log(`✅ Pick-up set to: ${name}`);
+            } else {
+                dropoffPoint = newPoint;
+                log(`✅ Drop-off set to: ${name}`);
+            }
+
+            // Tell Backend to Boost Popularity count (Redis/MySQL DB)
+            try {
+                await fetch(`http://localhost:4004/api/v1/transport/passenger/location/${locId}/select`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                log(`📈 Boosted location popularity rating for ${name}.`);
+            } catch (e) { }
+
+            // Recalculate route if both points exist
+            if (pickupPoint && dropoffPoint) {
+                routingControl.setWaypoints([pickupPoint, dropoffPoint]);
+            } else if (pickupPoint) {
+                driverMarker.setLatLng(pickupPoint);
+                map.panTo(pickupPoint);
+            }
+        }
+
+        async function triggerDispatchRide() {
+            if (!pickupPoint || !dropoffPoint) {
+                return alert("Please search and select BOTH Pick-up and Drop-off points first.");
+            }
+            const token = document.getElementById('passengerToken').value;
+            if (!token) return alert('Enter Passenger Token to book ride.');
+
+            log(`🚀 Submitting Payload to Enterprise Dispatch Engine (RedLock/RetryQueues)...`);
+
+            try {
+                const response = await fetch(`http://localhost:4004/api/v1/transport/rides`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pickupLocation: { lat: pickupPoint.lat, lng: pickupPoint.lng },
+                        dropoffLocation: { lat: dropoffPoint.lat, lng: dropoffPoint.lng },
+                        vehicleCategory: "Economy" // Hardcoded for test
+                    })
+                });
+
+                const json = await response.json();
+                if (json.success) {
+                    log(`✨ RIDE CREATED! Dispatch Engine took over. ID: ${json.data.id}`);
+                    log(`💰 Surge Price Calculated: $${json.data.price}`);
+                    document.getElementById('passengerRideId').value = json.data.id;
+                    document.getElementById('rideId').value = json.data.id; // Also sync for Driver box
+                    alert(`Ride Triggered! State: ${json.data.status}`);
+                } else {
+                    log(`❌ Dispatch Error: ${json.message}`);
+                }
+            } catch (error) {
+                log(`❌ Dispatch Exception: ${error.message}`);
+            }
+        }
+
+        // Call init immediately to show the map UI
+        document.addEventListener('DOMContentLoaded', initMap);
+
+        function log(msg) {
+            const logs = document.getElementById('logs');
+            logs.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // --- DRIVER ---
+        function connectDriver() {
+            const token = document.getElementById('driverToken').value;
+            if (!token) return alert('Enter Driver Token!');
+
+            driverSocket = io('http://localhost:4004', {
+                auth: { token: token }
+            });
+
+            driverSocket.on('connect', () => {
+                document.getElementById('driverStatus').innerText = 'Status: Connected ✅';
+                log('👨‍✈️ Driver Connected');
+            });
+
+            driverSocket.on('connect_error', (err) => {
+                log('❌ Driver Connection Error: ' + err.message);
+            });
+
+            driverSocket.on('driverLocation', (data) => {
+                log(`📡 (Driver View) Server broadcasted location: ${data.location.lat}, ${data.location.lng}`);
+            });
+        }
+
+        function joinRoomDriver() {
+            const rideId = document.getElementById('rideId').value;
+            driverSocket.emit('joinRoom', `ride_${rideId}`);
+            log(`👨‍✈️ Driver joining room: ride_${rideId}`);
+        }
+
+        function startSendingLocation() {
+            const rideId = document.getElementById('rideId').value;
+
+            if (routeCoordinates.length === 0) {
+                return alert("Still plotting road route. Try again in a second.");
+            }
+
+            log('🚦 Simulating realistic driving along the route...');
+
+            intervalId = setInterval(() => {
+                if (simulationStep >= routeCoordinates.length) {
+                    stopSendingLocation();
+                    log('🏁 Destination Reached!');
+                    return;
+                }
+
+                const currentPoint = routeCoordinates[simulationStep];
+                const lat = currentPoint.lat;
+                const lng = currentPoint.lng;
+
+                // Move slightly faster by skipping some micro-points (e.g. step by 5)
+                simulationStep += 8;
+
+                driverSocket.emit('updateLocation', {
+                    rideId: rideId,
+                    lat: lat,
+                    lng: lng
+                });
+                log(`📤 Driver sent location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }, 1500);
+        }
+
+        function stopSendingLocation() {
+            clearInterval(intervalId);
+            log('🛑 Driver stopped sending');
+        }
+
+        // --- PASSENGER ---
+        function connectPassenger() {
+            const token = document.getElementById('passengerToken').value;
+            if (!token) return alert('Enter Passenger Token!');
+
+            passengerSocket = io('http://localhost:4004', {
+                auth: { token: token }
+            });
+
+            passengerSocket.on('connect', () => {
+                document.getElementById('passengerStatus').innerText = 'Status: Connected ✅';
+                log('🧍 Passenger Connected');
+            });
+
+            passengerSocket.on('connect_error', (err) => {
+                log('❌ Passenger Connection Error: ' + err.message);
+            });
+
+            passengerSocket.on('driverLocation', (data) => {
+                const lat = data.location.lat;
+                const lng = data.location.lng;
+
+                // Update Map
+                driverMarker.setLatLng([lat, lng]);
+                map.panTo([lat, lng]);
+
+                log(`📥 Passenger received location update: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            });
+        }
+
+        function joinRoomPassenger() {
+            const rideId = document.getElementById('passengerRideId').value;
+            passengerSocket.emit('joinRoom', `ride_${rideId}`);
+            log(`🧍 Passenger joining room: ride_${rideId}`);
+        }
+
+    </script>
+</body>
+
+</html>

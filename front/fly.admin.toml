@@ -1,0 +1,15 @@
+app = "discoverkarabakh-admin"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile.admin"
+
+[build.args]
+  VITE_API_URL = "https://discoverkarabakh-test.fly.dev/api/v1"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0

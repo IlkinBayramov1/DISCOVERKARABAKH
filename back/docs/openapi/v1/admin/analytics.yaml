@@ -1,0 +1,36 @@
+paths:
+  /admins/analytics:
+    get:
+      tags:
+        - Admin Analytics
+      summary: "Platforma üzrə bütün göstəriciləri (Dashboard) gətirir"
+      description: "Admin panelinin əsas səhifəsi üçün gəlir, bron sayı, doluluq dərəcəsi və son 30 günlük trendləri qaytarır."
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: "Uğurlu cavab"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: 'schemas.yaml#/components/schemas/PlatformAnalytics'
+        '401':
+          $ref: 'schemas.yaml#/components/responses/UnauthorizedError'

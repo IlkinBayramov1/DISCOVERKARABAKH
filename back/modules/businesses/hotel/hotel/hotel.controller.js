@@ -1,0 +1,108 @@
+import { hotelService } from './hotel.service.js';
+import { successResponse } from '../../../../core/api.response.js';
+
+class HotelController {
+    async create(req, res, next) {
+        try {
+            const hotel = await hotelService.create(req.user.id, req.body);
+            return successResponse(res, hotel, { message: 'Hotel listing created successfully and is pending approval.' }, 201);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getHotels(req, res, next) {
+        try {
+            const hotels = await hotelService.findAll(req.query);
+            return successResponse(res, hotels, { count: hotels.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getVendorHotels(req, res, next) {
+        try {
+            const hotels = await hotelService.findByVendor(req.user.id);
+            return successResponse(res, hotels, { count: hotels.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getVendorRooms(req, res, next) {
+        try {
+            const rooms = await hotelService.findRoomsByVendor(req.user.id);
+            return successResponse(res, rooms, { count: rooms.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getVendorHotelReviews(req, res, next) {
+        try {
+            const reviews = await hotelService.findReviewsByVendor(req.user.id);
+            return successResponse(res, reviews, { count: reviews.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getHotelById(req, res, next) {
+        try {
+            const hotel = await hotelService.findById(req.params.id);
+            return successResponse(res, hotel);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async update(req, res, next) {
+        try {
+            const hotel = await hotelService.update(req.params.id, req.user.id, req.body, req.user.role);
+            return successResponse(res, hotel, { message: 'Hotel updated successfully.' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async delete(req, res, next) {
+        try {
+            await hotelService.delete(req.params.id, req.user.id, req.user.role);
+            return successResponse(res, null, { message: 'Hotel permanently deleted.' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getAnalytics(req, res, next) {
+        try {
+            const analytics = await hotelService.getAnalytics(req.user.id, req.query);
+            return successResponse(res, analytics);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async validateCoupon(req, res, next) {
+        try {
+            const { code, total, hotelId } = req.body;
+            const { promotionService } = await import('../pricing/promotion.service.js');
+            
+            const promo = await promotionService.validateCoupon(code, total, hotelId);
+            const discount = promotionService.calculateDiscount(total, promo);
+            
+            return successResponse(res, {
+                isValid: true,
+                code: promo.code,
+                name: promo.name,
+                discountAmount: discount,
+                discountType: promo.discountType,
+                discountValue: promo.discountValue
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+}
+
+export const hotelController = new HotelController();

@@ -1,0 +1,265 @@
+/* ============================================
+   ULTRA PREMIUM FAVORITES PAGE CSS
+   ============================================ */
+
+:root {
+    --dk-primary: #6a28c7;
+    --dk-primary-light: #8b4ddb;
+    --dk-accent: #9d65eb;
+    --dk-bg-main: #f8fafc;
+    --dk-card-bg: #ffffff;
+    --dk-text-dark: #0f172a;
+    --dk-text-muted: #64748b;
+    --dk-border: #f1f5f9;
+    --dk-border-darker: #e2e8f0;
+    --dk-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.03);
+    --dk-shadow-md: 0 10px 25px rgba(106, 40, 199, 0.06);
+}
+
+.favorites-page {
+    background: var(--dk-bg-main);
+    min-height: 100vh;
+    padding: 40px 24px 80px 24px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--dk-text-dark);
+}
+
+.favorites-container {
+    max-width: 1320px; /* Matched to Premium Standard */
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.favorites-header {
+    margin-bottom: 32px;
+}
+
+.favorites-header h1 {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--dk-text-dark);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.favorites-header p {
+    color: var(--dk-text-muted);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ============================================
+   TABS NAVIGATION
+   ============================================ */
+/* Wrapper enables horizontal scrolling on small mobile screens */
+.favorites-tabs-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--dk-border);
+}
+
+.favorites-tabs-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.favorites-tabs {
+    display: inline-flex;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--dk-text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 14px;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--dk-primary);
+    background: #f5f3ff;
+}
+
+.tab-btn.active {
+    color: var(--dk-primary);
+    background: #ffffff;
+    border-color: var(--dk-border-darker);
+    box-shadow: var(--dk-shadow-sm);
+}
+
+.count-badge {
+    background: var(--dk-bg-main);
+    color: var(--dk-text-muted);
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 800;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active .count-badge {
+    background: #f5f3ff;
+    color: var(--dk-primary);
+}
+
+/* ============================================
+   GRID & CONTENT
+   ============================================ */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+/* ============================================
+   EMPTY & LOADING STATES
+   ============================================ */
+.favorites-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    gap: 20px;
+    color: var(--dk-text-muted);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--dk-border-darker);
+    border-top-color: var(--dk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.favorites-empty-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+    background: var(--dk-card-bg);
+    border: 1px dashed #cbd5e1;
+    border-radius: 24px;
+    box-shadow: var(--dk-shadow-sm);
+    min-height: 400px;
+}
+
+.empty-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: #f8fafc;
+    color: #94a3b8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.favorites-empty-card h3 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dk-text-dark);
+    margin: 0 0 12px 0;
+}
+
+.favorites-empty-card p {
+    color: var(--dk-text-muted);
+    font-size: 15px;
+    max-width: 400px;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ============================================
+   ULTIMATE RESPONSIVENESS (300px to Infinity)
+   ============================================ */
+
+/* 1. LARGE DESKTOPS & 4K (1440px+) */
+@media (min-width: 1440px) {
+    .favorites-container { max-width: 1320px; }
+}
+
+/* 2. STANDARD DESKTOPS (1025px - 1439px) */
+@media (max-width: 1200px) {
+    .favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* 3. TABLETS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .favorites-page { padding: 32px 20px 80px 20px; }
+}
+
+/* 4. LARGE PHONES & SMALL TABLETS (481px - 768px) */
+@media (max-width: 768px) {
+    .favorites-header h1 { font-size: 28px; }
+    .favorites-header p { font-size: 15px; }
+    
+    .favorites-tabs {
+        padding-bottom: 12px;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* 5. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .favorites-page { padding: 24px 16px 80px 16px; }
+    
+    .favorites-header { margin-bottom: 24px; }
+    .favorites-header h1 { font-size: 24px; }
+
+    /* Force the grid into a single column for readability on small phones */
+    .favorites-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .favorites-empty-card {
+        padding: 60px 20px;
+        min-height: 300px;
+    }
+    
+    .favorites-empty-card h3 { font-size: 20px; }
+    .empty-icon-wrapper { width: 64px; height: 64px; }
+}
+
+/* 6. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .favorites-header h1 { font-size: 20px; }
+    .tab-btn { padding: 10px 16px; font-size: 13px; }
+}

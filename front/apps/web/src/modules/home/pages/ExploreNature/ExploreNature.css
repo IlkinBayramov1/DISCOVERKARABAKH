@@ -1,0 +1,438 @@
+/* ============================================================
+   GLOBAL & CONTAINER
+   ============================================================ */
+.explore--nature {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+/* ============================================================
+   HERO (Refined Premium Purple Bloom)
+   ============================================================ */
+.nature-hero {
+  padding: 24px 0 32px;
+  margin-top: 60px;
+}
+
+.nature-heroCard {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 560px;
+  background: #f8fafc;
+  box-shadow: 0 24px 50px rgba(106, 40, 199, 0.15);
+}
+
+.nature-heroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.nature-heroMedia img,
+.nature-heroMedia video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Identical Bloom Effect from ExploreAbout & ExploreCulture */
+.nature-heroShade {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(900px circle at 20% 30%, rgba(157, 101, 235, 0.45) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20, 10, 40, 0.15) 0%, rgba(38, 15, 75, 0.85) 100%);
+}
+
+.nature-heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 80px 56px 24px;
+  max-width: 800px;
+}
+
+.nature-heroKicker {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.nature-heroTitle {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-size: clamp(36px, 4.5vw, 64px);
+  line-height: 1.1;
+  text-shadow: 0 12px 30px rgba(20, 10, 40, 0.5);
+}
+
+.nature-heroSub {
+  margin: 0 0 32px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 600px;
+  text-shadow: 0 4px 15px rgba(20, 10, 40, 0.4);
+}
+
+/* CTAs */
+.nature-heroCtas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(106, 40, 199, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(106, 40, 199, 0.35);
+}
+
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+  .heroCard { border-radius: 24px; min-height: auto; }
+  .heroContent { padding: 60px 24px 60px; max-width: 100%; }
+}
+
+/* ============================================================
+   ARTICLE INTRO & HEADERS (Clean Light SaaS Theme)
+   ============================================================ */
+.article {
+  padding: 60px 0;
+}
+
+.articleHead {
+  max-width: 800px;
+  margin-bottom: 60px;
+}
+
+.articleTitle {
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.articleLead {
+  font-size: 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   CARDS GRID SYSTEM (Pristine White UI)
+   ============================================================ */
+.cards {
+  padding: 60px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.cardsHead {
+  margin-bottom: 40px;
+}
+
+.cardsTitle {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.cardsSub {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.cardGrid, .routeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.placeCard {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.placeCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.1);
+  border-color: #ddd6fe;
+}
+
+.placeCard__img {
+  height: 220px;
+  overflow: hidden;
+}
+
+.placeCard__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.placeCard:hover .placeCard__img img {
+  transform: scale(1.05);
+}
+
+.placeCard__b {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.placeCard__k {
+  align-self: flex-start;
+  background: #f5f3ff;
+  color: #6a28c7;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.placeCard__t {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.placeCard__d {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.placeCard__cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6a28c7;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: auto;
+}
+
+.placeCard__cta svg {
+  transition: transform 0.2s ease;
+}
+
+.placeCard:hover .placeCard__cta svg {
+  transform: translateX(4px);
+}
+
+/* Top Spots Foot Links */
+.cardsFoot {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+}
+
+.linkBtn:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.linkBtn--primary {
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 20px rgba(106, 40, 199, 0.25);
+}
+
+.linkBtn--primary:hover {
+  background: linear-gradient(135deg, #7b43c4 0%, #a87df0 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 25px rgba(106, 40, 199, 0.35);
+}
+
+/* ============================================================
+   SEASON TILES (White Glass with Purple Stripe)
+   ============================================================ */
+.seasonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.seasonTile {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 24px 24px 28px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.seasonTile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(106, 40, 199, 0.08);
+  border-color: #e2e8f0;
+}
+
+/* The Left Purple Accent Stripe */
+.seasonTile::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, #6a28c7 0%, #9d65eb 100%);
+}
+
+.seasonTile__k {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #6a28c7;
+  background: #f5f3ff;
+  margin-bottom: 16px;
+}
+
+.seasonTile__t {
+  font-weight: 800;
+  font-size: 18px;
+  color: #0f172a;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.seasonTile__d {
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* ============================================================
+   BOTTOM CTA (Vibrant Purple Banner)
+   ============================================================ */
+.endCta {
+  padding: 40px 0 80px;
+}
+
+.endCta__card {
+  background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+  border-radius: 32px;
+  padding: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-shadow: 0 20px 40px rgba(106, 40, 199, 0.2);
+}
+
+.endCta__text h3 {
+  color: #ffffff;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.endCta__text p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.endCta__actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 980px) {
+  .endCta__card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 40px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cardGrid, .routeGrid, .seasonGrid { grid-template-columns: 1fr; }
+  .endCta__actions { flex-direction: column; width: 100%; }
+  .endCta__actions .btn { justify-content: center; }
+}

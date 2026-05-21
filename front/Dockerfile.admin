@@ -1,0 +1,27 @@
+FROM node:18-alpine
+
+# Step 1: Copy everything and install dependencies at the root of the monorepo
+WORKDIR /app
+COPY . .
+
+# Pass your live Backend API URL
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+RUN npm install
+
+# 👉 Tell Vite this is a standalone app! (Root domain instead of /admin/)
+ENV VITE_BASE_PATH="/"
+
+# Step 2: Navigate directly into the Admin app folder
+WORKDIR /app/apps/admin
+
+# Step 3: FORCE Vite to build into a local 'dist' folder, ignoring rogue package.json rules
+RUN npx vite build --outDir ./dist --emptyOutDir
+
+# Step 4: Install static file server
+RUN npm install -g serve
+EXPOSE 3000
+
+# Step 5: Serve the exact 'dist' folder we just built
+CMD ["serve", "-s", "dist", "-l", "3000"]

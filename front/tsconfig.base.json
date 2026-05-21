@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@dk/ui": ["packages/ui/src"]
+    }
+  }
+}

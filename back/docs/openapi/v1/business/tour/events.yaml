@@ -1,0 +1,36 @@
+x-events:
+  TOUR_CREATED:
+    summary: Emitted when a new tour is successfully registered.
+    payload:
+      $ref: './schemas.yaml#/components/schemas/Tour'
+  
+  TOUR_UPDATED:
+    summary: Emitted when an existing tour is updated.
+    payload:
+      $ref: './schemas.yaml#/components/schemas/Tour'
+
+  TOUR_DELETED:
+    summary: Emitted when a tour is deleted from the system.
+    payload:
+      type: object
+      properties:
+        tourId: { type: string, format: uuid }
+
+  TOUR_RESERVATION_CREATED:
+    summary: Emitted when a new reservation is created and paid.
+    payload:
+      type: object
+      properties:
+        bookingId: { type: string, format: uuid }
+        tourId: { type: string, format: uuid }
+        totalPrice: { type: number }
+        timestamp: { type: string, format: date-time }
+
+  TOUR_RESERVATION_CANCELLED:
+    summary: Emitted when a tour reservation is cancelled.
+    payload:
+      type: object
+      properties:
+        bookingId: { type: string, format: uuid }
+        tourId: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
