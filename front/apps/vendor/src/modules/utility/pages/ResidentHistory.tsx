@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Users, Search, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
+import { 
+    Users, Search, ChevronDown, ChevronUp, AlertCircle, RefreshCw, 
+    SearchX, DollarSign, FileText, CheckCircle
+} from 'lucide-react';
 import { utilityApi, type SubscriberItem } from '../api/utility.api';
-import './Utility.css';
+import './ResidentHistory.css';
 
 export default function ResidentHistory() {
     const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
@@ -24,7 +27,6 @@ export default function ResidentHistory() {
                 setLoading(false);
             }
         };
-
         fetchSubscribers();
     }, []);
 
@@ -42,90 +44,101 @@ export default function ResidentHistory() {
     }, [searchQuery, subscribers]);
 
     const toggleExpand = (abonentCode: string) => {
-        if (expandedAbonentCode === abonentCode) {
-            setExpandedAbonentCode(null);
-        } else {
-            setExpandedAbonentCode(abonentCode);
-        }
+        setExpandedAbonentCode(prev => prev === abonentCode ? null : abonentCode);
     };
 
-    if (loading) {
-        return (
-            <div className="utility-container">
-                <div className="utility-header">
-                    <div>
-                        <div className="utility-skeleton utility-skeleton-title"></div>
-                        <div className="utility-skeleton utility-skeleton-text" style={{ width: '250px' }}></div>
-                    </div>
-                </div>
-                <div className="utility-panel">
-                    <div className="utility-skeleton" style={{ width: '100%', height: '40px', marginBottom: '20px', borderRadius: '10px' }}></div>
-                    {[1, 2, 3].map(n => (
-                        <div key={n} className="utility-skeleton" style={{ width: '100%', height: '50px', marginBottom: '10px', borderRadius: '6px' }}></div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="utility-container">
-                <div className="utility-alert utility-alert-danger">
-                    <AlertCircle className="utility-alert-icon" size={20} />
-                    <div className="utility-alert-content">
-                        <h4>Məlumat Yüklənə bilmədi</h4>
-                        <p>{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const stats = useMemo(() => {
+        let totalDebt = 0, totalPaid = 0, activeBillsCount = 0;
+        subscribers.forEach(sub => {
+            sub.utilitybill.forEach(bill => {
+                totalPaid += bill.paidAmount;
+                const remaining = bill.amount - bill.paidAmount;
+                if (remaining > 0) {
+                    totalDebt += remaining;
+                    if (bill.status !== 'paid') activeBillsCount++;
+                }
+            });
+        });
+        return { totalSubscribers: subscribers.length, totalDebt, totalPaid, activeBillsCount };
+    }, [subscribers]);
 
     return (
-        <div className="utility-container">
-            <div className="utility-header">
+        <div className="dk-rh-wrapper">
+            <header className="dk-util-header">
                 <div>
-                    <h1>Qeydiyyatlı Sakinlər və Borclar</h1>
-                    <p>Abonentlərin siyahısı, aktiv borclar və ödəniş jurnallarına nəzarət.</p>
+                    <h1 className="dk-util-title">Qeydiyyatlı Sakinlər və Borclar</h1>
+                    <p className="dk-util-subtitle">Abonentlərin siyahısı, aktiv borclar və ödəniş jurnallarına nəzarət.</p>
+                </div>
+            </header>
+
+            <div className="dk-util-stats-grid">
+                <div className="dk-util-stat-card">
+                    <div className="stat-icon-wrap blue"><Users size={24} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Ümumi Abonent</span>
+                        <h2 className="stat-value">{stats.totalSubscribers}</h2>
+                    </div>
+                </div>
+                <div className="dk-util-stat-card">
+                    <div className="stat-icon-wrap red"><DollarSign size={24} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Gözlənilən Qalıq Borc</span>
+                        <h2 className="stat-value"><span className="currency">₼</span>{stats.totalDebt.toFixed(2)}</h2>
+                    </div>
+                </div>
+                <div className="dk-util-stat-card">
+                    <div className="stat-icon-wrap green"><CheckCircle size={24} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Ümumi Yığımlar</span>
+                        <h2 className="stat-value"><span className="currency">₼</span>{stats.totalPaid.toFixed(2)}</h2>
+                    </div>
+                </div>
+                <div className="dk-util-stat-card">
+                    <div className="stat-icon-wrap orange"><FileText size={24} /></div>
+                    <div className="stat-info">
+                        <span className="stat-label">Aktiv Qəbzlər</span>
+                        <h2 className="stat-value">{stats.activeBillsCount}</h2>
+                    </div>
                 </div>
             </div>
 
-            <div className="utility-panel">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Users size={20} className="text-sky-400" />
-                        Sakin Siyahısı ({filteredSubscribers.length} abonent)
-                    </h3>
-                </div>
-
-                {/* Search Bar */}
-                <div className="utility-search-bar">
+            <div className="dk-util-toolbar">
+                <div className="dk-util-search">
+                    <Search size={18} className="search-icon" />
                     <input 
                         type="text" 
-                        className="utility-input" 
-                        placeholder="Abonent kodu və ya sakin adına görə axtarış..."
+                        placeholder="Abonent kodu və ya sakin adına görə axtarış..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button className="utility-btn utility-btn-primary" style={{ padding: '10px 16px' }}>
-                        <Search size={18} />
-                    </button>
                 </div>
+            </div>
 
-                {filteredSubscribers.length === 0 ? (
-                    <p style={{ color: '#64748b', textAlign: 'center', padding: '30px 0', fontSize: '14px' }}>Axtarışa uyğun heç bir abonent tapılmadı.</p>
+            {error && <div className="dk-util-error-alert"><AlertCircle size={20} /><span>{error}</span></div>}
+
+            <div className="dk-util-content-card">
+                {loading ? (
+                    <div className="dk-util-loading">
+                        <RefreshCw size={40} className="spin-icon" />
+                        <p>Abonent məlumatları yüklənir...</p>
+                    </div>
+                ) : filteredSubscribers.length === 0 ? (
+                    <div className="dk-util-empty">
+                        <div className="empty-icon-circle"><SearchX size={40} /></div>
+                        <h3>Məlumat Tapılmadı</h3>
+                        <p>Axtarışınıza uyğun heç bir abonent və ya borc qeydi mövcud deyil.</p>
+                        {searchQuery && <button className="dk-res-btn-ghost mt-4" onClick={() => setSearchQuery('')}>Axtarışı Sıfırla</button>}
+                    </div>
                 ) : (
-                    <div className="utility-table-wrapper">
-                        <table className="utility-table">
+                    <div className="dk-util-table-wrapper">
+                        <table className="dk-util-table">
                             <thead>
                                 <tr>
                                     <th style={{ width: '50px' }}></th>
-                                    <th>Abonent Kodu</th>
-                                    <th>Sakin Ad Soyad</th>
-                                    <th>Aktiv Borc Sayı</th>
-                                    <th>Qalıq Məbləğ</th>
-                                    <th style={{ textAlign: 'right' }}>Tarixçə</th>
+                                    <th>Abonent Profili</th>
+                                    <th>Aktiv Qəbzlər</th>
+                                    <th>Cəmi Qalıq Borc</th>
+                                    <th className="text-right">Tarixçə</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -133,88 +146,65 @@ export default function ResidentHistory() {
                                     const activeBills = sub.utilitybill.filter(b => b.status !== 'paid');
                                     const totalDebt = activeBills.reduce((acc, b) => acc + (b.amount - b.paidAmount), 0);
                                     const isExpanded = expandedAbonentCode === sub.abonentCode;
+                                    const guestInitial = sub.residentName?.[0]?.toUpperCase() || 'A';
 
                                     return (
-                                        <>
-                                            <tr 
-                                                key={sub.id} 
-                                                className="cursor-pointer hover:bg-slate-800/50"
-                                                onClick={() => toggleExpand(sub.abonentCode)}
-                                            >
+                                        <Fragment key={sub.id}>
+                                            <tr className="main-row" onClick={() => toggleExpand(sub.abonentCode)}>
+                                                <td className="td-expand">{isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</td>
                                                 <td>
-                                                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                    <div className="td-guest">
+                                                        <div className="guest-avatar">{guestInitial}</div>
+                                                        <div className="guest-details">
+                                                            <span className="guest-id">#{sub.abonentCode}</span>
+                                                            <span className="guest-name">{sub.residentName}</span>
+                                                        </div>
+                                                    </div>
                                                 </td>
-                                                <td style={{ fontWeight: 600, color: '#38bdf8' }}>{sub.abonentCode}</td>
-                                                <td>{sub.residentName}</td>
-                                                <td>{activeBills.length} ədəd borc</td>
-                                                <td style={{ fontWeight: 700, color: totalDebt > 0 ? '#ef4444' : '#10b981' }}>
-                                                    {totalDebt > 0 ? `${totalDebt.toFixed(2)} AZN` : 'Borcu Yoxdur'}
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <button 
-                                                        className="utility-btn utility-btn-secondary"
-                                                        style={{ padding: '4px 10px', fontSize: '12px' }}
-                                                    >
-                                                        Detalları Göstər
-                                                    </button>
-                                                </td>
+                                                <td><div className="td-capacity"><strong>{activeBills.length} Qəbz</strong></div></td>
+                                                <td><span className={`td-price ${totalDebt > 0 ? 'debt' : 'clear'}`}>{totalDebt > 0 ? `${totalDebt.toFixed(2)} AZN` : 'Borc Yoxdur'}</span></td>
+                                                <td className="text-right"><button className="dk-res-btn-ghost" style={{ fontSize: '13px', padding: '6px 14px' }}>{isExpanded ? 'Bağla' : 'Göstər'}</button></td>
                                             </tr>
                                             {isExpanded && (
-                                                <tr>
-                                                    <td colSpan={6} style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '20px' }}>
-                                                        <h4 style={{ margin: '0 0 10px 0', color: '#94a3b8', fontSize: '13px', textTransform: 'uppercase' }}>
-                                                            {sub.residentName} - Hesablanmış Borc Tarixçəsi
-                                                        </h4>
-                                                        {sub.utilitybill.length === 0 ? (
-                                                            <p style={{ color: '#64748b', fontSize: '13px', margin: 0 }}>Bu abonent üzrə heç bir borc qeydi yoxdur.</p>
-                                                        ) : (
-                                                            <div className="utility-table-wrapper" style={{ border: '1px solid rgba(255,255,255,0.03)' }}>
-                                                                <table className="utility-table" style={{ fontSize: '13px' }}>
-                                                                    <thead>
-                                                                        <tr style={{ background: 'rgba(30,41,59,0.8)' }}>
-                                                                            <th>Dövriyyə Ayı</th>
-                                                                            <th>Borc Məbləği</th>
-                                                                            <th>Ödənilən Məbləğ</th>
-                                                                            <th>Qalıq Borc</th>
-                                                                            <th>Son Tarix</th>
-                                                                            <th>Status</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {sub.utilitybill.map((bill) => {
-                                                                            const remaining = bill.amount - bill.paidAmount;
-                                                                            let badgeClass = 'utility-badge-unpaid';
-                                                                            let badgeText = 'Ödənilməyib';
-
-                                                                            if (bill.status === 'paid') {
-                                                                                badgeClass = 'utility-badge-paid';
-                                                                                badgeText = 'Ödənilib';
-                                                                            } else if (bill.status === 'partially_paid') {
-                                                                                badgeClass = 'utility-badge-partial';
-                                                                                badgeText = 'Qismən Ödənilib';
-                                                                            }
-
-                                                                            return (
-                                                                                <tr key={bill.id}>
-                                                                                    <td>{bill.billingMonth}</td>
-                                                                                    <td style={{ fontWeight: 600 }}>{bill.amount} AZN</td>
-                                                                                    <td style={{ color: '#10b981' }}>{bill.paidAmount} AZN</td>
-                                                                                    <td style={{ fontWeight: 600, color: remaining > 0 ? '#ef4444' : '#10b981' }}>{remaining} AZN</td>
-                                                                                    <td>{new Date(bill.dueDate).toLocaleDateString('az-AZ')}</td>
-                                                                                    <td>
-                                                                                        <span className={`utility-badge ${badgeClass}`}>{badgeText}</span>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            );
-                                                                        })}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        )}
+                                                <tr className="dk-util-expanded-row">
+                                                    <td colSpan={5}>
+                                                        <div className="dk-util-expanded-content">
+                                                            <h4 className="dk-util-expanded-title"><FileText size={16} />{sub.residentName} - Ödəniş və Borc Jurnalı</h4>
+                                                            {sub.utilitybill.length === 0 ? (
+                                                                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Bu abonent üzrə heç bir tarixçə tapılmadı.</p>
+                                                            ) : (
+                                                                <div className="inner-table-wrapper">
+                                                                    <table className="inner-table">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Hesabat Ayı</th><th>Hesablanıb</th><th>Ödənilib</th><th>Qalıq Məbləğ</th><th>Son Ödəniş Tarixi</th><th>Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {sub.utilitybill.map((bill) => {
+                                                                                const remaining = bill.amount - bill.paidAmount;
+                                                                                const badgeClass = bill.status === 'paid' ? 'success' : bill.status === 'partially_paid' ? 'warning' : 'danger';
+                                                                                const badgeText = bill.status === 'paid' ? 'Ödənilib' : bill.status === 'partially_paid' ? 'Qismən Ödənilib' : 'Ödənilməyib';
+                                                                                return (
+                                                                                    <tr key={bill.id}>
+                                                                                        <td>{bill.billingMonth}</td>
+                                                                                        <td>{bill.amount.toFixed(2)} ₼</td>
+                                                                                        <td style={{ color: '#10b981' }}>{bill.paidAmount.toFixed(2)} ₼</td>
+                                                                                        <td style={{ color: remaining > 0 ? '#ef4444' : '#10b981' }}>{remaining.toFixed(2)} ₼</td>
+                                                                                        <td>{new Date(bill.dueDate).toLocaleDateString('az-AZ')}</td>
+                                                                                        <td><span className={`dk-util-badge ${badgeClass}`}>{badgeText}</span></td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )}
-                                        </>
+                                        </Fragment>
                                     );
                                 })}
                             </tbody>

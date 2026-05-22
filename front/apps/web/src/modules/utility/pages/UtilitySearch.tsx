@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, useParams, Link } from 'react-router-dom';
-import { Search, Flame, Zap, Droplet, CreditCard, AlertTriangle, AlertCircle, Sparkles, ArrowLeft } from 'lucide-react';
+import { Search, Flame, Zap, Droplet, CreditCard, AlertTriangle, AlertCircle, Sparkles, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { utilityApi, type UtilityAbonent, type UtilityBill } from '../api/utility.api';
-import './Utility.css';
+import './UtilitySearch.css'; // Yeni CSS faylını bura bağlayın
 
 export default function UtilitySearch() {
     const { user, isAuthenticated } = useAuth();
@@ -17,6 +17,15 @@ export default function UtilitySearch() {
             case 'water': return 'Azərsu';
             case 'electricity': return 'Azərişıq';
             default: return 'Kommunal';
+        }
+    };
+
+    const getHeroImage = () => {
+        switch (provider) {
+            case 'gas': return 'url("https://media.deloitte.com/is/image/deloitte/us-natural-gas-workforce:Mobile?$Responsive$&fmt=webp&fit=stretch,1&dpr=on,2.625")';
+            case 'water': return 'url("https://cdn.mos.cms.futurecdn.net/cg8cNe5GV3DZyAnoK8dtmS.png")';
+            case 'electricity': return 'url("https://ca-times.brightspotcdn.com/dims4/default/b0f3e96/2147483647/strip/true/crop/1599x899+0+0/resize/1200x675!/quality/75/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.amazonaws.com%2F68%2F39%2Fb7312937aa407e1daa0eb7404147%2Fla-1546296793-txzcs91mho-snap-image")';
+            default: return 'url("https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&q=80&w=2000")';
         }
     };
 
@@ -37,7 +46,6 @@ export default function UtilitySearch() {
     const [redirecting, setRedirecting] = useState(false);
 
     useEffect(() => {
-        // Qeydiyyatlı istifadəçidirsə onun abonent kodlarını gətiririk (Smart Link)
         if (isAuthenticated) {
             fetchSmartLinkBills();
         }
@@ -68,11 +76,10 @@ export default function UtilitySearch() {
             const response = await utilityApi.searchBills(code, provider);
             setSearchResult(response.data.data);
 
-            // İlkin olaraq bütün borcları seçili edirik və məbləğləri tam borc təyin edirik
             const initialSelected: { [key: string]: boolean } = {};
             const initialAmounts: { [key: string]: number } = {};
 
-            response.data.data.bills.forEach(bill => {
+            response.data.data.bills.forEach((bill: any) => {
                 const remaining = bill.amount - bill.paidAmount;
                 if (remaining > 0) {
                     initialSelected[bill.id] = true;
@@ -95,8 +102,6 @@ export default function UtilitySearch() {
             setBillAmounts(prev => ({ ...prev, [billId]: 0 }));
             return;
         }
-
-        // Borcdan artıq məbləğ ödənməsinin qarşısını alırıq
         const finalAmount = amount > maxAmount ? maxAmount : amount;
         setBillAmounts(prev => ({ ...prev, [billId]: finalAmount }));
     };
@@ -107,31 +112,27 @@ export default function UtilitySearch() {
 
     const getUtilityIcon = (type: string) => {
         switch (type.toLowerCase()) {
-            case 'gas': return <Flame className="text-amber-500" size={18} />;
-            case 'electricity': return <Zap className="text-yellow-500" size={18} />;
-            case 'water': return <Droplet className="text-sky-500" size={18} />;
-            default: return <CreditCard className="text-slate-500" size={18} />;
+            case 'gas': return <Flame size={24} className="us-bill-icon gas" />;
+            case 'electricity': return <Zap size={24} className="us-bill-icon electricity" />;
+            case 'water': return <Droplet size={24} className="us-bill-icon water" />;
+            default: return <CreditCard size={24} className="us-bill-icon" />;
         }
     };
 
-    // Seçilmiş borcların ümumi cəmi
     const totalPaymentAmount = Object.keys(selectedBills)
         .filter(id => selectedBills[id])
         .reduce((sum, id) => sum + (billAmounts[id] || 0), 0);
 
     const handlePayment = async () => {
         if (!isAuthenticated) {
-            // Qeydiyyatlı olmalıdır
-            setPaymentError('Ödəniş etmək üçün zəhmət olmasa əvvəlcə daxil olun və ya qeydiyyatdan keçin.');
+            setPaymentError('Ödəniş etmək üçün zəhmət olmasa daxil olun və ya qeydiyyatdan keçin.');
             setTimeout(() => navigate('/auth/login'), 2000);
             return;
         }
 
-        // Profil doluluq validasiyası: Ad, Soyad, Email və Telefon vacibdir!
-        // Qeyd: back-end tərəfindən də bu yoxlanılır.
         const hasCompleteProfile = user?.firstName && user?.lastName && user?.email;
         if (!hasCompleteProfile) {
-            setPaymentError('Profiliniz natamamdır! Ödəniş etmək üçün Ad, Soyad və E-poçt doldurulmalıdır. Profilinizə yönləndirilirsiniz...');
+            setPaymentError('Profiliniz natamamdır! Ödəniş üçün Ad, Soyad və E-poçt doldurulmalıdır.');
             setTimeout(() => navigate('/account/profile'), 3000);
             return;
         }
@@ -151,9 +152,7 @@ export default function UtilitySearch() {
         try {
             setRedirecting(true);
             setPaymentError(null);
-
             const response = await utilityApi.initiatePayment(billPayments);
-            // Daxili təsdiqləmə səhifəsinə yönləndiririk
             navigate(`/utility-confirmation/${response.data.data.paymentId}`);
         } catch (err: any) {
             setPaymentError(err.message || 'Ödəniş başladılarkən xəta baş verdi.');
@@ -162,93 +161,90 @@ export default function UtilitySearch() {
     };
 
     return (
-        <div className="web-utility-page">
-            <div className="web-utility-container">
-                <div className="web-utility-header">
-                    <Link to="/utility" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#64748b', textDecoration: 'none', marginBottom: '20px', fontWeight: 600 }}>
-                        <ArrowLeft size={18} />
-                        Geri qayıt
+        <div className="us-page">
+            <main className="us-container">
+                
+                {/* HERO SECTION */}
+                <section className="us-hero" style={{ backgroundImage: getHeroImage() }}>
+                    <Link to="/utility" className="us-back-link">
+                        <ArrowLeft size={16} /> Geri Qayıt
                     </Link>
-                    <h1>{getProviderName()} Borcunun Ödənilməsi</h1>
-                    <p>Abonent kodunuzu daxil edərək borclarınızı sürətli və etibarlı şəkildə ödəyin.</p>
-                </div>
+                    <div className="us-hero-overlay">
+                        <h1>{getProviderName()} Ödənişi</h1>
+                        <p>Abonent kodunuzu daxil edərək borclarınızı sürətli və etibarlı şəkildə ödəyin.</p>
+                    </div>
+                </section>
 
-                {/* Smart Link / Profilimə Bağlı Kodlar */}
+                {/* SEARCH BAR */}
+                <form onSubmit={handleSearch} className="us-search-bar">
+                    <div className="us-search-item">
+                        <Search className="us-search-icon" />
+                        <div className="us-search-input-box">
+                            <label>ABONENT KODU</label>
+                            <input
+                                type="text"
+                                className="us-search-input-naked"
+                                placeholder="Məsələn: AZ10001..."
+                                value={abonentCode}
+                                onChange={(e) => setAbonentCode(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <button type="submit" className="us-search-btn" disabled={loading || !abonentCode.trim()}>
+                        {loading ? <RefreshCw className="us-spin" size={20} /> : <Search size={20} />}
+                        {loading ? 'Axtarılır...' : 'Borcu Yoxla'}
+                    </button>
+                </form>
+
+                {/* SMART LINKS (Auth Users) */}
                 {isAuthenticated && (loadingSmartLink || smartLinkAbonents.length > 0) && (
-                    <div className="web-utility-search-box" style={{ marginBottom: '25px', padding: '20px' }}>
-                        <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0369a1' }}>
-                            <Sparkles size={16} />
-                            Profilinizə Bağlı Abonent Kodları
-                        </h4>
+                    <div className="us-smart-links">
+                        <h4><Sparkles size={16} /> Profilinizə Bağlı Kodlar</h4>
                         {loadingSmartLink ? (
-                            <div style={{ color: '#64748b', fontSize: '14px' }}>Abonent kodları yüklənir...</div>
+                            <span style={{ color: '#94a3b8', fontSize: '14px' }}>Kodlar yüklənir...</span>
                         ) : (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                            <div className="us-smart-tags">
                                 {smartLinkAbonents.map(ab => (
-                                    <button
-                                        key={ab.id}
-                                        className="utility-btn utility-btn-secondary"
-                                        style={{ fontSize: '13px', padding: '8px 14px' }}
+                                    <div 
+                                        key={ab.id} 
+                                        className="us-smart-tag"
                                         onClick={() => {
                                             setAbonentCode(ab.abonentCode);
                                             handleSearch(undefined, ab.abonentCode);
                                         }}
                                     >
-                                        {ab.abonentCode} ({ab.residentName})
-                                    </button>
+                                        {ab.abonentCode} <span style={{ opacity: 0.6, fontSize: '12px' }}>({ab.residentName})</span>
+                                    </div>
                                 ))}
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Search Panel */}
-                <div className="web-utility-search-box">
-                    <form onSubmit={handleSearch}>
-                        <div className="web-search-input-group">
-                            <div className="web-search-input-wrapper">
-                                <Search className="web-search-icon" size={22} />
-                                <input
-                                    type="text"
-                                    className="web-search-input"
-                                    placeholder="Abonent kodunu daxil edin (məs: AZ10001)..."
-                                    value={abonentCode}
-                                    onChange={(e) => setAbonentCode(e.target.value)}
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="web-btn-search"
-                                disabled={loading || !abonentCode.trim()}
-                            >
-                                {loading ? 'Axtarılır...' : 'Borcu Yoxla'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
+                {/* ALERTS */}
                 {error && (
-                    <div className="web-alert web-alert-danger">
+                    <div className="us-alert">
                         <AlertCircle size={20} />
-                        <div>{error}</div>
+                        <span>{error}</span>
                     </div>
                 )}
 
-                {/* Results Screen */}
+                {/* RESULTS SECTION */}
                 {searchResult && (
-                    <div className="web-utility-results">
-                        <div className="web-results-header">
-                            <div className="web-abonent-info">
-                                <h2>{searchResult.abonent?.residentName || 'Qeydiyyatsız Abonent'}</h2>
-                                <p>
-                                    Abonent Kodu: <strong>{searchResult.abonent?.abonentCode || abonentCode}</strong>
-                                    {searchResult.abonent?.localAddress && ` | Ünvan: ${searchResult.abonent.localAddress}`}
-                                </p>
-                            </div>
+                    <div className="us-results-container">
+                        <div className="us-results-header">
+                            <h2>{searchResult.abonent?.residentName || 'Qeydiyyatsız Abonent'}</h2>
+                            <p>
+                                KOD: <strong>{searchResult.abonent?.abonentCode || abonentCode}</strong>
+                                {searchResult.abonent?.localAddress && ` • Ünvan: ${searchResult.abonent.localAddress}`}
+                            </p>
                         </div>
 
                         {searchResult.bills.length === 0 ? (
-                            <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>Bu abonent üzrə heç bir aktiv borc tapılmadı.</p>
+                            <div className="us-empty-state">
+                                <h3>Borc Tapılmadı</h3>
+                                <p>Bu abonent üzrə hazırda heç bir aktiv borc yoxdur.</p>
+                            </div>
                         ) : (
                             <div>
                                 {searchResult.bills.map((bill) => {
@@ -257,39 +253,38 @@ export default function UtilitySearch() {
                                     const isOverdue = new Date(bill.dueDate) < new Date() && bill.status !== 'paid';
 
                                     return (
-                                        <div key={bill.id} className={`web-bill-card ${isOverdue ? 'overdue' : ''}`}>
-                                            <div className="web-bill-details">
-                                                <h3>
-                                                    {getUtilityIcon(bill.utilityType)}
-                                                    {bill.utilityType === 'gas' ? 'Qaz Borcu' : bill.utilityType === 'electricity' ? 'Elektrik Borcu' : 'Su Borcu'}
-                                                </h3>
-                                                <div className="web-bill-meta">
-                                                    <div className="web-bill-meta-item">Dövr: {bill.billingMonth}</div>
-                                                    <div className={`web-bill-meta-item ${isOverdue ? 'text-red' : ''}`}>
-                                                        Son tarix: {new Date(bill.dueDate).toLocaleDateString('az-AZ')}
+                                        <div key={bill.id} className={`us-bill-card ${isOverdue ? 'overdue' : ''}`}>
+                                            <div className="us-bill-info">
+                                                {getUtilityIcon(bill.utilityType)}
+                                                <div className="us-bill-details">
+                                                    <h3>Dövr: {bill.billingMonth}</h3>
+                                                    <div className="us-bill-meta">
+                                                        <span>Hesablanıb: {bill.amount} AZN</span>
+                                                        <span>•</span>
+                                                        <span className={isOverdue ? 'overdue-text' : ''}>
+                                                            Son tarix: {new Date(bill.dueDate).toLocaleDateString('az-AZ')}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="web-bill-action">
-                                                <div className="web-bill-amount">{remaining.toFixed(2)} AZN</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div className="us-bill-action">
+                                                <div className="us-bill-debt">{remaining.toFixed(2)} AZN</div>
+                                                <div className="us-payment-controls">
                                                     <input
                                                         type="checkbox"
-                                                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                                                         checked={isSelected}
                                                         onChange={() => toggleBillSelect(bill.id)}
                                                     />
-                                                    <div className="web-pay-input-wrapper">
+                                                    <div className="us-partial-pay">
                                                         <input
                                                             type="number"
-                                                            className="web-pay-input"
                                                             value={billAmounts[bill.id] !== undefined ? billAmounts[bill.id] : remaining}
                                                             onChange={(e) => handleAmountChange(bill.id, e.target.value, remaining)}
                                                             disabled={!isSelected}
                                                             step="0.01"
                                                         />
-                                                        <span className="web-pay-currency">AZN</span>
+                                                        <span>AZN</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -298,33 +293,32 @@ export default function UtilitySearch() {
                                 })}
 
                                 {paymentError && (
-                                    <div className="web-alert web-alert-danger" style={{ marginTop: '20px' }}>
+                                    <div className="us-alert">
                                         <AlertTriangle size={20} />
-                                        <div>{paymentError}</div>
+                                        <span>{paymentError}</span>
                                     </div>
                                 )}
 
-                                {/* Cart Summary Footer */}
-                                <div className="web-cart-summary">
-                                    <div className="web-cart-total">
-                                        <span>Ödəniləcək Ümumi Məbləğ:</span>
+                                {/* CART SUMMARY */}
+                                <div className="us-cart-summary">
+                                    <div className="us-cart-total">
+                                        <span>Ödəniləcək Məbləğ</span>
                                         <strong>{totalPaymentAmount.toFixed(2)} AZN</strong>
                                     </div>
                                     <button
-                                        className="web-btn-pay"
+                                        className="us-btn-pay"
                                         onClick={handlePayment}
                                         disabled={totalPaymentAmount <= 0 || redirecting}
                                     >
                                         <CreditCard size={20} />
-                                        {redirecting ? 'Ödəniş səhifəsinə yönləndirilir...' : 'Kartla Ödə'}
+                                        {redirecting ? 'Yönləndirilir...' : 'Kartla Ödə'}
                                     </button>
                                 </div>
                             </div>
                         )}
                     </div>
                 )}
-            </div>
-
+            </main>
         </div>
     );
 }

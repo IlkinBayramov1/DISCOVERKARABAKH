@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
-import { 
-    LayoutDashboard, 
-    Coins, 
-    Users, 
-    AlertCircle, 
-    TrendingUp, 
-    CalendarCheck 
-} from 'lucide-react';
-import { 
-    AreaChart, 
-    Area, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
-    ResponsiveContainer 
-} from 'recharts';
+import { LayoutDashboard, Coins, AlertCircle, TrendingUp, CalendarCheck, Wallet, AlertTriangle } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { utilityApi, type AnalyticsResponse } from '../api/utility.api';
-import './Utility.css';
+import './UtilityDashboard.css';
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="dk-custom-tooltip">
+                <p className="tooltip-label">{label}</p>
+                <div className="tooltip-data">
+                    <span className="dot" style={{ background: '#10b981' }}></span>
+                    <p className="tooltip-value">{`${payload[0].value.toLocaleString()} AZN`}</p>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
 
 export default function UtilityDashboard() {
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
@@ -36,37 +36,15 @@ export default function UtilityDashboard() {
                 setLoading(false);
             }
         };
-
         fetchAnalytics();
     }, []);
 
     if (loading) {
         return (
-            <div className="utility-container">
-                <div className="utility-header">
-                    <div>
-                        <div className="utility-skeleton utility-skeleton-title"></div>
-                        <div className="utility-skeleton utility-skeleton-text" style={{ width: '200px' }}></div>
-                    </div>
-                </div>
-                <div className="utility-stats-grid">
-                    {[1, 2, 3, 4].map(n => (
-                        <div key={n} className="utility-stat-card" style={{ height: '140px' }}>
-                            <div className="utility-skeleton" style={{ width: '40px', height: '40px', borderRadius: '10px', marginBottom: '15px' }}></div>
-                            <div className="utility-skeleton" style={{ width: '80px', height: '15px', marginBottom: '10px' }}></div>
-                            <div className="utility-skeleton" style={{ width: '120px', height: '24px' }}></div>
-                        </div>
-                    ))}
-                </div>
-                <div className="utility-dashboard-body">
-                    <div className="utility-panel" style={{ height: '350px' }}>
-                        <div className="utility-skeleton" style={{ width: '150px', height: '20px', marginBottom: '30px' }}></div>
-                        <div className="utility-skeleton" style={{ width: '100%', height: '220px' }}></div>
-                    </div>
-                    <div className="utility-panel" style={{ height: '350px' }}>
-                        <div className="utility-skeleton" style={{ width: '150px', height: '20px', marginBottom: '30px' }}></div>
-                        <div className="utility-skeleton" style={{ width: '100%', height: '220px' }}></div>
-                    </div>
+            <div className="dk-ud-wrapper">
+                <div className="dk-util-loading-layout">
+                    <div className="spin-loader"></div>
+                    <p>Dashboard məlumatları emal edilir...</p>
                 </div>
             </div>
         );
@@ -74,11 +52,11 @@ export default function UtilityDashboard() {
 
     if (error || !analytics) {
         return (
-            <div className="utility-container">
-                <div className="utility-alert utility-alert-danger">
-                    <AlertCircle className="utility-alert-icon" size={20} />
-                    <div className="utility-alert-content">
-                        <h4>Xəta baş verdi</h4>
+            <div className="dk-ud-wrapper">
+                <div className="dk-util-error-layout">
+                    <div className="error-card">
+                        <div className="error-icon"><AlertCircle size={32} /></div>
+                        <h2>Xəta baş verdi</h2>
                         <p>{error || 'İdarəetmə panelinə daxil olmaq mümkün olmadı.'}</p>
                     </div>
                 </div>
@@ -89,122 +67,91 @@ export default function UtilityDashboard() {
     const { summary, dailyChart } = analytics;
 
     return (
-        <div className="utility-container">
-            <div className="utility-header">
-                <div>
-                    <h1>Kommunal İdarəetmə Paneli</h1>
-                    <p>Maliyyə axınları, yığım faizi və son tranzaksiyaların real vaxt analitikası.</p>
-                </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="utility-stats-grid">
-                <div className="utility-stat-card">
-                    <div className="utility-stat-icon-wrapper">
-                        <div className="utility-stat-icon">
-                            <Coins size={22} />
-                        </div>
-                        <span className="utility-badge utility-badge-success">Cari Ay</span>
-                    </div>
-                    <div className="utility-stat-label">Ümumi Hesablanmış</div>
-                    <div className="utility-stat-value">{summary.totalBilled.toLocaleString()} AZN</div>
-                </div>
-
-                <div className="utility-stat-card">
-                    <div className="utility-stat-icon-wrapper">
-                        <div className="utility-stat-icon success">
-                            <TrendingUp size={22} />
-                        </div>
-                        <span className="utility-badge utility-badge-success">Yığılan</span>
-                    </div>
-                    <div className="utility-stat-label">Ödənilən Borclar</div>
-                    <div className="utility-stat-value">{summary.totalPaid.toLocaleString()} AZN</div>
-                </div>
-
-                <div className="utility-stat-card">
-                    <div className="utility-stat-icon-wrapper">
-                        <div className="utility-stat-icon warning">
-                            <Coins size={22} />
-                        </div>
-                        <span className="utility-badge utility-badge-partial">Qalıq</span>
-                    </div>
-                    <div className="utility-stat-label">Qalıq Borc Məbləği</div>
-                    <div className="utility-stat-value">{summary.totalRemaining.toLocaleString()} AZN</div>
-                </div>
-
-                <div className="utility-stat-card">
-                    <div className="utility-stat-icon-wrapper">
-                        <div className="utility-stat-icon danger">
-                            <AlertCircle size={22} />
-                        </div>
-                        <span className="utility-badge utility-badge-unpaid">Gecikmiş</span>
-                    </div>
-                    <div className="utility-stat-label">Vaxtı Keçmiş Borclar</div>
-                    <div className="utility-stat-value">{summary.overdueCount} Abonent</div>
-                </div>
-            </div>
-
-            {/* Analytical Body */}
-            <div className="utility-dashboard-body">
-                {/* Collection Chart */}
-                <div className="utility-panel">
-                    <h3>
-                        <TrendingUp size={18} className="text-sky-400" />
-                        Son 7 Günlük Ödəniş Trendi
-                    </h3>
-                    <div style={{ width: '100%', height: 300 }}>
-                        <ResponsiveContainer>
-                            <AreaChart data={dailyChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} />
-                                <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
-                                <Tooltip 
-                                    contentStyle={{ background: '#1e293b', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                                    labelStyle={{ color: '#94a3b8' }}
-                                />
-                                <Area type="monotone" dataKey="amount" name="Ödəniş (AZN)" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Yığım faizi */}
-                <div className="utility-panel flex flex-col justify-between">
-                    <h3>
-                        <CalendarCheck size={18} className="text-emerald-400" />
-                        Yığım Effektivliyi
-                    </h3>
-                    <div className="flex flex-col items-center justify-center py-6">
-                        <div style={{ position: 'relative', width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center' }}>
-                            {/* Circular progress bar simulation */}
-                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" strokeWidth="8" fill="transparent" />
-                                <circle 
-                                    cx="50" 
-                                    cy="50" 
-                                    r="40" 
-                                    stroke="#10b981" 
-                                    strokeWidth="8" 
-                                    fill="transparent" 
-                                    strokeDasharray="251.2" 
-                                    strokeDashoffset={251.2 - (251.2 * summary.collectionRate) / 100}
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <div style={{ position: 'absolute', fontSize: '32px', fontWeight: '800', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span>{summary.collectionRate}%</span>
-                                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500', textTransform: 'uppercase', marginTop: '4px' }}>Yığılıb</span>
+        <div className="dk-ud-wrapper">
+            <div className="dk-util-container">
+                <header className="dk-util-header">
+                    <div className="header-main-row">
+                        <div className="header-title">
+                            <div>
+                                <h1>Kommunal İdarəetmə Paneli</h1>
+                                <p>Maliyyə axınları, yığım faizi və son tranzaksiyaların real vaxt analitikası.</p>
                             </div>
                         </div>
                     </div>
-                    <div className="text-center text-slate-400 text-sm mt-4">
-                        Ümumi hesaba düşən ödəniş həcminin faiz göstəricisi.
+                </header>
+
+                <div className="dk-util-stats-grid">
+                    <div className="dk-stat-card">
+                        <div className="stat-icon-wrap blue"><Coins size={22} /></div>
+                        <div className="stat-info">
+                            <span className="stat-label">Ümumi Hesablanmış</span>
+                            <span className="stat-value"><span className="currency-symbol">₼</span>{summary.totalBilled.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div className="dk-stat-card">
+                        <div className="stat-icon-wrap emerald"><TrendingUp size={22} /></div>
+                        <div className="stat-info">
+                            <span className="stat-label">Ödənilən Borclar</span>
+                            <span className="stat-value"><span className="currency-symbol">₼</span>{summary.totalPaid.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div className="dk-stat-card">
+                        <div className="stat-icon-wrap orange"><Wallet size={22} /></div>
+                        <div className="stat-info">
+                            <span className="stat-label">Qalıq Borc Məbləği</span>
+                            <span className="stat-value"><span className="currency-symbol">₼</span>{summary.totalRemaining.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div className="dk-stat-card">
+                        <div className="stat-icon-wrap red"><AlertTriangle size={22} /></div>
+                        <div className="stat-info">
+                            <span className="stat-label">Vaxtı Keçmiş Abonent</span>
+                            <span className="stat-value">{summary.overdueCount}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="dk-util-charts-grid">
+                    <div className="dk-chart-card main-chart">
+                        <div className="chart-header">
+                            <h3><TrendingUp size={20} color="#10b981" /> Son 7 Günlük Ödəniş Trendi</h3>
+                        </div>
+                        <div className="chart-wrapper">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={dailyChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                    <XAxis dataKey="date" stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} tickFormatter={(str) => str.split('-').slice(1).join('/')} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 2, strokeDasharray: '4 4' }} />
+                                    <Area type="monotone" dataKey="amount" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorAmount)" activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    <div className="dk-chart-card insight-card">
+                        <div className="chart-header">
+                            <h3><CalendarCheck size={20} color="#0ea5e9" /> Yığım Effektivliyi</h3>
+                        </div>
+                        <div className="insight-content">
+                            <div style={{ position: 'relative', width: '180px', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="10" fill="transparent" />
+                                    <circle cx="50" cy="50" r="40" stroke="#10b981" strokeWidth="10" fill="transparent" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * summary.collectionRate) / 100} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease-in-out' }} />
+                                </svg>
+                                <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '36px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{summary.collectionRate}%</span>
+                                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>Yığılıb</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="insight-footer">Ümumi hesaba düşən ödəniş həcminin faiz göstəricisi. Yüksək faiz uğurlu idarəetmə deməkdir.</div>
                     </div>
                 </div>
             </div>
