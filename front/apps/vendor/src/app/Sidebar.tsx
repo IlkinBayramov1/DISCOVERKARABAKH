@@ -6,7 +6,6 @@ import {
     BedDouble,
     CalendarDays,
     MessageSquare,
-    Image as ImageIcon,
     Car,
     Users,
     DollarSign,
@@ -32,7 +31,7 @@ interface NavSection {
     items: RouteItem[];
 }
 
-type ModuleType = 'hotel' | 'transport' | 'tour' | 'attraction' | 'restaurant' | 'default';
+type ModuleType = 'hotel' | 'transport' | 'tour' | 'attraction' | 'restaurant' | 'utility' | 'default';
 
 export default function Sidebar() {
     const location = useLocation();
@@ -45,6 +44,7 @@ export default function Sidebar() {
         if (path.startsWith('/transport')) return 'transport';
         if (path.startsWith('/hotel')) return 'hotel';
         if (path.startsWith('/restaurant')) return 'restaurant';
+        if (path.startsWith('/utility')) return 'utility';
 
         const storedCategory = getVendorCategory()?.toLowerCase();
         if (storedCategory === 'attraction') return 'attraction';
@@ -52,6 +52,7 @@ export default function Sidebar() {
         if (storedCategory === 'transport') return 'transport';
         if (storedCategory === 'restaurant') return 'restaurant';
         if (storedCategory === 'hotel') return 'hotel';
+        if (['gas', 'electricity', 'water', 'utility'].includes(storedCategory || '')) return 'utility';
 
         return 'hotel';
     };
@@ -161,6 +162,21 @@ export default function Sidebar() {
                 title: 'Menyu',
                 items: [
                     { path: '/restaurant/menu', name: 'Menyu İdarəetməsi', icon: Plus },
+                ]
+            }
+        ],
+        utility: [
+            {
+                title: 'Ümumi Baxış',
+                items: [
+                    { path: '/utility/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+                ]
+            },
+            {
+                title: 'İdarəetmə',
+                items: [
+                    { path: '/utility/upload', name: 'Excel Borc Yükləmə', icon: Plus },
+                    { path: '/utility/subscribers', name: 'Sakin Siyahısı', icon: Users },
                 ]
             }
         ],

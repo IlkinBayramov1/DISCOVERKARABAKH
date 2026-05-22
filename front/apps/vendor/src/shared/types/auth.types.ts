@@ -19,7 +19,11 @@ export type VendorCategory =
     | 'transport'
     | 'restaurant'
     | 'event'
-    | 'attraction';
+    | 'attraction'
+    | 'gas'
+    | 'electricity'
+    | 'water'
+    | 'utility';
 
 export interface IVendorProfile {
     id: string;

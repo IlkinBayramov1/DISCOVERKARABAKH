@@ -15,9 +15,13 @@ export interface IUserRegisterPayload {
 
 export interface IUser {
     _id: string;
+    id?: string;
     email: string;
     role: 'tourist' | 'resident' | 'driver' | 'admin';
     name?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
     avatar?: string;
     balance?: number;
 }

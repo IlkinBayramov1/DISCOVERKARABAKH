@@ -25,6 +25,11 @@ export default function DashRedirect() {
             return <Navigate to="/restaurant" replace />;
         case 'event':
             return <Navigate to="/events" replace />;
+        case 'gas':
+        case 'electricity':
+        case 'water':
+        case 'utility':
+            return <Navigate to="/utility/dashboard" replace />;
         default:
             // Defaulting to hotel if logged in but no specific category found
             return <Navigate to="/hotel/dashboard" replace />;

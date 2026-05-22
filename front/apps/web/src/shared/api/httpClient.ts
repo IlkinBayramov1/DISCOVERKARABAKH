@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { getToken, removeToken } from '../utils/token';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4004/api/v1';
 
 export const httpClient = axios.create({
     baseURL: API_BASE_URL,
@@ -28,9 +28,9 @@ httpClient.interceptors.response.use(
         return response;
     },
     (error: AxiosError) => {
-        if (error.response?.status === 401 || error.response?.status === 403) {
+        if (error.response?.status === 401) {
             console.error('Auth Error at:', error.config?.url, 'Status:', error.response?.status);
-            // Only remove token if it's an explicit 401/403 on a protected route
+            // Only remove token if it's an explicit 401 on a protected route
             // For now, let's keep it to see what's failing
             removeToken();
             window.location.href = '/auth/login'; 

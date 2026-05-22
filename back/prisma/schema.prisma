@@ -1103,6 +1103,9 @@ model user {
   vehiclefavorite                               vehiclefavorite[]
   vendorprofile                                 vendorprofile?
   wishlist                                      wishlist[]
+  utilityabonent                                utilityabonent[]
+  utilitypayment                                utilitypayment[]
+  utilityuploadlog                              utilityuploadlog[]
 }
 
 model vehicle {
@@ -1271,4 +1274,76 @@ enum attraction_category {
   Tebiet_Abidesi
   Memorial_Kompleks
   Idman_Eylence
+}
+
+model utilityabonent {
+  id           String        @id @default(uuid())
+  abonentCode  String        @unique
+  residentName String
+  localAddress String?
+  userId       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         user?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  utilitybill  utilitybill[]
+}
+
+model utilitybill {
+  id           String               @id @default(uuid())
+  abonentCode  String
+  utilityType  String               // 'gas', 'electricity', 'water'
+  amount       Float
+  paidAmount   Float                @default(0)
+  dueDate      DateTime
+  status       String               @default("unpaid") // 'unpaid', 'partially_paid', 'paid'
+  billingMonth String               // '2026-05'
+  batchId      String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  abonent      utilityabonent       @relation(fields: [abonentCode], references: [abonentCode], onDelete: Cascade)
+  utilitypaymentitem utilitypaymentitem[]
+
+  @@unique([abonentCode, utilityType, billingMonth])
+  @@index([batchId])
+}
+
+model utilitypayment {
+  id            String               @id @default(uuid())
+  transactionId String?              @unique
+  totalAmount   Float
+  paymentStatus String               @default("pending") // 'pending', 'completed', 'failed'
+  paymentMethod String?
+  userId        String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  user          user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  utilitypaymentitem utilitypaymentitem[]
+}
+
+model utilitypaymentitem {
+  id         String         @id @default(uuid())
+  paymentId  String
+  billId     String
+  amountPaid Float
+  createdAt  DateTime       @default(now())
+  payment    utilitypayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  bill       utilitybill    @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([billId])
+}
+
+model utilityuploadlog {
+  id                String    @id @default(uuid())
+  batchId           String    @unique
+  fileName          String
+  rowCount          Int
+  successCount      Int
+  errorCount        Int
+  uploadedByAdminId String
+  isRolledBack      Boolean   @default(false)
+  rolledBackAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  admin             user      @relation(fields: [uploadedByAdminId], references: [id], onDelete: Cascade)
 }

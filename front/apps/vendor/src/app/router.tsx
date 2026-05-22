@@ -39,6 +39,11 @@ import AttractionReviews from '../modules/attraction/pages/reviews/AttractionRev
 import AttractionAnalyticsPage from '../modules/attraction/pages/analytics/AttractionAnalyticsPage';
 import AttractionBookingsPage from '../modules/attraction/pages/bookings/AttractionBookingsPage';
 
+// Utility Vendor Pages
+import UtilityDashboard from '../modules/utility/pages/UtilityDashboard';
+import BulkUpload from '../modules/utility/pages/BulkUpload';
+import ResidentHistory from '../modules/utility/pages/ResidentHistory';
+
 import DashRedirect from './DashRedirect';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
 
@@ -202,6 +207,19 @@ export const router = createBrowserRouter([
             {
                 path: 'attractions/analytics/:id',
                 element: <AttractionAnalyticsPage />
+            },
+            // Utility Routes
+            {
+                path: 'utility/dashboard',
+                element: <UtilityDashboard />
+            },
+            {
+                path: 'utility/upload',
+                element: <BulkUpload />
+            },
+            {
+                path: 'utility/subscribers',
+                element: <ResidentHistory />
             },
             {
                 path: '*',

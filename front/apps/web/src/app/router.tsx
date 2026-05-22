@@ -48,6 +48,9 @@ import { AttractionReservationPage } from '../modules/attraction/pages/Attractio
 import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
 import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
 import { FavoritesPage } from '../modules/account/pages/FavoritesPage/FavoritesPage';
+import UtilitySearch from '../modules/utility/pages/UtilitySearch';
+import UtilityProviders from '../modules/utility/pages/UtilityProviders';
+import UtilityConfirmationPage from '../modules/utility/pages/UtilityConfirmationPage';
 
 // ─── Driver Portal ────────────────────────────────────────────────────────────
 import DriverLayout from '../modules/driver/components/DriverLayout';
@@ -77,11 +80,11 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'about',
-                        element: <ExploreAboutPage about={{}} />,
+                        element: <ExploreAboutPage />,
                     },
                     {
                         path: 'explore/about',
-                        element: <ExploreAboutPage about={{}} />,
+                        element: <ExploreAboutPage />,
                     },
                     {
                         path: 'explore/culture',
@@ -261,6 +264,23 @@ const router = createBrowserRouter([
                     {
                         path: 'auth/register',
                         element: <WebRegister />,
+                    },
+                    {
+                        element: <ProtectedRoute />,
+                        children: [
+                            {
+                                path: 'utility',
+                                element: <UtilityProviders />,
+                            },
+                            {
+                                path: 'utility/:provider',
+                                element: <UtilitySearch />,
+                            },
+                            {
+                                path: 'utility-confirmation/:paymentId',
+                                element: <UtilityConfirmationPage />,
+                            }
+                        ]
                     },
                 ],
             },

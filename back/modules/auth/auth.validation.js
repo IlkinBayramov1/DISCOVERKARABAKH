@@ -8,7 +8,7 @@ export const registerSchema = Joi.object({
   role: Joi.string().valid('user', 'vendor', 'tourist', 'resident', 'admin', 'driver').default('user'),
   // Vendor specific fields
   companyName: Joi.string().when('role', { is: 'vendor', then: Joi.required() }),
-  category: Joi.string().valid('hotel', 'tour', 'event', 'transport', 'restaurant', 'attraction').when('role', { is: 'vendor', then: Joi.required() }),
+  category: Joi.string().valid('hotel', 'tour', 'event', 'transport', 'restaurant', 'attraction', 'gas', 'electricity', 'water', 'utility').when('role', { is: 'vendor', then: Joi.required() }),
   // Tourist fields
   nationality: Joi.string().when('role', { is: 'tourist', then: Joi.optional() }),
   passportNumber: Joi.string().optional(),

@@ -10,6 +10,7 @@ import tourRoutes from '../../modules/businesses/tour/tour.routes.js';
 import eventRoutes from '../../modules/businesses/event/event/event.routes.js';
 import restaurantRoutes from '../../modules/businesses/restaurant/restaurant.routes.js';
 import attractionRoutes from '../../modules/businesses/attraction/index.js';
+import utilityRoutes from '../../modules/businesses/utility/utility.routes.js';
 import bookingRoutes from '../../modules/booking/booking.routes.js';
 import reviewRoutes from '../../modules/interactions/review/review.routes.js';
 import uploadRoutes from '../../modules/shared/upload/upload.routes.js';
@@ -29,6 +30,7 @@ router.use('/events', eventRoutes);
 router.use('/restaurants', restaurantRoutes);
 router.use('/attractions', attractionRoutes);
 router.use('/vendors', vendorRoutes);
+router.use('/utility', utilityRoutes);
 
 
 // Interaction Routes

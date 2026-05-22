@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Building2, Briefcase, Mail, Lock, Eye, EyeOff, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { authApi } from '../../api/auth.api';
 import type { VendorCategory } from '@/shared/types/auth.types';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 // Loqonu import edirik (Fayl strukturunuza əsasən)
 import dkLogo from '../../../../assets/dk-logo3.png';
 import './VendorRegister.css'; 
@@ -177,6 +177,9 @@ export default function VendorRegister() {
                                         <option value="restaurant">Restaurant & Food</option>
                                         <option value="attraction">Attractions & Fun</option>
                                         <option value="event">Events & Festivals</option>
+                                        <option value="gas">Utility - Gas (Azəriqaz)</option>
+                                        <option value="electricity">Utility - Electricity (Azərişıq)</option>
+                                        <option value="water">Utility - Water (Azərsu)</option>
                                     </select>
                                     <label htmlFor="category" className="select-label">Business Category</label>
                                 </div>

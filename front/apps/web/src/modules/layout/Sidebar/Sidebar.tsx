@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     Hotel, Map as MapIcon, FerrisWheel, Car, Package, Users,
     BadgeCheck, ChevronDown, ChevronRight, MapPin, Shield,
-    Heart, Briefcase, Wallet, LogOut, User as UserIcon
+    Heart, Briefcase, Wallet, LogOut, User as UserIcon, Flame
 } from 'lucide-react';
 import { getUserRole } from '../../../shared/utils/token';
 import { useAuth } from '../../../shared/context/AuthContext';
@@ -117,6 +117,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             }>
                                 <FerrisWheel size={20} />
                                 <span>Attractions</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to={buildLink("/utility")} onClick={onClose} className={({ isActive }) => 
+                                isActive && location.pathname.includes('/utility') ? 'nav-link active' : 'nav-link'
+                            }>
+                                <Flame size={20} />
+                                <span>Utility Bills</span>
                             </NavLink>
                         </li>
 
