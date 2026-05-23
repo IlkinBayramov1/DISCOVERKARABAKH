@@ -234,10 +234,22 @@
         position: sticky;
         top: 0;
         z-index: 999;
+        /* YENİ: Header-in sıxılmasını və yoxa çıxmasını qəti şəkildə əngəlləyir */
+        flex-shrink: 0; 
+        transform: translate3d(0, 0, 0); 
+        -webkit-transform: translate3d(0, 0, 0);
+    }
+
+    /* YENİ: Logonun sağındakı xətti (border) silir və ölçünü mobildə nizamlayır */
+    .header-logo-container {
+        border-right: none; 
+        width: auto;
+        padding-left: 0;
+        height: 64px;
     }
 
     .web-header__left {
-        gap: 0; /* Remove gap so hamburger sits flush left */
+        gap: 0; 
     }
 
     /* CENTER THE LOGO ON MOBILE */
@@ -248,7 +260,7 @@
     }
 
     .header-logo {
-        height: 60px; /* Slightly smaller for mobile elegance */
+        height: 50px; /* Mobildə daha səliqəli görünməsi üçün bir az kiçiltdik */
     }
 
     /* --- MOBILE AUTH BUTTON FIX --- */

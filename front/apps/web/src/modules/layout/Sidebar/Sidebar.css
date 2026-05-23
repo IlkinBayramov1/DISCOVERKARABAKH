@@ -35,7 +35,13 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+
+  /* YENİ ƏLAVƏLƏR: Öz içində sürüşmə və kəsilməmə üçün */
+  overscroll-behavior: contain; /* Sürüşmənin arxa səhifəyə keçməsinin qarşısını alır */
+  -webkit-overflow-scrolling: touch; /* iOS cihazlarda rahat sürüşmə üçün */
+  padding-bottom: 40px; /* Ən aşağıdakı "Logout" düyməsi kəsilməsin deyə boşluq */  
 }
+
 
 .web-sidebar::-webkit-scrollbar { width: 4px; }
 .web-sidebar::-webkit-scrollbar-track { background: transparent; }
@@ -247,9 +253,15 @@
    ============================================ */
 @media (max-width: 1024px) {
   .web-sidebar {
-    left: -260px; /* Hidden by default */
+    left: -260px;
     width: 260px;
     box-shadow: var(--dk-shadow-sidebar);
+    
+    /* YENİ: Mobildə arxadakı səhifədən tam qoparıb ekrana sabitleyirik */
+    position: fixed;
+    top: 80px; /* Tablet üçün header ölçüsü */
+    height: calc(100dvh - 80px); /* 100dvh mobil brauzer panellərini nəzərə alır */
+    z-index: 1000;
   }
 
   .web-sidebar.open {
@@ -258,6 +270,13 @@
 
   .sidebar-overlay.active {
     display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .web-sidebar {
+    top: 64px; /* Mobil üçün daha incə header ölçüsü */
+    height: calc(100dvh - 64px);
   }
 }
 

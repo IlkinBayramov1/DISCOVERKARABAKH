@@ -184,8 +184,7 @@ export function WalletPage() {
         <div className="dk-wallet-container">
             <div className="dk-wallet-header">
                 <div className="header-title-wrapper">
-                    <Wallet className="header-icon" size={28} />
-                    <h2>Pul Kisəsi</h2>
+                    <h2>DiscoverKarabakh Wallet</h2>
                 </div>
                 <p>Maliyyə balansınızı idarə edin, çıxarışlar əldə edin və rahat şəkildə vəsait köçürün.</p>
             </div>

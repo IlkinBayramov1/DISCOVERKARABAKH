@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon server.js",
     "start": "node server.js",
+    "ship": "npx prisma migrate dev --name auto_update && flyctl deploy --local-only",
     "seed:attractions": "node seed_attraction_categories.js"
   },
   "keywords": [],

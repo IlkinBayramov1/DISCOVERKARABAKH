@@ -308,7 +308,7 @@
     transition: 0.2s;
 }
 
-.amount-btn:hover:not(:disabled) {
+.amount-btn:not(.selected):hover:not(:disabled) {
     border-color: var(--dk-accent);
     background: #faf5ff;
 }
@@ -465,7 +465,7 @@
     transition: 0.2s;
 }
 
-.method-btn:hover:not(:disabled) {
+.method-btn:not(.selected):hover:not(:disabled) {
     border-color: var(--dk-danger);
     color: var(--dk-danger);
 }
