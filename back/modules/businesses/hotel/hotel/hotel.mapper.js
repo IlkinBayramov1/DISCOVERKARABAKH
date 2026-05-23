@@ -51,6 +51,7 @@ class HotelMapper {
             address: hotel.address,
             latitude: hotel.latitude,
             longitude: hotel.longitude,
+            googleMapsUrl: hotel.googleMapsUrl,
             phone: hotel.phone,
             email: hotel.email,
             status: hotel.status,

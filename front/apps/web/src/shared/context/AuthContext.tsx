@@ -10,6 +10,7 @@ interface IAuthContext {
     isLoading: boolean;
     login: (token: string, user: IUser) => void;
     logout: () => void;
+    refreshUser: () => Promise<void>;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -58,6 +59,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = '/';
     };
 
+    const refreshUser = async () => {
+        try {
+            const res = await authApi.getMe();
+            if (res.success && res.data) {
+                setUser(res.data);
+            }
+        } catch (error) {
+            console.error('Error refreshing user details:', error);
+        }
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -66,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 login,
                 logout,
+                refreshUser,
             }}
         >
             {children}

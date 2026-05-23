@@ -48,9 +48,11 @@ import { AttractionReservationPage } from '../modules/attraction/pages/Attractio
 import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
 import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
 import { FavoritesPage } from '../modules/account/pages/FavoritesPage/FavoritesPage';
+import { WalletPage } from '../modules/account/pages/WalletPage/WalletPage';
 import UtilitySearch from '../modules/utility/pages/UtilitySearch';
 import UtilityProviders from '../modules/utility/pages/UtilityProviders';
 import UtilityConfirmationPage from '../modules/utility/pages/UtilityConfirmationPage';
+import UtilityCheckoutPage from '../modules/utility/pages/UtilityCheckoutPage';
 
 // ─── Driver Portal ────────────────────────────────────────────────────────────
 import DriverLayout from '../modules/driver/components/DriverLayout';
@@ -250,6 +252,10 @@ const router = createBrowserRouter([
                         element: <ProfilePage />,
                     },
                     {
+                        path: 'account/wallet',
+                        element: <WalletPage />,
+                    },
+                    {
                         path: 'account/trips',
                         element: <TripsPage />,
                     },
@@ -279,6 +285,10 @@ const router = createBrowserRouter([
                             {
                                 path: 'utility-confirmation/:paymentId',
                                 element: <UtilityConfirmationPage />,
+                            },
+                            {
+                                path: 'utility-checkout/:paymentId',
+                                element: <UtilityCheckoutPage />,
                             }
                         ]
                     },

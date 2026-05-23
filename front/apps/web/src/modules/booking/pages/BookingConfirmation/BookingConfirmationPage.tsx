@@ -15,7 +15,24 @@ export const BookingConfirmationPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [downloading, setDownloading] = useState(false);
+    const [showBackWarning, setShowBackWarning] = useState(false);
     const receiptRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Push state to prevent initial back navigation
+        window.history.pushState(null, '', window.location.href);
+
+        const handlePopState = () => {
+            // Push state again to keep user on confirmation page
+            window.history.pushState(null, '', window.location.href);
+            setShowBackWarning(true);
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
 
     const handleDownloadPDF = async () => {
         if (!receiptRef.current) return;
@@ -204,6 +221,27 @@ export const BookingConfirmationPage: React.FC = () => {
 
     return (
         <div className="dk-bc-layout">
+            {showBackWarning && (
+                <div className="dk-bc-modal-overlay">
+                    <div className="dk-bc-modal-card">
+                        <div className="warning-icon-wrap">
+                            <ShieldCheck size={32} style={{ color: '#6a28c7' }} />
+                        </div>
+                        <h3>Rezervasiyanız Tamamlanıb!</h3>
+                        <p>
+                            Ödənişiniz uğurla icra edildiyi üçün yenidən ödəniş (checkout) səhifəsinə geri qayıda bilməzsiniz.
+                        </p>
+                        <div className="modal-buttons">
+                            <button onClick={() => navigate(exploreLink)} className="dk-btn-dark">
+                                Axtarış Səhifəsinə Qayıt
+                            </button>
+                            <button onClick={() => setShowBackWarning(false)} className="dk-btn-ghost">
+                                Qəbzdə Qal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="dk-bc-container">
                 
                 {/* RECEIPT PAPER START */}

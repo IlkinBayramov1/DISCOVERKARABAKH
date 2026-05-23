@@ -598,7 +598,17 @@ class UtilityService {
     async completePayment(paymentId, userId) {
         const payment = await prisma.utilitypayment.findFirst({
             where: { id: paymentId, userId },
-            include: { utilitypaymentitem: true }
+            include: {
+                utilitypaymentitem: {
+                    include: {
+                        bill: {
+                            include: {
+                                abonent: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!payment) {
@@ -610,6 +620,52 @@ class UtilityService {
         }
 
         await prisma.$transaction(async (tx) => {
+            const user = await tx.user.findUnique({
+                where: { id: userId }
+            });
+
+            if (!user) {
+                throw ApiError.notFound('İstifadəçi tapılmadı.');
+            }
+
+            if (user.balance < payment.totalAmount) {
+                throw ApiError.badRequest('Balansınızda kifayət qədər vəsait yoxdur.');
+            }
+
+            // 1. Decrement user balance
+            await tx.user.update({
+                where: { id: userId },
+                data: {
+                    balance: {
+                        decrement: payment.totalAmount
+                    }
+                }
+            });
+
+            // 2. Create wallet transaction
+            const firstItem = payment.utilitypaymentitem[0];
+            const utilityType = firstItem?.bill?.utilityType;
+            const abonentCode = firstItem?.bill?.abonentCode || 'N/A';
+            
+            const providerNames = {
+                gas: 'Azəriqaz',
+                water: 'Azərsu',
+                electricity: 'Azərişıq'
+            };
+            const providerName = providerNames[utilityType] || 'Kommunal Xidmət';
+            const description = `${providerName} ödənişi (Abonent: ${abonentCode})`;
+
+            await tx.wallettransaction.create({
+                data: {
+                    userId,
+                    amount: payment.totalAmount,
+                    type: 'payment',
+                    status: 'COMPLETED',
+                    description
+                }
+            });
+
+            // 3. Update payment status
             await tx.utilitypayment.update({
                 where: { id: payment.id },
                 data: {
@@ -618,6 +674,7 @@ class UtilityService {
                 }
             });
 
+            // 4. Update utility bills
             for (const item of payment.utilitypaymentitem) {
                 const bill = await tx.utilitybill.findUnique({
                     where: { id: item.billId }

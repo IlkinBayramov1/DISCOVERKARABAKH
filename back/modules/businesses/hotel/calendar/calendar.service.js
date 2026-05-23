@@ -217,7 +217,14 @@ class CalendarService {
             if (priceAdjustment) {
                 const dateKey = dateObj.toISOString().split('T')[0];
                 const existing = currentPrices.find(p => p.date.toISOString().split('T')[0] === dateKey);
-                const sourcePrice = existing ? existing.basePrice : (basePrice || 0);
+                
+                // The source price for adjustment should be:
+                // 1. The basePrice provided in this bulk update payload (if any)
+                // 2. The existing daily pricing override (if any)
+                // 3. The room type's default base price (if no override exists)
+                const sourcePrice = basePrice !== undefined 
+                    ? basePrice 
+                    : (existing ? existing.basePrice : (roomType.basePrice || 0));
 
                 if (priceAdjustment.type === 'percentage') {
                     finalPrice = sourcePrice + (sourcePrice * (priceAdjustment.value / 100));

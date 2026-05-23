@@ -39,6 +39,9 @@ export default function TourBookingDetails({ booking, onClose, onStatusUpdate }:
                         <div>
                             <h2>Tour Intelligence</h2>
                             <p>Protocol ID: <strong className="text-slate-700">#{booking.bookingNumber}</strong></p>
+                            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                Created: {booking.createdAt ? new Date(booking.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                            </p>
                         </div>
                     </div>
                     <button className="dk-res-modal-close" onClick={onClose}>

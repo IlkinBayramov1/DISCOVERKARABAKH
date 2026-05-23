@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { User, LogOut, Briefcase, Heart, Wallet, Menu } from 'lucide-react';
 import { WebHeaderWeather } from './WebHeaderWeather';
@@ -12,6 +12,7 @@ interface WebHeaderProps {
 export default function WebHeader({ onMenuClick }: WebHeaderProps) {
     const { isAuthenticated, user, logout } = useAuth();
     const userBalance = (user as any)?.balance ?? 0.00;
+    const navigate = useNavigate();
 
     return (
         <header className="web-header">
@@ -37,10 +38,10 @@ export default function WebHeader({ onMenuClick }: WebHeaderProps) {
             <div className="web-header__actions">
                 {isAuthenticated ? (
                     <div className="user-profile-menu">
-                        <div className="header-balance-card" title="Your Balance">
+                        <div className="header-balance-card" title="Your Balance" onClick={() => navigate('/account/wallet')}>
                             <Wallet size={16} className="balance-icon" />
                             <span className="balance-amount">{userBalance.toFixed(2)} ₼</span>
-                            <button className="deposit-btn">+</button>
+                            <button className="deposit-btn" onClick={(e) => { e.stopPropagation(); navigate('/account/wallet'); }}>+</button>
                         </div>
 
                         <Link to="/account/favorites" className="header-link fav-link" title="Favorites">

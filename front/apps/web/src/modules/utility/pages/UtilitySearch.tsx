@@ -153,7 +153,7 @@ export default function UtilitySearch() {
             setRedirecting(true);
             setPaymentError(null);
             const response = await utilityApi.initiatePayment(billPayments);
-            navigate(`/utility-confirmation/${response.data.data.paymentId}`);
+            navigate(`/utility-checkout/${response.data.data.paymentId}`);
         } catch (err: any) {
             setPaymentError(err.message || 'Ödəniş başladılarkən xəta baş verdi.');
             setRedirecting(false);

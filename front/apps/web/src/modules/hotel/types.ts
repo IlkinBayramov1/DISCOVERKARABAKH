@@ -46,6 +46,7 @@ export interface IHotel {
 
     latitude?: number;
     longitude?: number;
+    googleMapsUrl?: string;
     phone?: string;
     email?: string;
 

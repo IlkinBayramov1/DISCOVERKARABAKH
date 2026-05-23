@@ -6,6 +6,7 @@ import { hotelEvents } from '../../businesses/hotel/hotel.events.js';
 import { fraudDetectionService } from '../../businesses/hotel/fraud/fraud.service.js';
 import { inventoryLockService } from '../../businesses/hotel/availability/inventoryLock.service.js';
 import { notificationService } from '../../shared/notification/notification.service.js';
+import crypto from 'crypto';
 
 export class HotelBookingStrategy extends BookingStrategy {
 
@@ -165,20 +166,46 @@ export class HotelBookingStrategy extends BookingStrategy {
     // Hook triggered upon Successful Commit of the Transaction
     async onBookingSuccess(booking) {
         // Increment reservedRooms
-        if (booking.items && booking.items.length > 0) {
-            for (const item of booking.items) {
-                await prisma.roomavailability.updateMany({
-                    where: {
-                        roomTypeId: item.roomTypeId,
-                        date: {
-                            gte: new Date(item.checkIn),
-                            lt: new Date(item.checkOut)
-                        }
-                    },
-                    data: {
-                        reservedRooms: { increment: 1 }
-                    }
+        const items = booking.bookingitem || booking.items || [];
+        if (items.length > 0) {
+            for (const item of items) {
+                const roomType = await prisma.roomtype.findUnique({
+                    where: { id: item.roomTypeId }
                 });
+                if (!roomType) continue;
+
+                let current = new Date(item.checkIn);
+                const end = new Date(item.checkOut);
+                
+                const ops = [];
+                while (current < end) {
+                    const dateObj = new Date(current);
+                    ops.push(
+                        prisma.roomavailability.upsert({
+                            where: {
+                                roomTypeId_date: {
+                                    roomTypeId: item.roomTypeId,
+                                    date: dateObj
+                                }
+                            },
+                            update: {
+                                reservedRooms: { increment: 1 },
+                                availableRooms: { decrement: 1 }
+                            },
+                            create: {
+                                id: crypto.randomUUID(),
+                                roomTypeId: item.roomTypeId,
+                                date: dateObj,
+                                totalRooms: roomType.totalInventory,
+                                reservedRooms: 1,
+                                availableRooms: roomType.totalInventory - 1
+                            }
+                        })
+                    );
+                    current.setDate(current.getDate() + 1);
+                }
+                
+                await prisma.$transaction(ops);
 
                 // Release user's temporary locks for these rooms
                 await prisma.inventorylock.deleteMany({
@@ -208,23 +235,49 @@ export class HotelBookingStrategy extends BookingStrategy {
         // Decrement reservedRooms
         const fullBooking = await prisma.booking.findUnique({
             where: { id: booking.id },
-            include: { items: true }
+            include: { bookingitem: true }
         });
 
-        if (fullBooking && fullBooking.items) {
-            for (const item of fullBooking.items) {
-                await prisma.roomavailability.updateMany({
-                    where: {
-                        roomTypeId: item.roomTypeId,
-                        date: {
-                            gte: new Date(item.checkIn),
-                            lt: new Date(item.checkOut)
-                        }
-                    },
-                    data: {
-                        reservedRooms: { decrement: 1 }
-                    }
+        const items = fullBooking?.bookingitem || [];
+        if (items.length > 0) {
+            for (const item of items) {
+                const roomType = await prisma.roomtype.findUnique({
+                    where: { id: item.roomTypeId }
                 });
+                if (!roomType) continue;
+
+                let current = new Date(item.checkIn);
+                const end = new Date(item.checkOut);
+                
+                const ops = [];
+                while (current < end) {
+                    const dateObj = new Date(current);
+                    ops.push(
+                        prisma.roomavailability.upsert({
+                            where: {
+                                roomTypeId_date: {
+                                    roomTypeId: item.roomTypeId,
+                                    date: dateObj
+                                }
+                            },
+                            update: {
+                                reservedRooms: { decrement: 1 },
+                                availableRooms: { increment: 1 }
+                            },
+                            create: {
+                                id: crypto.randomUUID(),
+                                roomTypeId: item.roomTypeId,
+                                date: dateObj,
+                                totalRooms: roomType.totalInventory,
+                                reservedRooms: 0,
+                                availableRooms: roomType.totalInventory
+                            }
+                        })
+                    );
+                    current.setDate(current.getDate() + 1);
+                }
+                
+                await prisma.$transaction(ops);
             }
         }
 

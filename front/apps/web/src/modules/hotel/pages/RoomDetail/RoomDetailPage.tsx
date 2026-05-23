@@ -265,7 +265,7 @@ export const RoomDetailPage: React.FC = () => {
                             <h3 className="section-title-premium"><i className="fa-solid fa-location-dot"></i> Hotel Location</h3>
                             <a 
                                 className="premium-card clickable-map-card-horizontal" 
-                                href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}`)}`}
+                                href={hotel.googleMapsUrl ? hotel.googleMapsUrl : (hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}`)}`)}
                                 target="_blank" 
                                 rel="noopener noreferrer"
                             >

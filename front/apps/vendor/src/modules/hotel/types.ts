@@ -9,6 +9,7 @@ export interface IHotel {
     address: string;
     latitude?: number | null;
     longitude?: number | null;
+    googleMapsUrl?: string | null;
     phone?: string | null;
     email?: string | null;
     status: string;
@@ -52,6 +53,7 @@ export interface IHotelPayload {
     address: string;
     latitude?: number;
     longitude?: number;
+    googleMapsUrl?: string;
     phone?: string;
     email?: string;
     checkInTime?: string;

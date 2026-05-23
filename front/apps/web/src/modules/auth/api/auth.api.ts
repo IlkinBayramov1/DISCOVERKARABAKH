@@ -55,5 +55,20 @@ export const authApi = {
     getMe: async (): Promise<IGetMeResponse> => {
         const response = await httpClient.get<IGetMeResponse>('/auth/me');
         return response.data;
+    },
+
+    topupWallet: async (amount: number, cardNumber?: string): Promise<any> => {
+        const response = await httpClient.post<any>('/users/wallet/topup', { amount, cardNumber });
+        return response.data;
+    },
+
+    withdrawWallet: async (payload: { amount: number; withdrawalMethod: string; cardNumber?: string; bankAccount?: string }): Promise<any> => {
+        const response = await httpClient.post<any>('/users/wallet/withdraw', payload);
+        return response.data;
+    },
+
+    getWalletTransactions: async (params?: { page?: number; limit?: number; type?: 'all' | 'in' | 'out' }): Promise<any> => {
+        const response = await httpClient.get<any>('/users/wallet/transactions', { params });
+        return response.data;
     }
 };

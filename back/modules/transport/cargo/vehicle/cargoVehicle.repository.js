@@ -9,7 +9,7 @@ class CargoVehicleRepository {
         return prisma.cargoVehicle.findUnique({
             where: { id },
             include: {
-                owner: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
+                user: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
             }
         });
     }
@@ -26,7 +26,7 @@ class CargoVehicleRepository {
             where,
             orderBy: { createdAt: 'desc' },
             include: {
-                owner: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
+                user: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
             }
         });
     }

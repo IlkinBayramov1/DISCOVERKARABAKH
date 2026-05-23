@@ -87,7 +87,18 @@ class PaymentService {
                 id: params.transId || params.transactionId,
                 provider: providerName 
             },
-            include: { booking: { include: { items: true, guests: true } } }
+            include: { 
+                booking: { 
+                    include: { 
+                        items: true, 
+                        guests: true,
+                        hotel: true,
+                        tour: true,
+                        event: true,
+                        attraction: true
+                    } 
+                } 
+            }
         });
 
         if (!transaction) throw ApiError.notFound('Transaction not found');
@@ -104,8 +115,43 @@ class PaymentService {
             });
 
             if (verification.status === 'success') {
+                // Deduct from user's wallet balance
+                await tx.user.update({
+                    where: { id: transaction.booking.userId },
+                    data: {
+                        balance: {
+                            decrement: transaction.amount
+                        }
+                    }
+                });
+
+                // Determine transaction description
+                let itemTitle = 'Rezervasiya Ödənişi';
+                const bookingType = transaction.booking.bookingType;
+                if (bookingType === 'hotel' && transaction.booking.hotel) {
+                    itemTitle = transaction.booking.hotel.name;
+                } else if (bookingType === 'tour' && transaction.booking.tour) {
+                    itemTitle = transaction.booking.tour.name;
+                } else if (bookingType === 'event' && transaction.booking.event) {
+                    itemTitle = transaction.booking.event.title;
+                } else if (bookingType === 'attraction' && transaction.booking.attraction) {
+                    itemTitle = transaction.booking.attraction.name;
+                }
+                const description = `${itemTitle} (${transaction.booking.bookingNumber})`;
+
+                // Log wallettransaction
+                await tx.wallettransaction.create({
+                    data: {
+                        userId: transaction.booking.userId,
+                        amount: transaction.amount,
+                        type: 'payment',
+                        status: 'COMPLETED',
+                        description
+                    }
+                });
+
                 await tx.booking.update({
-                    where: { id: transaction.bookingId },
+                    where: { id: transaction.booking.bookingId },
                     data: { 
                         status: 'confirmed',
                         paymentStatus: 'captured',
