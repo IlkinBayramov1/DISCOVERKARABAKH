@@ -1,0 +1,346 @@
+/* UtilityCheckoutPage.css */
+
+.utility-checkout-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+}
+
+.checkout-back-header {
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.back-btn:hover {
+    color: #0f172a;
+}
+
+/* Grid Layout */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 868px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cards layout */
+.checkout-details-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.checkout-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0;
+}
+
+.border-accent {
+    border-left: 4px solid #4f46e5;
+}
+
+.checkout-provider-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.checkout-provider-header .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkout-provider-header .icon.gas {
+    background-color: #ffedd5;
+    color: #f97316;
+}
+
+.checkout-provider-header .icon.water {
+    background-color: #e0f2fe;
+    color: #0ea5e9;
+}
+
+.checkout-provider-header .icon.electricity {
+    background-color: #fef9c3;
+    color: #eab308;
+}
+
+.checkout-provider-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.checkout-provider-header p {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.abonent-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #f1f5f9;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.detail-row .label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-row .value {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+}
+
+.checkout-bills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.checkout-bill-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.bill-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.bill-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.bill-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* RIGHT COLUMN PAYMENT INFO */
+.payment-summary-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.payment-summary-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #475569;
+}
+
+.free-badge {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.summary-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 8px 0;
+}
+
+.summary-row.total {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* WALLET BOX */
+.wallet-balance-box {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wallet-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-lbl {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-lbl svg {
+    color: #4f46e5;
+}
+
+.balance-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.balance-val.insufficient {
+    color: #ef4444;
+}
+
+.balance-error-msg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #ef4444;
+    line-height: 1.4;
+}
+
+/* PAY BUTTON */
+.checkout-pay-btn {
+    border: none;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.checkout-pay-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
+}
+
+.checkout-pay-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.secure-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* LOADING & ERROR */
+.dk-checkout-loading, .dk-checkout-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 16px;
+    color: #64748b;
+    font-size: 15px;
+    text-align: center;
+}
+
+.dk-checkout-error h2 {
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.back-btn-link {
+    display: inline-block;
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.back-btn-link:hover {
+    background-color: #1e293b;
+}
+
+.spinner-anim {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}

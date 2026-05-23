@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { favoriteApi } from '../../../../shared/api/favorite.api';
 import { HotelCard } from '../../../hotel/components/HotelCard/HotelCard';
 import { TourCard } from '../../../tour/components/TourCard.tsx';
@@ -8,6 +9,7 @@ import { Heart, Loader2, BookmarkX } from 'lucide-react';
 import './FavoritesPage.css';
 
 export const FavoritesPage: React.FC = () => {
+    const navigate = useNavigate();
     const [favorites, setFavorites] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'hotels' | 'tours' | 'attractions' | 'vehicles'>('hotels');
@@ -58,14 +60,34 @@ export const FavoritesPage: React.FC = () => {
 
         return (
             <div className="favorites-grid">
-                {activeTab === 'hotels' && items.map((item: any) => <HotelCard key={item.id} hotel={item} isFavorited={true} />)}
-                {activeTab === 'tours' && items.map((item: any) => <TourCard key={item.id} tour={item} isFavorited={true} />)}
-                {activeTab === 'attractions' && items.map((item: any) => <AttractionCard key={item.id} attraction={item} isFavorited={true} />)}
+                {activeTab === 'hotels' && items.map((item: any) => (
+                    <HotelCard 
+                        key={item.id} 
+                        hotel={item} 
+                        isFavorited={true} 
+                        onClick={(id) => navigate(`/hotels/${id}`)}
+                    />
+                ))}
+                {activeTab === 'tours' && items.map((item: any) => (
+                    <TourCard 
+                        key={item.id} 
+                        tour={item} 
+                        isFavorited={true} 
+                        onClick={(id) => navigate(`/tours/${id}`)}
+                    />
+                ))}
+                {activeTab === 'attractions' && items.map((item: any) => (
+                    <AttractionCard 
+                        key={item.id} 
+                        attraction={item} 
+                        isFavorited={true} 
+                    />
+                ))}
                 {activeTab === 'vehicles' && items.map((item: any) => (
                     <TransferCard 
                         key={item.id} 
                         taxi={{ vehicle: item, pricing: { totalPrice: item.basePrice || 0, currency: 'AZN' } } as any} 
-                        onClick={() => {}} 
+                        onClick={() => navigate(`/transport/details/${item.id}`)} 
                         hasRoute={false}
                         isFavorited={true}
                     />

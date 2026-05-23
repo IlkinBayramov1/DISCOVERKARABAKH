@@ -50,6 +50,9 @@ export default function TransportOrderDetails({ order, activeTab, onClose, onSta
                         <div>
                             <h2>Logistics Intelligence</h2>
                             <p>Protocol ID: <strong className="text-slate-700">{bNo}</strong></p>
+                            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                Created: {order.createdAt ? new Date(order.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                            </p>
                         </div>
                     </div>
                     <button className="dk-transport-modal-close" onClick={onClose}>

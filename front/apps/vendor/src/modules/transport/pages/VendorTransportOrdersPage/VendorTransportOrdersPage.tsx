@@ -184,6 +184,9 @@ export default function VendorTransportOrdersPage() {
                                                         <span className="user-email">
                                                             <Mail size={12} /> {email}
                                                         </span>
+                                                        <span className="guest-date" style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                                            {order.createdAt ? new Date(order.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

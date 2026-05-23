@@ -109,12 +109,12 @@ export const getPendingBusinesses = async (req, res, next) => {
         // Fetch all generic businesses that have 'pending' status
         const hotels = await prisma.hotel.findMany({
             where: { status: 'pending' },
-            include: { owner: { select: { email: true, phone: true } } }
+            include: { user: { select: { email: true, phone: true } } }
         });
 
         const restaurants = await prisma.restaurant.findMany({
             where: { status: 'pending' },
-            include: { owner: { select: { email: true, phone: true } } }
+            include: { user: { select: { email: true, phone: true } } }
         });
 
         const tours = await prisma.tour.findMany({
@@ -147,30 +147,30 @@ export const getAllBusinesses = async (req, res, next) => {
         if (type === 'hotel') {
             data = await prisma.hotel.findMany({ 
                 where, 
-                include: { owner: { select: { email: true, phone: true } } },
+                include: { user: { select: { email: true, phone: true } } },
                 orderBy: { createdAt: 'desc' }
             });
             count = data.length;
         } else if (type === 'restaurant') {
             data = await prisma.restaurant.findMany({ 
                 where, 
-                include: { owner: { select: { email: true, phone: true } } },
+                include: { user: { select: { email: true, phone: true } } },
                 orderBy: { createdAt: 'desc' }
             });
             count = data.length;
         } else if (type === 'tour') {
             data = await prisma.tour.findMany({ 
                 where, 
-                include: { owner: { select: { email: true, phone: true } } },
+                include: { user: { select: { email: true, phone: true } } },
                 orderBy: { createdAt: 'desc' }
             });
             count = data.length;
         } else {
             // Əgər tip seçilməyibsə hamısını birlikdə qaytar (Sadələşdirilmiş)
             const [hotels, restaurants, tours] = await Promise.all([
-                prisma.hotel.findMany({ where, include: { owner: { select: { email: true } } } }),
-                prisma.restaurant.findMany({ where, include: { owner: { select: { email: true } } } }),
-                prisma.tour.findMany({ where, include: { owner: { select: { email: true } } } })
+                prisma.hotel.findMany({ where, include: { user: { select: { email: true } } } }),
+                prisma.restaurant.findMany({ where, include: { user: { select: { email: true } } } }),
+                prisma.tour.findMany({ where, include: { user: { select: { email: true } } } })
             ]);
             data = { hotels, restaurants, tours };
             count = hotels.length + restaurants.length + tours.length;

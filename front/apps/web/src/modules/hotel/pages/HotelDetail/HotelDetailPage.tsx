@@ -175,7 +175,7 @@ export const HotelDetailPage: React.FC = () => {
                             <span className="dot">•</span>
                             <div className="location">
                                 <i className="fa-solid fa-location-dot"></i>
-                                <a href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
+                                <a href={hotel.googleMapsUrl ? hotel.googleMapsUrl : (hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}`)} target="_blank" rel="noopener noreferrer">
                                     {hotel.address}{hotel.city ? `, ${hotel.city}` : ''}
                                 </a>
                             </div>
@@ -251,7 +251,7 @@ export const HotelDetailPage: React.FC = () => {
                                 ) : (
                                     <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}></iframe>
                                 )}
-                                <a className="map-overlay-btn" href={hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`} target="_blank" rel="noopener noreferrer">
+                                <a className="map-overlay-btn" href={hotel.googleMapsUrl ? hotel.googleMapsUrl : (hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`)} target="_blank" rel="noopener noreferrer">
                                     <i className="fa-solid fa-location-crosshairs"></i> View on map
                                 </a>
                             </div>

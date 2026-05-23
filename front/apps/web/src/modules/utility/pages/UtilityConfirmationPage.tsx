@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { utilityApi } from '../api/utility.api';
-import { CheckCircle, ShieldCheck, Download, CreditCard, Flame, Zap, Droplet, Clock } from 'lucide-react';
+import { CheckCircle, ShieldCheck, Download, Flame, Zap, Droplet, Clock } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import logoImg from '../../../assets/dk logo main3.png';
@@ -15,15 +15,37 @@ export default function UtilityConfirmationPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [downloading, setDownloading] = useState(false);
-    const [processing, setProcessing] = useState(false);
+
+    const [showBackWarning, setShowBackWarning] = useState(false);
     const receiptRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Push state to prevent initial back navigation
+        window.history.pushState(null, '', window.location.href);
+
+        const handlePopState = () => {
+            // Push state again to keep user on confirmation page
+            window.history.pushState(null, '', window.location.href);
+            setShowBackWarning(true);
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
 
     const fetchPaymentDetails = async () => {
         if (!paymentId) return;
         setLoading(true);
         try {
             const res = await utilityApi.getPaymentDetails(paymentId);
-            setPayment(res.data.data);
+            const data = res.data.data;
+            if (data && data.paymentStatus === 'pending') {
+                navigate(`/utility-checkout/${paymentId}`, { replace: true });
+                return;
+            }
+            setPayment(data);
         } catch (err: any) {
             setError(err.message || 'Ödəniş məlumatları yüklənərkən xəta baş verdi.');
         } finally {
@@ -34,19 +56,6 @@ export default function UtilityConfirmationPage() {
     useEffect(() => {
         fetchPaymentDetails();
     }, [paymentId]);
-
-    const handleConfirmPayment = async () => {
-        if (!paymentId) return;
-        setProcessing(true);
-        try {
-            const res = await utilityApi.completePayment(paymentId);
-            setPayment(res.data.data);
-        } catch (err: any) {
-            alert(err.message || 'Ödəniş təsdiqlənərkən xəta baş verdi.');
-        } finally {
-            setProcessing(false);
-        }
-    };
 
     const handleDownloadPDF = async () => {
         if (!receiptRef.current) return;
@@ -169,6 +178,27 @@ export default function UtilityConfirmationPage() {
 
     return (
         <div className="dk-bc-layout">
+            {showBackWarning && (
+                <div className="dk-bc-modal-overlay">
+                    <div className="dk-bc-modal-card">
+                        <div className="warning-icon-wrap">
+                            <ShieldCheck size={32} style={{ color: '#6a28c7' }} />
+                        </div>
+                        <h3>Ödəniş Tamamlanıb!</h3>
+                        <p>
+                            Ödənişiniz uğurla icra edildiyi üçün yenidən ödəniş səhifəsinə geri qayıda bilməzsiniz.
+                        </p>
+                        <div className="modal-buttons">
+                            <button onClick={() => navigate('/utility')} className="dk-btn-dark">
+                                Provayder Seçiminə Qayıt
+                            </button>
+                            <button onClick={() => setShowBackWarning(false)} className="dk-btn-ghost">
+                                Qəbzdə Qal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="dk-bc-container">
                 
                 {/* RECEIPT PAPER START */}
@@ -318,36 +348,6 @@ export default function UtilityConfirmationPage() {
                         <p>Discover Karabakh tərəfindən təhlükəsiz şəkildə yaradılmışdır.</p>
                         <span className="pdf-watermark">Discover Karabakh Operations</span>
                     </div>
-
-                    {/* PENDING PAYMENT ACTION BUTTON */}
-                    {!isCompleted && (
-                        <div className="no-print" style={{ marginTop: '30px' }}>
-                            <button
-                                onClick={handleConfirmPayment}
-                                disabled={processing}
-                                style={{
-                                    width: '100%',
-                                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                                    color: 'white',
-                                    padding: '18px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    fontWeight: 800,
-                                    fontSize: '16px',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 8px 20px rgba(15, 23, 42, 0.2)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <CreditCard size={20} />
-                                {processing ? 'Ödəniş emal edilir...' : 'ÖDƏNİŞİ TƏSDİQLƏ (SUCCESS)'}
-                            </button>
-                        </div>
-                    )}
 
                 </div>
                 {/* RECEIPT PAPER END */}

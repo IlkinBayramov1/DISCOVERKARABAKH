@@ -153,6 +153,9 @@ export default function TourBookings() {
                                                     <div className="guest-details">
                                                         <span className="guest-id">#{booking.bookingNumber}</span>
                                                         <span className="guest-email">{booking.user?.email || 'Guest Protocol'}</span>
+                                                        <span className="guest-date" style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                                            {booking.createdAt ? new Date(booking.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

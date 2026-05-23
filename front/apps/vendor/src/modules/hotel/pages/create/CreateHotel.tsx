@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useHotels } from '../../hooks/useHotels';
 import { useUpload } from '../../hooks/useUpload';
 import { hotelApi } from '../../api/hotel.api';
-import { parseCoordinate } from '../../utils/coordinates';
+import { parseCoordinate, parseGoogleMapsUrl } from '../../utils/coordinates';
 import type { IHotelPayload } from '../../types';
 import { 
     UploadCloud, 
@@ -90,6 +90,7 @@ export default function CreateHotel() {
     });
 
     const [imageUrlInput, setImageUrlInput] = useState('');
+    const [mapsLink, setMapsLink] = useState('');
     const [localFiles, setLocalFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -128,11 +129,51 @@ export default function CreateHotel() {
                 amenities: hotel.amenities?.map((a: any) => a.amenity.name) || [],
                 images: hotel.images?.map((img: any) => img.url) || []
             });
+
+            if (hotel.googleMapsUrl) {
+                setMapsLink(hotel.googleMapsUrl);
+            } else if (hotel.latitude && hotel.longitude) {
+                setMapsLink(`https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}`);
+            }
         } catch (err: any) {
             console.error('Load Error:', err);
             setError(err.message || 'Failed to load property details');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleMapsLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setMapsLink(val);
+
+        if (!val.trim()) {
+            setFormData(prev => ({ ...prev, latitude: undefined, longitude: undefined }));
+            return;
+        }
+
+        // 1. Try Google Maps URL Parser
+        const parsed = parseGoogleMapsUrl(val);
+        if (parsed) {
+            setFormData(prev => ({
+                ...prev,
+                latitude: parsed.latitude,
+                longitude: parsed.longitude,
+                googleMapsUrl: val
+            }));
+            return;
+        }
+
+        // 2. Try comma-separated coordinates like "39.7594652, 46.7431602"
+        const coordsMatch = val.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
+        if (coordsMatch) {
+            setFormData(prev => ({
+                ...prev,
+                latitude: Number(parseFloat(coordsMatch[1]).toFixed(6)),
+                longitude: Number(parseFloat(coordsMatch[2]).toFixed(6)),
+                googleMapsUrl: undefined
+            }));
+            return;
         }
     };
 
@@ -413,19 +454,34 @@ export default function CreateHotel() {
 
                                 <div className="col-span-2 my-4"><hr className="dk-divider"/></div>
 
-                                <div className="dk-form-group col-span-2 md:col-span-1">
-                                    <label>Latitude (Strategic Coord)</label>
+                                <div className="dk-form-group col-span-2">
+                                    <label>Google Maps Link / Xəritə Linki</label>
                                     <div className="dk-input-wrap">
                                         <MapPin size={18} className="dk-input-icon text-blue-500" />
-                                        <input type="text" name="latitude" className="dk-input with-icon" value={formData.latitude || ''} onChange={handleChange} placeholder="e.g. 39.758" />
+                                        <input 
+                                            type="text" 
+                                            name="googleMapsLink" 
+                                            className="dk-input with-icon" 
+                                            value={mapsLink} 
+                                            onChange={handleMapsLinkChange} 
+                                            placeholder="Google Maps linkini bura yapışdırın və ya koordinatları yazın (məs: 39.7594652, 46.7431602)" 
+                                        />
                                     </div>
-                                </div>
-                                <div className="dk-form-group col-span-2 md:col-span-1">
-                                    <label>Longitude (Strategic Coord)</label>
-                                    <div className="dk-input-wrap">
-                                        <MapPin size={18} className="dk-input-icon text-emerald-500" />
-                                        <input type="text" name="longitude" className="dk-input with-icon" value={formData.longitude || ''} onChange={handleChange} placeholder="e.g. 46.742" />
-                                    </div>
+                                    {formData.latitude && formData.longitude ? (
+                                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Koordinatlar müəyyən edildi: <span className="font-mono font-semibold text-emerald-600">{formData.latitude}, {formData.longitude}</span>
+                                        </div>
+                                    ) : mapsLink.trim() ? (
+                                        <div className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                            Xəritə linki oxunmadı. Zəhmət olmasa tam URL yapışdırın və ya koordinatları '39.759, 46.743' formatında yazın.
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 mt-1">
+                                            Google Maps-dən kopyaladığınız linki bura yapışdırın (məs. https://www.google.com/maps/place/...)
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

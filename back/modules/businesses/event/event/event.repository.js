@@ -11,7 +11,7 @@ class EventRepository {
         return prisma.event.findUnique({
             where: { id },
             include: {
-                owner: { select: { id: true, email: true, vendorProfile: true } }
+                user: { select: { id: true, email: true, vendorProfile: true } }
             }
         });
     }

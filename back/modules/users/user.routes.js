@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getProfile, updateProfile } from './user.controller.js';
+import { getProfile, updateProfile, topupWallet, getWalletTransactions, withdrawWallet } from './user.controller.js';
 import { authMiddleware } from '../../middlewares/auth.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import { updateProfileSchema } from './user.validation.js';
@@ -10,6 +10,9 @@ router.use(authMiddleware);
 
 router.get('/profile', getProfile);
 router.put('/profile', validate(updateProfileSchema), updateProfile);
+router.post('/wallet/topup', topupWallet);
+router.get('/wallet/transactions', getWalletTransactions);
+router.post('/wallet/withdraw', withdrawWallet);
 
 // Favorites
 import favoriteController from '../shared/favorite/favorite.controller.js';

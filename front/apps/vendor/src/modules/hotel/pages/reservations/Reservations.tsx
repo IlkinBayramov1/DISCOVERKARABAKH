@@ -227,6 +227,9 @@ export default function Reservations() {
                                                         <span className="guest-email">
                                                             {b.user?.firstName ? `${b.user.firstName} ${b.user.lastName || ''}` : b.user?.email || 'Guest Protocol'}
                                                         </span>
+                                                        <span className="guest-date" style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                                            {b.createdAt ? new Date(b.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

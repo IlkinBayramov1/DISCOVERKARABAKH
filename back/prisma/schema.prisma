@@ -368,6 +368,7 @@ model hotel {
   cancellationPolicy  String?              @db.Text
   childPolicy         String?              @db.Text
   petPolicy           String?              @db.Text
+  googleMapsUrl       String?              @db.Text
   booking             booking[]
   user                user                 @relation(fields: [ownerId], references: [id], map: "Hotel_ownerId_fkey")
   hotelamenity        hotelamenity[]
@@ -1106,6 +1107,7 @@ model user {
   utilityabonent                                utilityabonent[]
   utilitypayment                                utilitypayment[]
   utilityuploadlog                              utilityuploadlog[]
+  wallettransaction                             wallettransaction[]
 }
 
 model vehicle {
@@ -1346,4 +1348,18 @@ model utilityuploadlog {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   admin             user      @relation(fields: [uploadedByAdminId], references: [id], onDelete: Cascade)
+}
+
+model wallettransaction {
+  id               String   @id @default(uuid())
+  userId           String
+  amount           Float
+  type             String   // 'deposit', 'withdrawal', 'payment', 'refund'
+  status           String   @default("COMPLETED") // 'PENDING', 'COMPLETED', 'REJECTED', 'FAILED'
+  description      String?
+  withdrawalMethod String?  // 'bank_card', 'bank_transfer', 'cash'
+  cardNumber       String?  // Masked or simulated card used (e.g., "**** 1234")
+  bankAccount      String?  // Bank account if withdrawal
+  createdAt        DateTime @default(now())
+  user             user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

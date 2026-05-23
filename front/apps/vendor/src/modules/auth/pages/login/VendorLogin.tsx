@@ -45,6 +45,7 @@ export default function VendorLogin() {
                 else if (category === 'attraction') navigate('/attractions');
                 else if (category === 'restaurant') navigate('/restaurant/dashboard');
                 else if (category === 'event') navigate('/events');
+                else if (['gas', 'water', 'electricity', 'utility'].includes(category || '')) navigate('/utility/dashboard');
                 else navigate('/hotel/dashboard');
             }
         } catch (err: unknown) {
