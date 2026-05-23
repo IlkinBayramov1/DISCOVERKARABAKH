@@ -6,11 +6,17 @@ import fs from 'fs';
 
 const app = express();
 
+// Helper to split comma-separated env vars, or fallback to localhost
+const getOrigins = (envVar, fallback) => {
+    if (!envVar) return [fallback];
+    return envVar.split(',').map(url => url.trim());
+};
+
 // Enable CORS strictly for authorized frontend domains
 const allowedOrigins = [
-    process.env.FRONTEND_WEB_URL || 'http://localhost:5173',
-    process.env.FRONTEND_VENDOR_URL || 'http://localhost:5174',
-    process.env.FRONTEND_ADMIN_URL || 'http://localhost:5175'
+    ...getOrigins(process.env.FRONTEND_WEB_URL, 'http://localhost:5173'),
+    ...getOrigins(process.env.FRONTEND_VENDOR_URL, 'http://localhost:5174'),
+    ...getOrigins(process.env.FRONTEND_ADMIN_URL, 'http://localhost:5175')
 ];
 
 app.use(cors({
