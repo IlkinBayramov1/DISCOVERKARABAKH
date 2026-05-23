@@ -6,6 +6,8 @@ import { useBookingPreview } from '../../../booking/hooks/useBookingPreview';
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { useProfile } from '../../../account/hooks/useProfile';
 import { hotelWebApi } from '../../api/hotel.web.api';
+import { WalletPaymentBox } from '../../../booking/components/WalletPaymentBox';
+import { useAuth } from '../../../../shared/context/AuthContext';
 
 export const ReservationPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -25,6 +27,9 @@ export const ReservationPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
+
+    const [isValidWallet, setIsValidWallet] = useState(true);
+    const { refreshUser } = useAuth();
 
     // Hotel & Room Data for summary
     const [hotel, setHotel] = useState<any | null>(null);
@@ -91,27 +96,38 @@ export const ReservationPage: React.FC = () => {
             return;
         }
 
-        const data = await submitBooking({
-            type: 'hotel',
-            entityId: hotelId,
-            items: [{
-                roomTypeId: roomId,
-                checkIn,
-                checkOut,
-                adults,
-                children
-            }],
-            guests: [{
-                firstName,
-                lastName,
-                email,
-                phone
-            }],
-            paymentMethod
-        });
+        if (!isValidWallet) {
+            alert('Balansınızda kifayət qədər vəsait yoxdur.');
+            return;
+        }
 
-        if (data && data.data?.id) {
-            navigate(`/booking-confirmation/${data.data.id}`);
+        try {
+            const data = await submitBooking({
+                type: 'hotel',
+                entityId: hotelId,
+                items: [{
+                    roomTypeId: roomId,
+                    checkIn,
+                    checkOut,
+                    adults,
+                    children
+                }],
+                guests: [{
+                    firstName,
+                    lastName,
+                    email,
+                    phone
+                }],
+                paymentMethod
+            });
+
+            if (data && data.data?.id) {
+                await refreshUser();
+                navigate(`/booking-confirmation/${data.data.id}`);
+            }
+        } catch (err: any) {
+            alert(err.message || 'Booking failed');
+            await refreshUser();
         }
     };
 
@@ -233,6 +249,7 @@ export const ReservationPage: React.FC = () => {
                                     </div>
                                 </label>
                             </div>
+                            <WalletPaymentBox totalPrice={previewData?.exactTotal || 0} onValidationChange={setIsValidWallet} />
                         </section>
                     </div>
 
@@ -320,9 +337,9 @@ export const ReservationPage: React.FC = () => {
                             </div>
 
                             <button
-                                className={`confirm ${(!previewData || bookingLoading) ? 'disabled' : ''}`}
+                                className={`confirm ${(!previewData || bookingLoading || !isValidWallet) ? 'disabled' : ''}`}
                                 onClick={handleBooking}
-                                disabled={!previewData || bookingLoading}
+                                disabled={!previewData || bookingLoading || !isValidWallet}
                             >
                                 {bookingLoading ? (
                                     <div className="loader"></div>

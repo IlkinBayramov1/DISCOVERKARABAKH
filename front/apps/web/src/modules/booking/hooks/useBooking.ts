@@ -14,7 +14,7 @@ export const useBooking = () => {
             return data;
         } catch (err: any) {
             setError(err.message || 'Failed to complete booking');
-            return null;
+            throw err;
         } finally {
             setLoading(false);
         }

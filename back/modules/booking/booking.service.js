@@ -91,13 +91,47 @@ class BookingService {
         // 3. Payload detail formatting (handles Items array, Guests, specific metadata)
         const details = await strategy.generateDetailsPayload(context, data);
 
+        const bookingNumber = this._generatePNR();
+
         // 4. Create master polymorphic reservation inside DB Transaction 
         // to securely spawn Booking, Items, Guests, and AuditLogs atomically.
         const booking = await prisma.$transaction(async (tx) => {
+            // 4.0.1 Decrement the user's balance atomically
+            const updatedUser = await tx.user.update({
+                where: { id: userId },
+                data: { balance: { decrement: totalPrice } }
+            });
+
+            // 4.0.2 Rollback if the balance dropped below zero
+            if (updatedUser.balance < 0) {
+                throw ApiError.badRequest('Balansınızda kifayət qədər vəsait yoxdur.');
+            }
+
+            // 4.0.3 Create wallet transaction log
+            const bookingTypeNames = {
+                hotel: 'Hotel',
+                tour: 'Tur',
+                attraction: 'Attraksion',
+                transfer: 'VİP Transfer',
+                event: 'Tədbir'
+            };
+            const typeName = bookingTypeNames[type] || type;
+            const description = `${typeName} rezervasiyası (Rezervasiya №: ${bookingNumber})`;
+
+            await tx.wallettransaction.create({
+                data: {
+                    userId,
+                    amount: totalPrice,
+                    type: 'payment',
+                    status: 'COMPLETED',
+                    description
+                }
+            });
+
             const newBooking = await tx.booking.create({
                 data: {
                     id: crypto.randomUUID(),
-                    bookingNumber: this._generatePNR(),
+                    bookingNumber,
                     bookingType: type,
                     entityId: entityId,
                     user: { connect: { id: userId } },
@@ -105,7 +139,7 @@ class BookingService {
 
                     status: 'confirmed',
                     paymentStatus: 'captured',
-                    paymentMethod: data.paymentMethod || 'Direct Confirmation',
+                    paymentMethod: 'DiscoverKarabakh Wallet',
                     specialRequests: data.specialRequests || null,
 
                     totalPrice,
@@ -139,7 +173,7 @@ class BookingService {
                         create: [{
                             id: crypto.randomUUID(),
                             action: 'created',
-                            meta: JSON.stringify({ source: 'api', message: 'Booking Confirmed (Payment Bypassed)' })
+                            meta: JSON.stringify({ source: 'api', message: 'Booking Confirmed (Payment Deducted from Wallet)' })
                         }]
                     }
                 },

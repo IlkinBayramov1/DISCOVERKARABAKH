@@ -1,0 +1,50 @@
+/* WalletPaymentBox.css */
+
+.wallet-balance-box {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wallet-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-lbl {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-lbl svg {
+    color: #4f46e5;
+}
+
+.balance-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.balance-val.insufficient {
+    color: #ef4444;
+}
+
+.balance-error-msg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #ef4444;
+    line-height: 1.4;
+}

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { useProfile } from '../../../account/hooks/useProfile';
+import { WalletPaymentBox } from '../../../booking/components/WalletPaymentBox';
+import { useAuth } from '../../../../shared/context/AuthContext';
 import './TransportReservationPage.css';
 
 export const TransportReservationPage: React.FC = () => {
@@ -33,6 +35,9 @@ export const TransportReservationPage: React.FC = () => {
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
 
+    const [isValidWallet, setIsValidWallet] = useState(true);
+    const { refreshUser } = useAuth();
+
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
     const { profile } = useProfile();
 
@@ -51,44 +56,55 @@ export const TransportReservationPage: React.FC = () => {
             return;
         }
 
+        if (!isValidWallet) {
+            alert('Balansınızda kifayət qədər vəsait yoxdur.');
+            return;
+        }
+
         const scheduledAt = new Date(bookingDate || new Date()).toISOString();
 
-        const data = await submitBooking({
-            type: 'transfer',
-            entityId: vehicleId,
-            visitDate: scheduledAt,
-            pickupLocation,
-            dropoffLocation,
-            distanceKm: tripData.distanceKm || 0,
-            totalPrice: totalPrice, // Root level override
-            participants: paxCount || 1,
-            items: [{
-                checkIn: scheduledAt,
-                checkOut: scheduledAt,
-                adults: paxCount || 1,
-                children: 0,
-                price: totalPrice
-            }],
-            guests: [{
-                firstName,
-                lastName,
-                email,
-                phone
-            }],
-            paymentMethod,
-            extraData: {
+        try {
+            const data = await submitBooking({
+                type: 'transfer',
+                entityId: vehicleId,
+                visitDate: scheduledAt,
                 pickupLocation,
                 dropoffLocation,
-                waypoints,
-                paxCount,
-                scheduledAt
-            }
-        } as any);
+                distanceKm: tripData.distanceKm || 0,
+                totalPrice: totalPrice, // Root level override
+                participants: paxCount || 1,
+                items: [{
+                    checkIn: scheduledAt,
+                    checkOut: scheduledAt,
+                    adults: paxCount || 1,
+                    children: 0,
+                    price: totalPrice
+                }],
+                guests: [{
+                    firstName,
+                    lastName,
+                    email,
+                    phone
+                }],
+                paymentMethod,
+                extraData: {
+                    pickupLocation,
+                    dropoffLocation,
+                    waypoints,
+                    paxCount,
+                    scheduledAt
+                }
+            } as any);
 
-        if (data && (data.data?.id || data.id)) {
-            const bId = data.data?.id || data.id;
-            // Redirect to shared booking confirmation page
-            navigate(`/booking-confirmation/${bId}`);
+            if (data && (data.data?.id || data.id)) {
+                const bId = data.data?.id || data.id;
+                await refreshUser();
+                // Redirect to shared booking confirmation page
+                navigate(`/booking-confirmation/${bId}`);
+            }
+        } catch (err: any) {
+            alert(err.message || 'Booking failed');
+            await refreshUser();
         }
     };
 
@@ -182,6 +198,7 @@ export const TransportReservationPage: React.FC = () => {
                                     </div>
                                 </label>
                             </div>
+                            <WalletPaymentBox totalPrice={Number(totalPrice) || 0} onValidationChange={setIsValidWallet} />
                         </section>
                     </div>
 
@@ -240,9 +257,9 @@ export const TransportReservationPage: React.FC = () => {
                             </div>
 
                             <button
-                                className={`confirm-button ${bookingLoading ? 'disabled' : ''}`}
+                                className={`confirm-button ${bookingLoading || !isValidWallet ? 'disabled' : ''}`}
                                 onClick={handleBooking}
-                                disabled={bookingLoading}
+                                disabled={bookingLoading || !isValidWallet}
                             >
                                 {bookingLoading ? (
                                     <div className="loader"></div>

@@ -73,14 +73,19 @@ export class TransferBookingStrategy extends BookingStrategy {
     }
         
     async calculatePrice(context, data) {
-        // If price is already provided and validated in payload, use it
-        if (data.totalPrice) return parseFloat(data.totalPrice);
-        
         const { vehicle, distanceKm } = context;
         const basePrice = vehicle.basePrice || 5.0;
         const ratePerKm = vehicle.pricePerKm || 1.5;
-        const price = basePrice + (distanceKm * ratePerKm);
-        return parseFloat(price.toFixed(2));
+        const calculatedPrice = parseFloat((basePrice + (distanceKm * ratePerKm)).toFixed(2));
+
+        if (data.totalPrice) {
+            const userPrice = parseFloat(data.totalPrice);
+            if (Math.abs(userPrice - calculatedPrice) > 0.05) {
+                throw ApiError.badRequest('Qiymət uyğunsuzluğu aşkar edildi (Price manipulation detected).');
+            }
+        }
+
+        return calculatedPrice;
     }
         
     async generateDetailsPayload(context, data) {

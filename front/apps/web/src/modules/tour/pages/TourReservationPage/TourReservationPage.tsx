@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Info, Users, CreditCard, ChevronLeft, User as UserIcon, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { ShieldCheck, Users, CreditCard, ChevronLeft, User as UserIcon, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { tourWebApi } from '../../api/tour.api';
 import { useTourAvailability } from '../../hooks/useTourAvailability';
 import type { ITour } from '../../types';
 import { useProfile } from '../../../account/hooks/useProfile';
+import { WalletPaymentBox } from '../../../booking/components/WalletPaymentBox';
+import { useAuth } from '../../../../shared/context/AuthContext';
 import './TourReservationPage.css';
 
 export const TourReservationPage: React.FC = () => {
@@ -23,6 +25,9 @@ export const TourReservationPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
+
+    const [isValidWallet, setIsValidWallet] = useState(true);
+    const { refreshUser } = useAuth();
 
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
     const { profile } = useProfile();
@@ -66,28 +71,39 @@ export const TourReservationPage: React.FC = () => {
             return;
         }
 
-        const data = await submitBooking({
-            type: 'tour',
-            entityId: tourId,
-            tourDate: selectedDate,
-            participants: participants,
-            items: [{
-                checkIn: selectedDate,
-                checkOut: selectedDate,
-                adults: participants,
-                children: 0
-            }],
-            guests: [{
-                firstName,
-                lastName,
-                email,
-                phone
-            }],
-            paymentMethod
-        });
+        if (!isValidWallet) {
+            alert('Balansınızda kifayət qədər vəsait yoxdur.');
+            return;
+        }
 
-        if (data && data.data?.id) {
-            navigate(`/booking-confirmation/${data.data.id}`);
+        try {
+            const data = await submitBooking({
+                type: 'tour',
+                entityId: tourId,
+                tourDate: selectedDate,
+                participants: participants,
+                items: [{
+                    checkIn: selectedDate,
+                    checkOut: selectedDate,
+                    adults: participants,
+                    children: 0
+                }],
+                guests: [{
+                    firstName,
+                    lastName,
+                    email,
+                    phone
+                }],
+                paymentMethod
+            });
+
+            if (data && data.data?.id) {
+                await refreshUser();
+                navigate(`/booking-confirmation/${data.data.id}`);
+            }
+        } catch (err: any) {
+            alert(err.message || 'Booking failed');
+            await refreshUser();
         }
     };
 
@@ -193,6 +209,7 @@ export const TourReservationPage: React.FC = () => {
                                     </div>
                                 </label>
                             </div>
+                            <WalletPaymentBox totalPrice={netTotal} onValidationChange={setIsValidWallet} />
                         </section>
                     </div>
 
@@ -247,9 +264,9 @@ export const TourReservationPage: React.FC = () => {
                             </div>
 
                             <button
-                                className={`confirm ${bookingLoading ? 'disabled' : ''}`}
+                                className={`confirm ${bookingLoading || !isValidWallet ? 'disabled' : ''}`}
                                 onClick={handleBooking}
-                                disabled={bookingLoading}
+                                disabled={bookingLoading || !isValidWallet}
                             >
                                 {bookingLoading ? (
                                     <div className="loader"></div>

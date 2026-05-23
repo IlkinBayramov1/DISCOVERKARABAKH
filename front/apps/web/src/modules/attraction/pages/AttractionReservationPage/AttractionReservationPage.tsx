@@ -4,6 +4,8 @@ import { ShieldCheck, Info, Users, CreditCard, ChevronLeft, Calendar, User, Phon
 import { useBooking } from '../../../booking/hooks/useBooking';
 import { attractionApi } from '../../api/attraction.api';
 import { useProfile } from '../../../account/hooks/useProfile';
+import { WalletPaymentBox } from '../../../booking/components/WalletPaymentBox';
+import { useAuth } from '../../../../shared/context/AuthContext';
 import './AttractionReservationPage.css';
 
 export const AttractionReservationPage: React.FC = () => {
@@ -23,6 +25,9 @@ export const AttractionReservationPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
+
+    const [isValidWallet, setIsValidWallet] = useState(true);
+    const { refreshUser } = useAuth();
 
     const { submitBooking, loading: bookingLoading, error: bookingError } = useBooking();
     const { profile } = useProfile();
@@ -71,7 +76,10 @@ export const AttractionReservationPage: React.FC = () => {
             return;
         }
 
-
+        if (!isValidWallet) {
+            alert('Balansınızda kifayət qədər vəsait yoxdur.');
+            return;
+        }
 
         try {
             const data = await submitBooking({
@@ -95,10 +103,12 @@ export const AttractionReservationPage: React.FC = () => {
             });
 
             if (data && data.data?.id) {
+                await refreshUser();
                 navigate(`/booking-confirmation/${data.data.id}`);
             }
-        } catch (err) {
-            console.error('Booking failed:', err);
+        } catch (err: any) {
+            alert(err.message || 'Booking failed');
+            await refreshUser();
         }
     };
 
@@ -206,6 +216,7 @@ export const AttractionReservationPage: React.FC = () => {
                                     </div>
                                 </label>
                             </div>
+                            <WalletPaymentBox totalPrice={totalAmount} onValidationChange={setIsValidWallet} />
                         </section>
                     </div>
 
@@ -275,7 +286,7 @@ export const AttractionReservationPage: React.FC = () => {
                             <button 
                                 className="confirm-button" 
                                 onClick={handleBooking}
-                                disabled={bookingLoading}
+                                disabled={bookingLoading || !isValidWallet}
                             >
                                 {bookingLoading ? (
                                     <div className="loader"></div>
