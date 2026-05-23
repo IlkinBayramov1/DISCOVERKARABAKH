@@ -65,10 +65,17 @@ export default function WebHeader({ onMenuClick }: WebHeaderProps) {
                         </button>
                     </div>
                 ) : (
-                    <>
-                        <Link to="/auth/login" className="header-btn-outline">Login</Link>
-                        <Link to="/auth/register" className="header-btn-primary">Register</Link>
-                    </>
+                    <div className="header-auth-container">
+                        {/* Desktop View: Shows both */}
+                        <Link to="/auth/login" className="header-btn-outline hide-mobile">Login</Link>
+                        <Link to="/auth/register" className="header-btn-primary hide-mobile">Register</Link>
+                        
+                        {/* Mobile View: Shows single unified button */}
+                        <Link to="/auth/login" className="header-btn-primary show-mobile">
+                            <User size={16} />
+                            <span>Sign In</span>
+                        </Link>
+                    </div>
                 )}
             </div>
         </header>

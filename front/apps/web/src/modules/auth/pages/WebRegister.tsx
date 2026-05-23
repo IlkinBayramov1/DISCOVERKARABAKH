@@ -59,14 +59,22 @@ export default function WebRegister() {
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="auth-group">
                             <label className="auth-label">I am a...</label>
-                            <select
-                                className="auth-input auth-select"
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'tourist' | 'resident' })}
-                            >
-                                <option value="tourist">Tourist / Visitor</option>
-                                <option value="resident">Local Resident</option>
-                            </select>
+                            <div className="auth-role-pills">
+                                <button
+                                    type="button"
+                                    className={`auth-role-pill ${formData.role === 'tourist' ? 'active' : ''}`}
+                                    onClick={() => setFormData({ ...formData, role: 'tourist' })}
+                                >
+                                    Tourist / Visitor
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`auth-role-pill ${formData.role === 'resident' ? 'active' : ''}`}
+                                    onClick={() => setFormData({ ...formData, role: 'resident' })}
+                                >
+                                    Local Resident
+                                </button>
+                            </div>
                         </div>
 
                         <div className="auth-row">

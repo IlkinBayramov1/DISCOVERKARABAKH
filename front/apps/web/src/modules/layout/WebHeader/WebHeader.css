@@ -47,6 +47,16 @@
   height: 100%;
 }
 
+.header-auth-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.show-mobile {
+  display: none; /* Hidden by default on desktop */
+}
+
 /* --- LOGO & TOGGLE STYLES --- */
 .mobile-menu-btn {
   background: transparent;
@@ -221,7 +231,9 @@
     .web-header {
         padding: 0 16px;
         min-height: 64px;
-        position: relative; /* Allows absolute centering of logo */
+        position: sticky;
+        top: 0;
+        z-index: 999;
     }
 
     .web-header__left {
@@ -237,6 +249,19 @@
 
     .header-logo {
         height: 60px; /* Slightly smaller for mobile elegance */
+    }
+
+    /* --- MOBILE AUTH BUTTON FIX --- */
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .show-mobile {
+        display: flex !important;
+        padding: 8px 16px;
+        font-size: 13px;
+        align-items: center;
+        gap: 6px;
     }
 
     /* CLEAN UP THE CLUTTER: Hide all links (Profile, Trips, Favs) and Logout */

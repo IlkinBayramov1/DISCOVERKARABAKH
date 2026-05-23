@@ -1,219 +1,278 @@
 /* ==========================================================================
-   ULTRA PREMIUM UTILITY PROVIDERS PAGE (DK DESIGN - SCOPED)
+   ULTRA PREMIUM UTILITY PROVIDERS DIRECTORY (DK DESIGN)
    ========================================================================== */
 
 :root {
     --up-primary: #6a28c7;
     --up-accent: #9d65eb;
     --up-bg-color: #f6f8fb;
-    --up-surface: #ffffff;
     --up-text-dark: #0f172a;
     --up-text-muted: #64748b;
     --up-border-light: #e2e8f0;
-    
-    --up-radius-lg: 24px;
-    --up-radius-md: 16px;
-    --up-shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.03);
-    --up-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.06);
-    --up-shadow-hover: 0 20px 40px rgba(106, 40, 199, 0.08);
-    
+    --up-white: #ffffff;
     --up-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .up-page {
     background-color: var(--up-bg-color);
     min-height: 100vh;
-    padding: 60px 20px;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--up-text-dark);
-    display: flex;
-    justify-content: center;
+    padding-bottom: 60px;
+    width: 100%;
 }
 
 .up-container {
-    width: 100%;
-    max-width: 900px;
+    max-width: 1320px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* --- HERO SECTION --- */
+.up-hero {
+    position: relative;
+    height: 320px;
+    border-radius: 26px;
+    background-image: url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.up-hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 100%);
+    z-index: 1;
+}
+
+.up-hero-overlay {
+    position: absolute;
+    bottom: 50px;
+    left: 40px;
+    color: #fff;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.up-hero-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    color: #fff;
 }
 
-/* --- HEADER --- */
-.up-header {
-    text-align: center;
-    margin-bottom: 48px;
-}
-
-.up-header h1 {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--up-text-dark);
+.up-hero-overlay h1 {
+    font-size: 42px;
+    font-weight: 800;
     margin: 0 0 12px 0;
     letter-spacing: -0.02em;
 }
 
-.up-header p {
+.up-hero-overlay p {
     font-size: 16px;
-    color: var(--up-text-muted);
-    font-weight: 500;
     margin: 0;
-    max-width: 500px;
-    line-height: 1.5;
+    opacity: 0.9;
+    line-height: 1.6;
 }
 
 /* --- PROVIDERS GRID --- */
 .up-providers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    width: 100%;
-    margin-bottom: 48px;
+    margin-top: -40px; /* Overlaps the hero for a premium SaaS look */
+    position: relative;
+    z-index: 10;
+    padding: 0 20px;
 }
 
-/* --- PROVIDER CARD --- */
 .up-provider-card {
-    background: var(--up-surface);
-    border-radius: var(--up-radius-lg);
+    background: var(--up-white);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--up-border-light);
-    padding: 32px 24px;
+    cursor: pointer;
+    transition: all 0.3s var(--up-ease-bounce);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: var(--up-shadow-sm);
-    transition: all 0.4s var(--up-ease-bounce);
-    position: relative;
-    overflow: hidden;
-}
-
-.up-provider-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: transparent;
-    transition: 0.3s ease;
+    justify-content: space-between;
+    min-height: 200px;
 }
 
 .up-provider-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--up-shadow-hover);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(106, 40, 199, 0.08);
     border-color: #cbd5e1;
 }
 
-.up-provider-card.gas:hover::before { background: #f59e0b; }
-.up-provider-card.water:hover::before { background: #0ea5e9; }
-.up-provider-card.electricity:hover::before { background: #eab308; }
+.up-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
 
-/* Icon Wrapper */
 .up-icon-wrapper {
-    width: 80px;
-    height: 80px;
-    border-radius: 20px;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-.up-provider-card:hover .up-icon-wrapper {
-    transform: scale(1.1);
-}
+/* Color Themes for Icons */
+.up-icon-wrapper.gas { background: #fef3c7; color: #f59e0b; }
+.up-icon-wrapper.water { background: #e0f2fe; color: #0ea5e9; }
+.up-icon-wrapper.electricity { background: #fef9c3; color: #eab308; }
 
-.up-icon-wrapper.gas {
-    background: #fef3c7;
-    color: #f59e0b;
-    box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
-}
+.up-provider-card:hover .up-icon-wrapper.gas { background: #f59e0b; color: #fff; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3); }
+.up-provider-card:hover .up-icon-wrapper.water { background: #0ea5e9; color: #fff; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3); }
+.up-provider-card:hover .up-icon-wrapper.electricity { background: #eab308; color: #fff; box-shadow: 0 8px 20px rgba(234, 179, 8, 0.3); }
 
-.up-icon-wrapper.water {
-    background: #e0f2fe;
-    color: #0ea5e9;
-    box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
-}
-
-.up-icon-wrapper.electricity {
-    background: #fef9c3;
-    color: #eab308;
-    box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2);
-}
-
-/* Typography inside card */
-.up-provider-card h3 {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--up-text-dark);
-    margin: 0 0 8px 0;
-}
-
-.up-provider-card p {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--up-text-muted);
-    margin: 0 0 20px 0;
-    line-height: 1.5;
-}
-
-/* Action Icon */
 .up-action-icon {
-    margin-top: auto;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #f1f5f9;
     color: var(--up-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .up-provider-card:hover .up-action-icon {
     background: var(--up-primary);
-    color: white;
+    color: #fff;
+    transform: translateX(4px);
+}
+
+.up-card-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--up-text-dark);
+}
+
+.up-card-content p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--up-text-muted);
+    line-height: 1.5;
 }
 
 /* --- SECURE BADGE --- */
+.up-secure-badge-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
 .up-secure-badge {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     background: #ecfdf5;
     border: 1px solid #a7f3d0;
-    padding: 12px 24px;
-    border-radius: 50px;
-    color: #065f46;
-    font-size: 13px;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+    color: #047857;
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-size: 14px;
 }
 
-.up-secure-badge svg {
-    color: #10b981;
+.up-secure-badge span {
+    opacity: 0.9;
 }
 
-/* --- RESPONSIVENESS --- */
-@media (max-width: 640px) {
-    .up-page {
-        padding: 40px 16px;
-    }
+.up-secure-badge strong {
+    font-weight: 800;
+}
 
-    .up-header h1 {
-        font-size: 28px;
+
+/* ============================================
+   ULTIMATE RESPONSIVE DESIGN (300px to Infinity)
+   ============================================ */
+
+/* 1. LAPTOPS & DESKTOPS (1025px - 1439px) */
+@media (max-width: 1439px) {
+    /* Auto layout handles this perfectly */
+}
+
+/* 2. TABLETS & SMALL LAPTOPS (769px - 1024px) */
+@media (max-width: 1024px) {
+    .up-hero { height: 260px; }
+    .up-hero-overlay h1 { font-size: 36px; }
+    
+    .up-providers-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 10px;
     }
+}
+
+/* 3. MOBILE LANDSCAPE & LARGE PHONES (481px - 768px) */
+@media (max-width: 768px) {
+    .up-container { padding: 15px; }
+    .up-hero { height: 280px; }
+    .up-hero-overlay { left: 24px; bottom: 30px; right: 24px; }
+    
+    .up-hero-icon-wrapper { width: 48px; height: 48px; margin-bottom: 12px; }
+    .up-hero-overlay h1 { font-size: 32px; }
+    .up-hero-overlay p { font-size: 14px; }
 
     .up-providers-grid {
         grid-template-columns: 1fr;
+        margin-top: -30px;
+        padding: 0;
     }
 
+    .up-provider-card {
+        padding: 24px;
+        min-height: auto;
+    }
+
+    .up-card-content h3 { font-size: 20px; }
+
     .up-secure-badge {
-        font-size: 12px;
-        padding: 10px 20px;
         flex-direction: column;
         text-align: center;
-        border-radius: 20px;
-        gap: 6px;
+        border-radius: 16px;
+        padding: 16px;
     }
+}
+
+/* 4. SMALL PHONES (300px - 480px) */
+@media (max-width: 480px) {
+    .up-hero { height: 260px; border-radius: 16px; }
+    .up-hero-overlay { left: 16px; bottom: 20px; right: 16px; }
+    .up-hero-overlay h1 { font-size: 26px; }
+
+    .up-providers-grid { margin-top: 16px; gap: 16px; } /* Disable overlap on very small screens */
+    
+    .up-provider-card { padding: 20px; border-radius: 20px; }
+    .up-icon-wrapper { width: 56px; height: 56px; }
+    .up-action-icon { width: 36px; height: 36px; }
+    
+    .up-card-content h3 { font-size: 18px; }
+    .up-card-content p { font-size: 14px; }
+    
+    .up-secure-badge { font-size: 13px; }
+}
+
+/* 5. ULTRA-SMALL DEVICES (Below 320px) */
+@media (max-width: 320px) {
+    .up-hero-overlay h1 { font-size: 22px; }
+    .up-card-content h3 { font-size: 16px; }
 }

@@ -49,7 +49,6 @@ export const mega: MegaMenu = {
 export const nav: NavItem[] = [
   { label: 'Explore Karabakh', href: '#explore',   key: 'explore' },
   { label: 'Where to go',      href: '#where',     key: 'where' },
-  { label: 'Things to do',     href: '#things',    key: 'things' },
   { label: 'Plan your trip',   href: '#plan',      key: 'plan' },
   { label: 'Corporate',        href: '#corporate', key: 'corporate' },
 ];

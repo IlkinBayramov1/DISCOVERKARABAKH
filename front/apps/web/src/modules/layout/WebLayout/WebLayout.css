@@ -22,7 +22,7 @@ body, html {
 .web-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh; /* 100vh əvəzinə 100dvh oldu */
   width: 100vw;
   overflow: hidden;
   background: var(--app-bg);
@@ -38,8 +38,8 @@ body, html {
 
 .web-main-content {
   flex: 1;
-  margin-left: 240px; /* Sidebar width */
-  height: calc(100vh - var(--header-height));
+  margin-left: 240px; 
+  height: 100%; /* calc düsturunun yerinə sadəcə 100% oldu */
   overflow-y: auto;
   background: var(--app-bg);
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);

@@ -16,21 +16,21 @@ const HERO_SLIDES = [
   },
   { 
     id: 2, 
-    tag: 'FEATURED STAY', 
-    title: 'Premium comfort in historical quarters', 
-    desc: 'Experience modern luxury steps away from history. Direct reservations and exclusive Karabakh Card discounts available now.', 
-    img: 'https://arsigroup.az/wp-content/uploads/2023/06/20230623_203051-1024x527.jpg', 
-    ctaText: 'Book hotels', 
-    ctaLink: '/plan/accommodation' 
+    tag: 'REKLAM', 
+    title: 'Burada Sizin Reklamınız Ola Bilər', 
+    desc: '', 
+    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png', 
+    ctaText: 'Reklam Yerləşdir', 
+    ctaLink: '#' 
   },
   { 
     id: 3, 
-    tag: 'NATURE', 
-    title: 'Alpine routes and wild valleys', 
-    desc: 'The weather is perfect for high-altitude exploration. See our curated guide to dramatic landscapes.', 
-    img: 'https://www.qanunla.az/public/storage/2023/11/media-16046-1606287750-oe178xyu90brgnwzihm4.jpg', 
-    ctaText: 'View guide', 
-    ctaLink: '/explore/nature' 
+    tag: 'REKLAM', 
+    title: 'Burada Sizin Reklamınız Ola Bilər', 
+    desc: '', 
+    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png', 
+    ctaText: 'Reklam Yerləşdir', 
+    ctaLink: '#' 
   },
 ];
 
