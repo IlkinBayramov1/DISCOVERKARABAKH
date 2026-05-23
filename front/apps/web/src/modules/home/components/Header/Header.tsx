@@ -182,7 +182,6 @@ export default function Header({ nav, mega }: HeaderProps) {
                 <div className="hdr__mSheet" role="dialog" aria-modal="true" aria-label="Mobile navigation">
                     
                     <div className="hdr__mTop">
-                        {/* 👈 LOGO APPLIED HERE AS WELL */}
                         <img src={logoImg} alt="Discover Karabakh" className="hdr__mLogo" />
                         <button className="hdr__mClose" type="button" aria-label="Close menu" onClick={closeMobile}>
                             <X size={20} />
@@ -227,13 +226,14 @@ export default function Header({ nav, mega }: HeaderProps) {
                                 <span className="hdr__mAccLabel">Contact</span>
                             </a>
                         </div>
-                    </div>
-
-                    {/* Actions pinned to bottom */}
-                    <div className="hdr__mActions">
-                        <button className="hdr__mBtn hdr__mBtn--ghost" type="button">Search</button>
-                        <button className="hdr__mBtn hdr__mBtn--ghost" type="button">EN</button>
-                        <button className="hdr__mBtn hdr__mBtn--primary" type="button" onClick={() => window.location.href = '/hotels'}>Dashboard</button>
+                        
+                        {/* Dashboard Button Moved Here */}
+                        <div className="hdr__mDashboardWrapper">
+                            <button className="hdr__mBtn hdr__mBtn--primary" type="button" onClick={() => window.location.href = '/hotels'}>
+                                Dashboard
+                            </button>
+                        </div>
+                        
                     </div>
                 </div>
             </div>

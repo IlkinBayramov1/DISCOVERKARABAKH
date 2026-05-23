@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, useParams, Link } from 'react-router-dom'
 import { Search, Flame, Zap, Droplet, CreditCard, AlertTriangle, AlertCircle, Sparkles, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { utilityApi, type UtilityAbonent, type UtilityBill } from '../api/utility.api';
-import './UtilitySearch.css'; // Yeni CSS faylını bura bağlayın
+import './UtilitySearch.css';
 
 export default function UtilitySearch() {
     const { user, isAuthenticated } = useAuth();
@@ -164,8 +164,9 @@ export default function UtilitySearch() {
         <div className="us-page">
             <main className="us-container">
                 
-                {/* HERO SECTION */}
+                {/* HERO SECTION (Matches HotelSearch) */}
                 <section className="us-hero" style={{ backgroundImage: getHeroImage() }}>
+                    <div className="us-hero-gradient"></div>
                     <Link to="/utility" className="us-back-link">
                         <ArrowLeft size={16} /> Geri Qayıt
                     </Link>
@@ -175,11 +176,11 @@ export default function UtilitySearch() {
                     </div>
                 </section>
 
-                {/* SEARCH BAR */}
-                <form onSubmit={handleSearch} className="us-search-bar">
+                {/* PREMIUM SEARCH BAR (Matches HotelSearch) */}
+                <form onSubmit={handleSearch} className="us-search-bar" onClick={(e) => e.stopPropagation()}>
                     <div className="us-search-item">
                         <Search className="us-search-icon" />
-                        <div className="us-search-input-box">
+                        <div style={{ width: '100%' }}>
                             <label>ABONENT KODU</label>
                             <input
                                 type="text"
@@ -190,8 +191,13 @@ export default function UtilitySearch() {
                             />
                         </div>
                     </div>
+
                     <button type="submit" className="us-search-btn" disabled={loading || !abonentCode.trim()}>
-                        {loading ? <RefreshCw className="us-spin" size={20} /> : <Search size={20} />}
+                        {loading ? (
+                            <RefreshCw className="us-search-btn-icon us-spin" size={20} />
+                        ) : (
+                            <Search className="us-search-btn-icon" size={20} />
+                        )}
                         {loading ? 'Axtarılır...' : 'Borcu Yoxla'}
                     </button>
                 </form>
@@ -213,7 +219,7 @@ export default function UtilitySearch() {
                                             handleSearch(undefined, ab.abonentCode);
                                         }}
                                     >
-                                        {ab.abonentCode} <span style={{ opacity: 0.6, fontSize: '12px' }}>({ab.residentName})</span>
+                                        {ab.abonentCode} <span className="us-tag-muted">({ab.residentName})</span>
                                     </div>
                                 ))}
                             </div>
@@ -223,7 +229,7 @@ export default function UtilitySearch() {
 
                 {/* ALERTS */}
                 {error && (
-                    <div className="us-alert">
+                    <div className="us-alert-box error">
                         <AlertCircle size={20} />
                         <span>{error}</span>
                     </div>
@@ -260,7 +266,7 @@ export default function UtilitySearch() {
                                                     <h3>Dövr: {bill.billingMonth}</h3>
                                                     <div className="us-bill-meta">
                                                         <span>Hesablanıb: {bill.amount} AZN</span>
-                                                        <span>•</span>
+                                                        <span className="dot-sep">•</span>
                                                         <span className={isOverdue ? 'overdue-text' : ''}>
                                                             Son tarix: {new Date(bill.dueDate).toLocaleDateString('az-AZ')}
                                                         </span>
@@ -271,11 +277,14 @@ export default function UtilitySearch() {
                                             <div className="us-bill-action">
                                                 <div className="us-bill-debt">{remaining.toFixed(2)} AZN</div>
                                                 <div className="us-payment-controls">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => toggleBillSelect(bill.id)}
-                                                    />
+                                                    <label className="us-custom-checkbox">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleBillSelect(bill.id)}
+                                                        />
+                                                        <span className="checkmark"></span>
+                                                    </label>
                                                     <div className="us-partial-pay">
                                                         <input
                                                             type="number"
@@ -293,7 +302,7 @@ export default function UtilitySearch() {
                                 })}
 
                                 {paymentError && (
-                                    <div className="us-alert">
+                                    <div className="us-alert-box error">
                                         <AlertTriangle size={20} />
                                         <span>{paymentError}</span>
                                     </div>
@@ -306,7 +315,8 @@ export default function UtilitySearch() {
                                         <strong>{totalPaymentAmount.toFixed(2)} AZN</strong>
                                     </div>
                                     <button
-                                        className="us-btn-pay"
+                                        className="us-search-btn"
+                                        style={{ width: 'auto', marginTop: 0 }}
                                         onClick={handlePayment}
                                         disabled={totalPaymentAmount <= 0 || redirecting}
                                     >

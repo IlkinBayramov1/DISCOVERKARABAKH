@@ -251,6 +251,42 @@
 }
 
 /* ============================================================
+   ROLE SELECTION PILLS (Replaces Dropdown)
+   ============================================================ */
+.auth-role-pills {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.auth-role-pill {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.auth-role-pill:hover:not(.active) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.auth-role-pill.active {
+  background: #ffffff;
+  color: #6a28c7;
+  box-shadow: 0 4px 12px rgba(106, 40, 199, 0.1);
+}
+
+/* ============================================================
    RESPONSIVE DESIGN (300px to max)
    ============================================================ */
 @media (max-width: 600px) {

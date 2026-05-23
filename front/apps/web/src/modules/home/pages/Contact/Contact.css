@@ -1,0 +1,296 @@
+/* ===============================
+   CONTACT PAGE STYLES
+   (Assumes your :root variables from the homepage are present)
+   =============================== */
+
+/* Hero Section */
+.contactHero {
+  padding: 24px 0 32px;
+  margin-top: 60px;
+}
+
+.cHeroCard {
+  position: relative;
+  border-radius: 34px;
+  overflow: hidden;
+  min-height: 380px;
+  background: radial-gradient(1200px 700px at 20% 30%, rgba(90,46,145,.35), rgba(10,8,20,1) 60%);
+  box-shadow: 0 24px 70px rgba(24, 12, 40, .14), 0 0 0 1px rgba(90,46,145,.14);
+  display: flex;
+  align-items: center;
+}
+
+.cHeroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.cHeroMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(1.05) contrast(1.06) brightness(.90);
+}
+
+.cHeroOverlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(800px 400px at 20% 50%, rgba(123,67,196,.6), rgba(123,67,196,0) 70%),
+    linear-gradient(90deg, rgba(10,8,20,.75) 0%, rgba(10,8,20,.3) 55%, rgba(10,8,20,.05) 100%);
+}
+
+.cHeroContent {
+  position: relative;
+  z-index: 1;
+  padding: 64px;
+  max-width: 600px;
+  color: #fff;
+}
+
+.cHeroTitle {
+  margin: 0 0 16px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  font-size: clamp(32px, 3.8vw, 54px);
+  text-shadow: 0 18px 40px rgba(0,0,0,.35);
+}
+
+.cHeroDesc {
+  margin: 0;
+  color: rgba(255,255,255,.86);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* Main Layout Grid */
+.contactMain {
+  padding: 0 0 20px;
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Left: Info Cards */
+.contact__heading {
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  font-weight: 950;
+  color: var(--text);
+  margin: 0 0 24px;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cInfoCard {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 24px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(17, 12, 26, .10);
+  box-shadow: 0 10px 26px rgba(24, 12, 40, .06);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.cInfoCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(90,46,145,.22);
+  box-shadow: 0 20px 48px rgba(24, 12, 40, .10);
+}
+
+.cInfoCard__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(90,46,145,.12), rgba(123,67,196,.06));
+  color: #5a2e91;
+  border: 1px solid rgba(90,46,145,.16);
+}
+
+.cInfoCard__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cInfoCard__h {
+  font-weight: 950;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: rgba(15,11,28,.96);
+  margin-bottom: 6px;
+  margin-top: 2px;
+}
+
+.cInfoCard__p, .cInfoCard__p a {
+  color: rgba(15,11,28,.68);
+  font-size: 14.5px;
+  line-height: 1.6;
+  text-decoration: none;
+  transition: color .15s ease;
+}
+
+.cInfoCard__p a:hover {
+  color: #5a2e91;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Right: Form Card */
+.contactFormWrap {
+  background: rgba(255,255,255,.95);
+  border-radius: 28px;
+  border: 1px solid rgba(17,12,26,.10);
+  box-shadow: 0 24px 64px rgba(24, 12, 40, .08);
+  padding: 40px;
+}
+
+.cForm__title {
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.cForm__desc {
+  font-size: 14.5px;
+  color: rgba(15,11,28,.64);
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+
+.cForm__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.cForm__group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cForm__group label {
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: .02em;
+  color: rgba(15,11,28,.85);
+  margin-bottom: 8px;
+}
+
+.cForm__group input,
+.cForm__group textarea,
+.cForm__group select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(90,46,145,.03);
+  border: 1px solid rgba(17,12,26,.12);
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  font-family: inherit;
+}
+
+.cForm__group input::placeholder,
+.cForm__group textarea::placeholder {
+  color: rgba(15,11,28,.35);
+}
+
+.cForm__group input:focus,
+.cForm__group textarea:focus,
+.cForm__group select:focus {
+  background: #fff;
+  border-color: #5a2e91;
+  box-shadow: 0 0 0 4px rgba(90,46,145,.12);
+}
+
+/* Select arrow styling */
+.cForm__selectWrap {
+  position: relative;
+}
+.cForm__selectWrap::after {
+  content: "▾";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: rgba(15,11,28,.5);
+  pointer-events: none;
+}
+.cForm__group select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Submit Button */
+.cForm__submit {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  margin-top: 8px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: .01em;
+  color: #fff;
+  
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 16px 36px rgba(90,46,145,.22);
+  
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.cForm__submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 44px rgba(90,46,145,.28);
+  filter: brightness(1.03);
+}
+
+.cForm__submit span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .contactGrid {
+    grid-template-columns: 1fr;
+  }
+  .cHeroContent {
+    padding: 48px 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .cForm__row {
+    grid-template-columns: 1fr;
+  }
+  .contactFormWrap {
+    padding: 32px 20px;
+  }
+}

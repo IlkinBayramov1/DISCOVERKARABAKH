@@ -119,14 +119,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 <span>Attractions</span>
                             </NavLink>
                         </li>
-                        <li>
-                            <NavLink to={buildLink("/utility")} onClick={onClose} className={({ isActive }) => 
-                                isActive && location.pathname.includes('/utility') ? 'nav-link active' : 'nav-link'
-                            }>
-                                <Flame size={20} />
-                                <span>Utility Bills</span>
-                            </NavLink>
-                        </li>
+                        {(!isAuthenticated || userRole !== 'tourist') && (
+                            <li>
+                                <NavLink to={buildLink("/utility")} onClick={onClose} className={({ isActive }) => 
+                                    isActive && location.pathname.includes('/utility') ? 'nav-link active' : 'nav-link'
+                                }>
+                                    <Flame size={20} />
+                                    <span>Utility Bills</span>
+                                </NavLink>
+                            </li>
+                        )}
 
                         <li className="nav-group">
                             <button className="nav-link expandable" onClick={() => setTransportOpen(!transportOpen)}>
@@ -138,16 +140,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             </button>
 
                             <ul className={`sub-nav ${transportOpen ? 'open' : ''}`}>
-                                {userRole !== 'tourist' && (
-                                    <li>
-                                        <NavLink to={buildLink("/transport/cargo")} onClick={onClose} className={({ isActive }) => 
-                                            isActive && location.pathname.includes('/transport/cargo') ? 'sub-nav-link active' : 'sub-nav-link'
-                                        }>
-                                            <Package size={18} />
-                                            <span>Yükdaşıma (Cargo)</span>
-                                        </NavLink>
-                                    </li>
-                                )}
                                 <li>
                                     <NavLink to={buildLink("/transport/passenger")} onClick={onClose} className={({ isActive }) => 
                                         isActive && location.pathname.includes('/transport/passenger') ? 'sub-nav-link active' : 'sub-nav-link'
@@ -168,7 +160,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             {isAuthenticated ? (
                                 <>
                                     <li>
-                                        <div className="mobile-balance-card">
+                                        <div 
+                                            className="mobile-balance-card" 
+                                            onClick={() => { navigate('/account/wallet'); onClose(); }}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <Wallet size={20} className="balance-icon" />
                                             <div className="balance-info">
                                                 <span className="balance-label">Wallet Balance</span>

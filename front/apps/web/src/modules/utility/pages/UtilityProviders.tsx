@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Flame, Droplet, Zap, ArrowRight } from 'lucide-react';
-import './UtilityProviders.css'; // Yeni CSS faylını bura bağlayın
+import { ShieldCheck, Flame, Droplet, Zap, ArrowRight, Building2 } from 'lucide-react';
+import './UtilityProviders.css';
 
-// Təkmilləşdirilmiş provayder siyahısı (Lucide ikonları ilə)
 const providers = [
     {
         id: 'gas',
@@ -32,15 +31,21 @@ export default function UtilityProviders() {
 
     return (
         <div className="up-page">
-            <div className="up-container">
+            <main className="up-container">
                 
-                {/* Header Section */}
-                <div className="up-header">
-                    <h1>Kommunal Borcların Ödənilməsi</h1>
-                    <p>Ödəniş etmək istədiyiniz dövlət kommunal xidmətini seçin və abonent kodunuzla əməliyyatı tamamlayın.</p>
-                </div>
+                {/* HERO SECTION (Matches Hotel & Utility Search) */}
+                <section className="up-hero">
+                    <div className="up-hero-gradient"></div>
+                    <div className="up-hero-overlay">
+                        <div className="up-hero-icon-wrapper">
+                            <Building2 size={28} />
+                        </div>
+                        <h1>Kommunal Xidmətlər</h1>
+                        <p>Ödəniş etmək istədiyiniz dövlət kommunal xidmətini seçin və abonent kodunuzla əməliyyatı asanlıqla tamamlayın.</p>
+                    </div>
+                </section>
 
-                {/* Providers Grid */}
+                {/* PROVIDERS GRID */}
                 <div className="up-providers-grid">
                     {providers.map(provider => {
                         const IconComponent = provider.icon;
@@ -50,28 +55,33 @@ export default function UtilityProviders() {
                                 className={`up-provider-card ${provider.colorClass}`}
                                 onClick={() => navigate(`/utility/${provider.id}`)}
                             >
-                                <div className={`up-icon-wrapper ${provider.colorClass}`}>
-                                    <IconComponent size={36} strokeWidth={2.5} />
+                                <div className="up-card-header">
+                                    <div className={`up-icon-wrapper ${provider.colorClass}`}>
+                                        <IconComponent size={28} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="up-action-icon">
+                                        <ArrowRight size={20} />
+                                    </div>
                                 </div>
                                 
-                                <h3>{provider.name}</h3>
-                                <p>{provider.description}</p>
-                                
-                                <div className="up-action-icon">
-                                    <ArrowRight size={18} />
+                                <div className="up-card-content">
+                                    <h3>{provider.name}</h3>
+                                    <p>{provider.description}</p>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
                 
-                {/* Secure Badge */}
-                <div className="up-secure-badge">
-                    <ShieldCheck size={20} />
-                    <span>Ödənişləriniz dövlət portalı üzərindən 256-bit şifrələmə ilə təhlükəsiz qorunur</span>
+                {/* SECURE BADGE */}
+                <div className="up-secure-badge-wrapper">
+                    <div className="up-secure-badge">
+                        <ShieldCheck size={20} />
+                        <span>Ödənişləriniz dövlət portalı üzərindən <strong>256-bit şifrələmə</strong> ilə tam təhlükəsiz qorunur.</span>
+                    </div>
                 </div>
 
-            </div>
+            </main>
         </div>
     );
 }
