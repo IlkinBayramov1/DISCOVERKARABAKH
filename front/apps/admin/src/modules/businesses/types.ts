@@ -125,15 +125,15 @@ export interface User {
     isBanned: boolean;
     isApproved: boolean;
     createdAt: string;
-    vendorProfile?: {
+    vendorprofile?: {
         companyName: string;
         category: string;
     };
     _count?: {
-        hotels: number;
-        restaurants: number;
-        tours: number;
-        vehicles: number;
+        hotel: number;
+        restaurant: number;
+        tour: number;
+        vehicle: number;
     };
 }
 
@@ -223,8 +223,3 @@ export interface PricingRuleCreate {
     priority: number;
 }
 
-export interface PendingBusinessesResponse {
-    hotels: Hotel[];
-    restaurants: Restaurant[];
-    tours: Tour[];
-}

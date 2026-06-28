@@ -6,11 +6,15 @@ export interface AdminTransaction {
     amount: number;
     currency: string;
     provider: string;
-    providerTransactionId?: string;
+    providerTransId?: string;
     status: TransactionStatus;
-    user: {
-        email: string;
-        fullName?: string;
+    booking?: {
+        bookingNumber: string;
+        totalPrice: number;
+        currency: string;
+        user: {
+            email: string;
+        };
     };
     meta?: any;
     createdAt: string;

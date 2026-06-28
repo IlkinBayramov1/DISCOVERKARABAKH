@@ -92,10 +92,10 @@ const VendorApprovals: React.FC = () => {
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-[16px] font-bold text-slate-800">
-                                                {vendor.vendorProfile?.companyName || vendor.email}
+                                                {vendor.vendorprofile?.companyName || vendor.email}
                                             </h3>
                                             <Badge variant="info">
-                                                {vendor.vendorProfile?.category || 'Satıcı'}
+                                                {vendor.vendorprofile?.category || 'Satıcı'}
                                             </Badge>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm font-medium text-slate-400">

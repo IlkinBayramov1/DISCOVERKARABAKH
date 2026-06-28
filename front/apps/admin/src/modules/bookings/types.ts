@@ -40,9 +40,9 @@ export interface AdminBooking {
         name: string;
         address?: string;
     };
-    items?: BookingItem[];
-    guests?: BookingGuest[];
-    auditLogs?: BookingAuditLog[];
+    bookingitem?: BookingItem[];
+    guest?: BookingGuest[];
+    bookingauditlog?: BookingAuditLog[];
     createdAt: string;
 }
 

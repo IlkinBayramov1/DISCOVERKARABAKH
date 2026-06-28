@@ -1,10 +1,10 @@
 export type AdminUserRole = 'admin' | 'vendor' | 'user';
 
 export interface UserStats {
-    hotels: number;
-    restaurants: number;
-    tours: number;
-    vehicles: number;
+    hotel: number;
+    restaurant: number;
+    tour: number;
+    vehicle: number;
 }
 
 export interface VendorProfile {
@@ -19,7 +19,7 @@ export interface AdminUser {
     isBanned: boolean;
     isApproved: boolean;
     createdAt: string;
-    vendorProfile: VendorProfile | null;
+    vendorprofile: VendorProfile | null;
     _count: UserStats | null;
 }
 

@@ -16,8 +16,8 @@ export const useReviewActions = () => {
 
     /** Statusu yeniləyir */
     const updateStatusMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string, status: ReviewStatus }) => 
-            reviewAdminApi.updateReviewStatus(id, status),
+        mutationFn: ({ id, status, type }: { id: string, status: ReviewStatus, type: 'general' | 'attraction' }) => 
+            reviewAdminApi.updateReviewStatus(id, status, type),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
         }
@@ -25,7 +25,8 @@ export const useReviewActions = () => {
 
     /** Rəyi silir */
     const deleteMutation = useMutation({
-        mutationFn: (id: string) => reviewAdminApi.deleteReview(id),
+        mutationFn: ({ id, type }: { id: string, type: 'general' | 'room' | 'attraction' }) => 
+            reviewAdminApi.deleteReview(id, type),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
         }

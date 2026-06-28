@@ -9,14 +9,14 @@ export const reviewAdminApi = {
     },
 
     /** Rəyin statusunu dəyişir (approved, rejected, flagged) */
-    updateReviewStatus: async (id: string, status: ReviewStatus): Promise<AdminReviewActionResponse> => {
-        const response = await api.patch(`/admins/reviews/${id}/status`, { status });
+    updateReviewStatus: async (id: string, status: ReviewStatus, type: 'general' | 'attraction'): Promise<AdminReviewActionResponse> => {
+        const response = await api.patch(`/admins/reviews/${id}/status`, { status, type });
         return response.data;
     },
 
     /** Rəyi sistemdən tamamilə silir */
-    deleteReview: async (id: string): Promise<AdminReviewActionResponse> => {
-        const response = await api.delete(`/admins/reviews/${id}`);
+    deleteReview: async (id: string, type: 'general' | 'room' | 'attraction'): Promise<AdminReviewActionResponse> => {
+        const response = await api.delete(`/admins/reviews/${id}`, { params: { type } });
         return response.data;
     }
 };

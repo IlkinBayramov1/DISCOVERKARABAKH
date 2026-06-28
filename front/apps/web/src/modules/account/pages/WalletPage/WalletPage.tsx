@@ -16,8 +16,7 @@ import {
     CheckCircle2,
     Loader2,
     ChevronLeft,
-    ChevronRight,
-    Wallet
+    ChevronRight
 } from 'lucide-react';
 import './WalletPage.css';
 
