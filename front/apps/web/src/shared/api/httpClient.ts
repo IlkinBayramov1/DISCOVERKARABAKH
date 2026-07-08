@@ -29,11 +29,12 @@ httpClient.interceptors.response.use(
     },
     (error: AxiosError) => {
         if (error.response?.status === 401) {
-            console.error('Auth Error at:', error.config?.url, 'Status:', error.response?.status);
-            // Only remove token if it's an explicit 401 on a protected route
-            // For now, let's keep it to see what's failing
-            removeToken();
-            window.location.href = '/auth/login'; 
+            const isAuthRoute = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
+            if (!isAuthRoute) {
+                console.error('Auth Error at:', error.config?.url, 'Status:', error.response?.status);
+                removeToken();
+                window.location.href = '/auth/login'; 
+            }
         }
         const errorMessage = (error.response?.data as any)?.message || 'An unexpected error occurred';
         console.error('API Error:', errorMessage);

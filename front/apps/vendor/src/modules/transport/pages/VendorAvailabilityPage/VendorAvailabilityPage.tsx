@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     RefreshCw,
     ChevronLeft,
     ChevronRight,
     Activity,
     Car,
-    Info,
-    Clock
+    Info
 } from 'lucide-react';
 import './VendorAvailabilityPage.css';
 import { httpClient } from '../../../../shared/api/httpClient';

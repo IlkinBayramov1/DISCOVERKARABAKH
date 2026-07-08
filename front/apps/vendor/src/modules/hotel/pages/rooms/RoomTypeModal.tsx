@@ -110,9 +110,14 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         const numFields = ['maxAdults', 'maxChildren', 'baseOccupancy', 'roomSizeM2', 'totalInventory', 'basePrice'];
+        let finalValue: any = value;
+        if (numFields.includes(name)) {
+            const parsed = Number(value);
+            finalValue = isNaN(parsed) ? '' : parsed;
+        }
         setFormData((prev: any) => ({
             ...prev,
-            [name]: numFields.includes(name) ? Number(value) : value
+            [name]: finalValue
         }));
     };
 

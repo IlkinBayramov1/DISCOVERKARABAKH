@@ -1,10 +1,16 @@
 import api from '../../../lib/axios';
-import type { AdminUsersResponse, AdminUserActionResponse } from '../types';
+import type { AdminUsersResponse, AdminUserActionResponse, AdminUserDetailResponse } from '../types';
 
 export const userAdminApi = {
     /** Bütün istifadəçiləri gətirir */
     getUsers: async (): Promise<AdminUsersResponse> => {
         const response = await api.get('/admins/users');
+        return response.data;
+    },
+
+    /** İstifadəçinin detallarını gətirir */
+    getUserDetails: async (id: string): Promise<AdminUserDetailResponse> => {
+        const response = await api.get(`/admins/users/${id}`);
         return response.data;
     },
 

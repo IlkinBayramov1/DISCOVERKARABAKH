@@ -72,14 +72,14 @@ export default function DriverModal({ driver, onClose, onStatusChange }: DriverM
                                 style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
                                 onClick={() => onStatusChange('Approved')}
                             >
-                                <CheckCircle size={18} /> İcazə Ver
+                                <CheckCircle size={18} /> <span>İcazə Ver</span>
                             </button>
                             <button
                                 className="v-btn-outline w-full"
                                 style={{ color: '#ef4444', borderColor: '#fecaca' }}
                                 onClick={() => onStatusChange('Rejected')}
                             >
-                                <X size={18} /> İmtina Et
+                                <X size={18} /> <span>İmtina Et</span>
                             </button>
                         </div>
                     )}
@@ -119,7 +119,7 @@ export default function DriverModal({ driver, onClose, onStatusChange }: DriverM
                                         onClick={handleAssign}
                                         disabled={isAssigning}
                                     >
-                                        {isAssigning ? 'Yadda Saxlanılır...' : 'Təyinatı Təsdiqlə'}
+                                        <span>{isAssigning ? 'Yadda Saxlanılır...' : 'Təyinatı Təsdiqlə'}</span>
                                     </button>
                                 </div>
                             )}

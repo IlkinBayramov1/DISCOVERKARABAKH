@@ -40,6 +40,15 @@ export const errorMiddleware = (err, req, res, next) => {
     error = new ApiError(400, message);
   }
 
+  // Multer Errors
+  if (err.name === 'MulterError') {
+    let message = err.message;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'Yüklənən şəkil çox böyükdür! Maksimum limit: 20MB.';
+    }
+    error = new ApiError(400, message);
+  }
+
   res.status(error.statusCode || 500).json({
     success: false,
     message: error.message || 'Server Error',

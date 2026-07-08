@@ -61,6 +61,16 @@ class VehicleRepository {
                         firstName: true,
                         lastName: true
                     }
+                },
+                user: {
+                    select: {
+                        email: true,
+                        vendorprofile: {
+                            select: {
+                                companyName: true
+                            }
+                        }
+                    }
                 }
             }
         });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Coins, AlertCircle, TrendingUp, CalendarCheck, Wallet, AlertTriangle } from 'lucide-react';
+import { Coins, AlertCircle, TrendingUp, CalendarCheck, Wallet, AlertTriangle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { utilityApi, type AnalyticsResponse } from '../api/utility.api';
 import './UtilityDashboard.css';

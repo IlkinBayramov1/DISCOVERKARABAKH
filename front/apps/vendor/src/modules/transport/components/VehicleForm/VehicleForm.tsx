@@ -49,7 +49,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ type, vehicle, onSave, onClos
         
         let finalValue: any = value;
         if (fieldType === 'number') {
-            finalValue = Number(value);
+            const parsed = Number(value);
+            finalValue = isNaN(parsed) ? '' : parsed;
         }
 
         setFormData((prev: any) => ({

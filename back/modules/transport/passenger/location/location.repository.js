@@ -33,7 +33,18 @@ class LocationRepository {
     async getLocationsByVendor(vendorId, filters = {}) {
         return await prisma.location.findMany({
             where: vendorId ? { vendorId } : {},
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: {
+                        vendorprofile: {
+                            select: {
+                                companyName: true
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 

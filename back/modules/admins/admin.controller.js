@@ -1,6 +1,7 @@
 import { userRepository } from '../users/user.repository.js';
 import { ApiError } from '../../core/api.error.js';
 import prisma from '../../config/db.js';
+import { utilityService } from '../businesses/utility/utility.service.js';
 
 export const getAllUsers = async (req, res, next) => {
   try {
@@ -8,6 +9,8 @@ export const getAllUsers = async (req, res, next) => {
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
         role: true,
         isBanned: true,
         isApproved: true,
@@ -33,6 +36,64 @@ export const getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getUserDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Get base user details and role
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isBanned: true,
+        isApproved: true,
+        createdAt: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatarUrl: true,
+        balance: true
+      }
+    });
+
+    if (!user) {
+      throw ApiError.notFound('İstifadəçi tapılmadı');
+    }
+
+    // 2. Fetch specific profile dynamically based on role to avoid multiple LEFT JOINs
+    let profile = null;
+    const role = user.role;
+
+    if (role === 'tourist' || role === 'user') {
+      profile = await prisma.touristprofile.findUnique({ where: { userId: id } });
+    } else if (role === 'resident') {
+      profile = await prisma.residentprofile.findUnique({ where: { userId: id } });
+    } else if (role === 'investor') {
+      profile = await prisma.investorprofile.findUnique({ where: { userId: id } });
+    } else if (role === 'driver') {
+      profile = await prisma.driverprofile.findUnique({
+        where: { userId: id },
+        include: { vehicle: true }
+      });
+    } else if (role === 'vendor') {
+      profile = await prisma.vendorprofile.findUnique({ where: { userId: id } });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...user,
+        profile
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const deleteUser = async (req, res, next) => {
   try {
@@ -101,33 +162,72 @@ export const rejectUser = async (req, res, next) => {
 };
 
 // ============================================
-// Business (Hotel/Restaurant/Tour) Governance
-// ============================================
+// Business (Hotel/Tour/Attraction/Utility/Transport) Governance
+// =============================================================
 
 export const getPendingBusinesses = async (req, res, next) => {
     try {
-        // Fetch all generic businesses that have 'pending' status
-        const hotels = await prisma.hotel.findMany({
-            where: { status: 'pending' },
-            include: { user: { select: { email: true, phone: true } } }
-        });
+        const [hotels, tours, attractions, utilityLogs, vehicles] = await Promise.all([
+            prisma.hotel.findMany({
+                where: { status: 'pending' },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true
+                }
+            }),
+            prisma.tour.findMany({
+                where: { status: 'pending' },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true
+                }
+            }),
+            prisma.attraction.findMany({
+                where: { status: 'pending' },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true
+                }
+            }),
+            prisma.utilityuploadlog.findMany({
+                where: { isRolledBack: false },
+                include: { admin: { select: { email: true, phone: true, firstName: true, lastName: true } } }
+            }),
+            prisma.vehicle.findMany({
+                where: { status: 'Inactive' },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    ride: true
+                }
+            })
+        ]);
 
-        const restaurants = await prisma.restaurant.findMany({
-            where: { status: 'pending' },
-            include: { user: { select: { email: true, phone: true } } }
-        });
-
-        const tours = await prisma.tour.findMany({
-            where: { status: 'pending' },
-            include: { user: { select: { email: true, phone: true } } }
-        });
+        const utilityWithBills = await Promise.all(utilityLogs.map(async log => {
+            const bills = await prisma.utilitybill.findMany({
+                where: { batchId: log.batchId }
+            });
+            const totalAmount = bills.reduce((sum, b) => sum + b.amount, 0);
+            const totalPaid = bills.reduce((sum, b) => sum + b.paidAmount, 0);
+            return {
+                ...log,
+                totalAmount,
+                totalPaid,
+                bills
+            };
+        }));
 
         res.status(200).json({
             success: true,
             data: {
                 hotels,
-                restaurants,
-                tours
+                tours,
+                attractions,
+                utility: utilityWithBills,
+                transport: vehicles
             }
         });
     } catch (error) {
@@ -135,45 +235,194 @@ export const getPendingBusinesses = async (req, res, next) => {
     }
 };
 
-// Bütün biznesləri (status filtrasiyası ilə) gətirir
+const formatBusiness = (biz, type) => {
+    if (!biz) return null;
+    if (type === 'hotel') {
+        const images = biz.hotelimage ? biz.hotelimage.map(img => ({ url: img.url, order: img.order })) : [];
+        return { ...biz, bizType: 'hotel', images };
+    }
+    if (type === 'tour') {
+        let images = [];
+        if (typeof biz.images === 'string') {
+            try {
+                images = JSON.parse(biz.images);
+            } catch (e) {
+                images = biz.images ? biz.images.split(',') : [];
+            }
+        } else if (Array.isArray(biz.images)) {
+            images = biz.images;
+        }
+        return { ...biz, bizType: 'tour', images };
+    }
+    if (type === 'attraction') {
+        const images = biz.attractionimage ? biz.attractionimage.map(img => ({ url: img.url, order: img.order })) : [];
+        return { ...biz, bizType: 'attraction', images };
+    }
+    if (type === 'transport') {
+        let images = [];
+        if (typeof biz.images === 'string') {
+            try {
+                images = JSON.parse(biz.images);
+            } catch (e) {
+                images = biz.images ? biz.images.split(',') : [];
+            }
+        } else if (Array.isArray(biz.images)) {
+            images = biz.images;
+        }
+        return { ...biz, bizType: 'transport', images };
+    }
+    return biz;
+};
+
 export const getAllBusinesses = async (req, res, next) => {
     try {
-        const { type, status } = req.query; // type: 'hotel' | 'restaurant' | 'tour'
-        const where = status ? { status } : {};
+        const { type, status } = req.query; // type: 'hotel' | 'tour' | 'attraction' | 'utility' | 'transport'
         
         let data;
         let count = 0;
 
         if (type === 'hotel') {
-            data = await prisma.hotel.findMany({ 
+            const where = status ? { status } : {};
+            const rawData = await prisma.hotel.findMany({ 
                 where, 
-                include: { user: { select: { email: true, phone: true } } },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true,
+                    hotelimage: true
+                },
                 orderBy: { createdAt: 'desc' }
             });
-            count = data.length;
-        } else if (type === 'restaurant') {
-            data = await prisma.restaurant.findMany({ 
-                where, 
-                include: { user: { select: { email: true, phone: true } } },
-                orderBy: { createdAt: 'desc' }
-            });
+            data = rawData.map(b => formatBusiness(b, 'hotel'));
             count = data.length;
         } else if (type === 'tour') {
-            data = await prisma.tour.findMany({ 
+            const where = status ? { status } : {};
+            const rawData = await prisma.tour.findMany({ 
                 where, 
-                include: { user: { select: { email: true, phone: true } } },
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true
+                },
                 orderBy: { createdAt: 'desc' }
             });
+            data = rawData.map(b => formatBusiness(b, 'tour'));
+            count = data.length;
+        } else if (type === 'attraction') {
+            const where = status ? { status } : {};
+            const rawData = await prisma.attraction.findMany({ 
+                where, 
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    review: true,
+                    attractionimage: true
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            data = rawData.map(b => formatBusiness(b, 'attraction'));
+            count = data.length;
+        } else if (type === 'utility') {
+            const where = status === 'active' ? { isRolledBack: false } : status === 'rejected' ? { isRolledBack: true } : {};
+            const logs = await prisma.utilityuploadlog.findMany({
+                where,
+                include: { admin: { select: { email: true, phone: true, firstName: true, lastName: true } } },
+                orderBy: { createdAt: 'desc' }
+            });
+            data = await Promise.all(logs.map(async log => {
+                const bills = await prisma.utilitybill.findMany({
+                    where: { batchId: log.batchId }
+                });
+                const totalAmount = bills.reduce((sum, b) => sum + b.amount, 0);
+                const totalPaid = bills.reduce((sum, b) => sum + b.paidAmount, 0);
+                return {
+                    ...log,
+                    totalAmount,
+                    totalPaid,
+                    bills
+                };
+            }));
+            count = data.length;
+        } else if (type === 'transport') {
+            let dbStatus;
+            if (status === 'active') dbStatus = 'Active';
+            else if (status === 'inactive' || status === 'rejected') dbStatus = 'Inactive';
+            
+            const where = dbStatus ? { status: dbStatus } : {};
+            const rawData = await prisma.vehicle.findMany({ 
+                where, 
+                include: { 
+                    user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                    booking: { include: { user: { select: { email: true, phone: true } } } },
+                    ride: true
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            data = rawData.map(b => formatBusiness(b, 'transport'));
             count = data.length;
         } else {
-            // Əgər tip seçilməyibsə hamısını birlikdə qaytar (Sadələşdirilmiş)
-            const [hotels, restaurants, tours] = await Promise.all([
-                prisma.hotel.findMany({ where, include: { user: { select: { email: true } } } }),
-                prisma.restaurant.findMany({ where, include: { user: { select: { email: true } } } }),
-                prisma.tour.findMany({ where, include: { user: { select: { email: true } } } })
+            const [hotelsRaw, toursRaw, attractionsRaw, rawUtilityLogs, vehiclesRaw] = await Promise.all([
+                prisma.hotel.findMany({ 
+                    include: { 
+                        user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                        booking: { include: { user: { select: { email: true, phone: true } } } },
+                        review: true,
+                        hotelimage: true
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }),
+                prisma.tour.findMany({ 
+                    include: { 
+                        user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                        booking: { include: { user: { select: { email: true, phone: true } } } },
+                        review: true
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }),
+                prisma.attraction.findMany({ 
+                    include: { 
+                        user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                        booking: { include: { user: { select: { email: true, phone: true } } } },
+                        review: true,
+                        attractionimage: true
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }),
+                prisma.utilityuploadlog.findMany({ 
+                    include: { admin: { select: { email: true, phone: true, firstName: true, lastName: true } } },
+                    orderBy: { createdAt: 'desc' }
+                }),
+                prisma.vehicle.findMany({ 
+                    include: { 
+                        user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
+                        booking: { include: { user: { select: { email: true, phone: true } } } },
+                        ride: true
+                    },
+                    orderBy: { createdAt: 'desc' }
+                })
             ]);
-            data = { hotels, restaurants, tours };
-            count = hotels.length + restaurants.length + tours.length;
+
+            const hotels = hotelsRaw.map(b => formatBusiness(b, 'hotel'));
+            const tours = toursRaw.map(b => formatBusiness(b, 'tour'));
+            const attractions = attractionsRaw.map(b => formatBusiness(b, 'attraction'));
+            const transport = vehiclesRaw.map(b => formatBusiness(b, 'transport'));
+
+            const utility = await Promise.all(rawUtilityLogs.map(async log => {
+                const bills = await prisma.utilitybill.findMany({
+                    where: { batchId: log.batchId }
+                });
+                const totalAmount = bills.reduce((sum, b) => sum + b.amount, 0);
+                const totalPaid = bills.reduce((sum, b) => sum + b.paidAmount, 0);
+                return {
+                    ...log,
+                    totalAmount,
+                    totalPaid,
+                    bills
+                };
+            }));
+
+            data = { hotels, tours, attractions, utility, transport };
+            count = hotels.length + tours.length + attractions.length + utility.length + transport.length;
         }
 
         res.status(200).json({
@@ -193,10 +442,18 @@ export const approveBusiness = async (req, res, next) => {
 
         if (type === 'hotel') {
             updated = await prisma.hotel.update({ where: { id }, data: { status: 'active' } });
-        } else if (type === 'restaurant') {
-            updated = await prisma.restaurant.update({ where: { id }, data: { status: 'active' } });
         } else if (type === 'tour') {
             updated = await prisma.tour.update({ where: { id }, data: { status: 'active' } });
+        } else if (type === 'attraction') {
+            updated = await prisma.attraction.update({ where: { id }, data: { status: 'active' } });
+        } else if (type === 'transport') {
+            updated = await prisma.vehicle.update({ where: { id }, data: { status: 'Active' } });
+        } else if (type === 'utility') {
+            // Approving utility uploads is a no-op since it's already active on upload
+            updated = await prisma.utilityuploadlog.findFirst({
+                where: { OR: [{ id }, { batchId: id }] }
+            });
+            if (!updated) throw ApiError.notFound('Utility upload log not found');
         } else {
             throw ApiError.badRequest('Unknown business type for approval');
         }
@@ -219,17 +476,25 @@ export const rejectBusiness = async (req, res, next) => {
 
         if (type === 'hotel') {
             updated = await prisma.hotel.update({ where: { id }, data: { status: 'rejected' } });
-        } else if (type === 'restaurant') {
-            updated = await prisma.restaurant.update({ where: { id }, data: { status: 'rejected' } });
         } else if (type === 'tour') {
             updated = await prisma.tour.update({ where: { id }, data: { status: 'rejected' } });
+        } else if (type === 'attraction') {
+            updated = await prisma.attraction.update({ where: { id }, data: { status: 'rejected' } });
+        } else if (type === 'transport') {
+            updated = await prisma.vehicle.update({ where: { id }, data: { status: 'Inactive' } });
+        } else if (type === 'utility') {
+            const log = await prisma.utilityuploadlog.findFirst({
+                where: { OR: [{ id }, { batchId: id }] }
+            });
+            if (!log) throw ApiError.notFound('Utility upload log not found');
+            updated = await utilityService.rollbackUpload(req.user.id, log.batchId);
         } else {
             throw ApiError.badRequest('Unknown business type for rejection');
         }
 
         res.status(200).json({
             success: true,
-            message: `${type.toUpperCase()} rejected successfully!`,
+            message: `${type.toUpperCase()} rejected/rolled back successfully!`,
             data: updated
         });
     } catch (error) {
@@ -247,24 +512,54 @@ export const rejectBusiness = async (req, res, next) => {
 /** Bütün platforma üzrə bronları gətirir */
 export const getAllBookings = async (req, res, next) => {
     try {
-        const { status, type, vendorId, userId } = req.query;
+        const { status, type, vendorId, userId, entityId, page = 1, limit = 10, search } = req.query;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+        const skip = (pageNum - 1) * limitNum;
+
         const where = {};
         if (status) where.status = status;
         if (type) where.bookingType = type;
         if (vendorId) where.vendorId = vendorId;
         if (userId) where.userId = userId;
+        if (entityId) where.entityId = entityId;
+        if (search) {
+            where.OR = [
+                { bookingNumber: { contains: search } },
+                { user: { email: { contains: search } } }
+            ];
+        }
 
-        const bookings = await prisma.booking.findMany({
-            where,
-            include: {
-                user: { select: { email: true } },
-                hotel: { select: { name: true } },
-                tour: { select: { name: true } }
-            },
-            orderBy: { createdAt: 'desc' }
+        const [bookings, totalCount] = await Promise.all([
+            prisma.booking.findMany({
+                where,
+                include: {
+                    user: { select: { email: true, phone: true } },
+                    hotel: { select: { name: true, address: true, city: true } },
+                    tour: { select: { name: true, address: true, city: true } },
+                    attraction: { select: { name: true, address: true, city: true } },
+                    event: { select: { title: true, location: true, city: true } },
+                    vehicle: { select: { brand: true, model: true, plateNumber: true } },
+                    bookingitem: true,
+                    guest: true
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limitNum
+            }),
+            prisma.booking.count({ where })
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: bookings,
+            pagination: {
+                total: totalCount,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(totalCount / limitNum)
+            }
         });
-
-        res.status(200).json({ success: true, count: bookings.length, data: bookings });
     } catch (error) {
         next(error);
     }
@@ -280,8 +575,11 @@ export const getBookingDetails = async (req, res, next) => {
                 bookingitem: true,
                 guest: true,
                 bookingauditlog: true,
-                hotel: { select: { name: true, address: true } },
-                tour: { select: { name: true } }
+                hotel: { select: { name: true, address: true, city: true } },
+                tour: { select: { name: true, address: true, city: true } },
+                attraction: { select: { name: true, address: true, city: true } },
+                event: { select: { title: true, location: true, city: true } },
+                vehicle: { select: { brand: true, model: true, plateNumber: true } }
             }
         });
 
@@ -417,18 +715,34 @@ export const deleteReview = async (req, res, next) => {
 /** Bütün ödəniş tranzaksiyalarını gətirir */
 export const getAllTransactions = async (req, res, next) => {
     try {
-        const { status, provider, startDate, endDate } = req.query;
+        const { status, provider, startDate, endDate, page = 1, limit = 10, search } = req.query;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = limit === 'all' ? undefined : (parseInt(limit, 10) || 10);
+        const skip = limit === 'all' ? undefined : ((pageNum - 1) * limitNum);
+
         const where = {};
         if (status) where.status = status;
         if (provider) where.provider = provider;
-        if (startDate && endDate) {
-            where.createdAt = {
-                gte: new Date(startDate),
-                lte: new Date(endDate)
-            };
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt.gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                where.createdAt.lte = end;
+            }
+        }
+        if (search) {
+            where.OR = [
+                { id: { contains: search } },
+                { providerTransId: { contains: search } },
+                { booking: { bookingNumber: { contains: search } } },
+                { booking: { user: { email: { contains: search } } } }
+            ];
         }
 
-        const transactions = await prisma.paymentTransaction.findMany({
+        const count = await prisma.paymenttransaction.count({ where });
+        const transactions = await prisma.paymenttransaction.findMany({
             where,
             include: {
                 booking: {
@@ -440,10 +754,396 @@ export const getAllTransactions = async (req, res, next) => {
                     }
                 }
             },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limitNum
+        });
+
+        res.status(200).json({ 
+            success: true, 
+            count: transactions.length, 
+            pagination: limit === 'all' ? null : {
+                total: count,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(count / limitNum)
+            },
+            data: transactions 
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/** Şirkətlərin dövriyyə və geri ödəniş (Refund) statistikasını gətirir */
+export const getCompanyTurnoverStats = async (req, res, next) => {
+    try {
+        const { startDate, endDate } = req.query;
+        
+        const where = {};
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt.gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                where.createdAt.lte = end;
+            }
+        }
+
+        const bookings = await prisma.booking.findMany({
+            where: {
+                ...where,
+                status: { in: ['confirmed', 'checked_in', 'checked_out', 'refunded', 'cancelled'] }
+            },
+            include: {
+                paymenttransaction: true
+            }
+        });
+
+        const companyMap = {};
+
+        for (const booking of bookings) {
+            const key = `${booking.bookingType}_${booking.entityId}`;
+            if (!companyMap[key]) {
+                companyMap[key] = {
+                    entityId: booking.entityId,
+                    type: booking.bookingType,
+                    bookingsCount: 0,
+                    grossTurnover: 0,
+                    totalRefunds: 0,
+                    netTurnover: 0
+                };
+            }
+
+            const stats = companyMap[key];
+            stats.bookingsCount += 1;
+
+            const isPaid = ['confirmed', 'checked_in', 'checked_out', 'refunded'].includes(booking.status) || 
+                           ['captured', 'success', 'completed'].includes(booking.paymentStatus?.toLowerCase() || '');
+
+            if (isPaid) {
+                stats.grossTurnover += booking.totalPrice;
+            }
+
+            if (booking.status === 'refunded') {
+                stats.totalRefunds += booking.totalPrice;
+            } else if (booking.status === 'cancelled') {
+                const hasRefund = booking.paymenttransaction?.some(pt => pt.status === 'refunded');
+                if (hasRefund) {
+                    stats.totalRefunds += booking.totalPrice;
+                }
+            }
+        }
+
+        const results = await Promise.all(Object.values(companyMap).map(async (stats) => {
+            let name = 'Unknown Business';
+            let vendorId = null;
+            let city = null;
+
+            try {
+                if (stats.type === 'hotel') {
+                    const data = await prisma.hotel.findUnique({
+                        where: { id: stats.entityId },
+                        select: { name: true, ownerId: true, city: true }
+                    });
+                    if (data) {
+                        name = data.name;
+                        vendorId = data.ownerId;
+                        city = data.city;
+                    }
+                } else if (stats.type === 'tour') {
+                    const data = await prisma.tour.findUnique({
+                        where: { id: stats.entityId },
+                        select: { name: true, ownerId: true, city: true }
+                    });
+                    if (data) {
+                        name = data.name;
+                        vendorId = data.ownerId;
+                        city = data.city;
+                    }
+                } else if (stats.type === 'attraction') {
+                    const data = await prisma.attraction.findUnique({
+                        where: { id: stats.entityId },
+                        select: { name: true, vendorId: true, city: true }
+                    });
+                    if (data) {
+                        name = data.name;
+                        vendorId = data.vendorId;
+                        city = data.city;
+                    }
+                } else if (stats.type === 'event') {
+                    const data = await prisma.event.findUnique({
+                        where: { id: stats.entityId },
+                        select: { title: true, vendorId: true, city: true }
+                    });
+                    if (data) {
+                        name = data.title;
+                        vendorId = data.vendorId;
+                        city = data.city;
+                    }
+                } else if (stats.type === 'transfer' || stats.type === 'transport') {
+                    const data = await prisma.vehicle.findUnique({
+                        where: { id: stats.entityId },
+                        select: { brand: true, model: true, plateNumber: true, vendorId: true }
+                    });
+                    if (data) {
+                        name = `${data.brand} ${data.model} (${data.plateNumber || ''})`.trim();
+                        vendorId = data.vendorId;
+                    }
+                }
+            } catch (err) {
+                console.error(`Error fetching entity ${stats.entityId}:`, err);
+            }
+
+            let vendorEmail = null;
+            if (vendorId) {
+                const vendorUser = await prisma.user.findUnique({
+                    where: { id: vendorId },
+                    select: { email: true }
+                });
+                if (vendorUser) {
+                    vendorEmail = vendorUser.email;
+                }
+            }
+
+            const gross = Math.round(stats.grossTurnover * 100) / 100;
+            const refunds = Math.round(stats.totalRefunds * 100) / 100;
+            const net = Math.round((gross - refunds) * 100) / 100;
+
+            return {
+                ...stats,
+                name,
+                city,
+                vendorEmail,
+                grossTurnover: gross,
+                totalRefunds: refunds,
+                netTurnover: net
+            };
+        }));
+
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/** İstifadəçilərin cüzdan balansları, depozit, çıxarış və xərclərini gətirir */
+export const getUserWalletStats = async (req, res, next) => {
+    try {
+        const { startDate, endDate, search } = req.query;
+
+        const userWhere = {};
+        if (search) {
+            userWhere.OR = [
+                { email: { contains: search } },
+                { firstName: { contains: search } },
+                { lastName: { contains: search } }
+            ];
+        }
+
+        const users = await prisma.user.findMany({
+            where: userWhere,
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                balance: true,
+                createdAt: true
+            }
+        });
+
+        const txWhere = {};
+        if (startDate || endDate) {
+            txWhere.createdAt = {};
+            if (startDate) txWhere.createdAt.gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                txWhere.createdAt.lte = end;
+            }
+        }
+
+        const userIds = users.map(u => u.id);
+
+        const [walletTransactions, cardTransactions] = await Promise.all([
+            prisma.wallettransaction.findMany({
+                where: {
+                    userId: { in: userIds },
+                    status: 'COMPLETED',
+                    ...txWhere
+                }
+            }),
+            prisma.paymenttransaction.findMany({
+                where: {
+                    booking: { userId: { in: userIds } },
+                    status: 'completed',
+                    provider: { not: 'wallet' },
+                    ...txWhere
+                },
+                include: {
+                    booking: { select: { userId: true } }
+                }
+            })
+        ]);
+
+        const statsMap = {};
+        userIds.forEach(id => {
+            statsMap[id] = {
+                cardSpend: 0,
+                walletSpend: 0,
+                totalDeposits: 0,
+                totalWithdrawals: 0
+            };
+        });
+
+        for (const tx of walletTransactions) {
+            const stats = statsMap[tx.userId];
+            if (!stats) continue;
+
+            if (tx.type === 'deposit') {
+                stats.totalDeposits += tx.amount;
+            } else if (tx.type === 'withdrawal') {
+                stats.totalWithdrawals += tx.amount;
+            } else if (tx.type === 'payment') {
+                stats.walletSpend += tx.amount;
+            }
+        }
+
+        for (const tx of cardTransactions) {
+            const userId = tx.booking?.userId;
+            if (!userId) continue;
+            const stats = statsMap[userId];
+            if (!stats) continue;
+
+            stats.cardSpend += tx.amount;
+        }
+
+        const data = users.map(user => {
+            const stats = statsMap[user.id] || { cardSpend: 0, walletSpend: 0, totalDeposits: 0, totalWithdrawals: 0 };
+            
+            const cSpend = Math.round(stats.cardSpend * 100) / 100;
+            const wSpend = Math.round(stats.walletSpend * 100) / 100;
+            const totalSpent = Math.round((cSpend + wSpend) * 100) / 100;
+            const totalDeposits = Math.round(stats.totalDeposits * 100) / 100;
+            const totalWithdrawals = Math.round(stats.totalWithdrawals * 100) / 100;
+
+            return {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                balance: Math.round((user.balance || 0) * 100) / 100,
+                cardSpend: cSpend,
+                walletSpend: wSpend,
+                totalSpent,
+                totalDeposits,
+                totalWithdrawals
+            };
+        });
+
+        res.status(200).json({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/** Müəyyən bir istifadəçinin ətraflı maliyyə hesabatını (cüzdan, kart və rezervasiya tarixçəsini) gətirir */
+export const getUserFinancialDetails = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Core istifadəçi məlumatları (balance null-safety ilə)
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                balance: true,
+                createdAt: true
+            }
+        });
+
+        if (!user) throw ApiError.notFound('İstifadəçi tapılmadı');
+
+        // 2. Cüzdan hərəkətləri
+        const walletTransactions = await prisma.wallettransaction.findMany({
+            where: { userId: id, status: 'COMPLETED' },
             orderBy: { createdAt: 'desc' }
         });
 
-        res.status(200).json({ success: true, count: transactions.length, data: transactions });
+        // 3. Birbaşa bank kartı ilə tamamlanmış ödənişlər (cüzdan yükləmələri bura daxil deyil)
+        const cardTransactions = await prisma.paymenttransaction.findMany({
+            where: {
+                booking: { userId: id },
+                status: 'completed',
+                provider: { not: 'wallet' }
+            },
+            include: {
+                booking: {
+                    select: {
+                        bookingNumber: true,
+                        bookingType: true,
+                        totalPrice: true,
+                        currency: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // 4. Rezervasiyalar və xərclər
+        const bookings = await prisma.booking.findMany({
+            where: { userId: id },
+            include: {
+                hotel: { select: { name: true, city: true } },
+                tour: { select: { name: true, city: true } },
+                event: { select: { title: true, city: true } },
+                attraction: { select: { name: true, city: true } },
+                vehicle: { select: { brand: true, model: true } },
+                bookingitem: true
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user: {
+                    ...user,
+                    balance: Math.round((user.balance || 0) * 100) / 100
+                },
+                walletTransactions: walletTransactions.map(tx => ({
+                    ...tx,
+                    amount: Math.round((tx.amount || 0) * 100) / 100
+                })),
+                cardTransactions: cardTransactions.map(tx => ({
+                    ...tx,
+                    amount: Math.round((tx.amount || 0) * 100) / 100
+                })),
+                bookings: bookings.map(b => {
+                    const firstItem = b.bookingitem?.[0];
+                    return {
+                        id: b.id,
+                        bookingNumber: b.bookingNumber,
+                        bookingType: b.bookingType,
+                        status: b.status,
+                        totalPrice: Math.round((b.totalPrice || 0) * 100) / 100,
+                        currency: b.currency,
+                        createdAt: b.createdAt,
+                        startDate: firstItem?.checkIn || null,
+                        endDate: firstItem?.checkOut || null,
+                        businessName: b.hotel?.name || b.tour?.name || b.event?.title || b.attraction?.name || (b.vehicle ? `${b.vehicle.brand} ${b.vehicle.model}` : 'N/A')
+                    };
+                })
+            }
+        });
     } catch (error) {
         next(error);
     }
@@ -452,7 +1152,7 @@ export const getAllTransactions = async (req, res, next) => {
 /** Tranzaksiya detallarını gətirir (Bank cavabı daxil olmaqla) */
 export const getTransactionDetails = async (req, res, next) => {
     try {
-        const transaction = await prisma.paymentTransaction.findUnique({
+        const transaction = await prisma.paymenttransaction.findUnique({
             where: { id: req.params.id },
             include: {
                 booking: {

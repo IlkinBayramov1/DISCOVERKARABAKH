@@ -9,6 +9,15 @@ export const useUsers = () => {
     });
 };
 
+/** Tək bir istifadəçinin bütün detallarını gətirən hook */
+export const useUserDetails = (id: string) => {
+    return useQuery({
+        queryKey: ['admin', 'users', 'detail', id],
+        queryFn: () => userAdminApi.getUserDetails(id),
+        enabled: !!id
+    });
+};
+
 /** İstifadəçi əməliyyatlarını (ban, approve, delete) idarə edən hook */
 export const useUserActions = () => {
     const queryClient = useQueryClient();

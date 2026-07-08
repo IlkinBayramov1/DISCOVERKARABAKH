@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
     getAllUsers,
+    getUserDetails,
     deleteUser,
     banUser,
     unbanUser,
@@ -26,6 +27,9 @@ import {
     deleteReview,
     getAllTransactions,
     getTransactionDetails,
+    getCompanyTurnoverStats,
+    getUserWalletStats,
+    getUserFinancialDetails,
     getAllPromotions,
     createPromotion,
     deletePromotion
@@ -41,6 +45,7 @@ router.use(roleMiddleware('admin'));
 
 // 1. İstifadəçi İdarəetməsi
 router.get('/users', getAllUsers);
+router.get('/users/:id', getUserDetails);
 router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/ban', banUser);
 router.patch('/users/:id/unban', unbanUser);
@@ -66,6 +71,9 @@ router.delete('/reviews/:id', deleteReview);
 // 5. Maliyyə Nəzarəti (Financial Control)
 router.get('/finance/transactions', getAllTransactions);
 router.get('/finance/transactions/:id', getTransactionDetails);
+router.get('/finance/stats/companies', getCompanyTurnoverStats);
+router.get('/finance/stats/users', getUserWalletStats);
+router.get('/finance/stats/users/:id', getUserFinancialDetails);
 
 // 6. Promosiyalar və Kuponlar (Promotions)
 router.get('/promotions', getAllPromotions);

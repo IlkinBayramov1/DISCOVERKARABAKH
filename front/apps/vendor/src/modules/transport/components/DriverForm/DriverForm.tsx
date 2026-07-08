@@ -125,8 +125,17 @@ export default function DriverForm({ onClose }: DriverFormProps) {
                     <div className="modal-actions mt-6">
                         <button type="button" className="v-btn-outline" onClick={onClose}>Ləğv Et</button>
                         <button type="submit" className="v-btn-primary" disabled={isPending}>
-                            {isPending ? <Loader className="animate-spin" size={18} /> : <UserPlus size={18} />}
-                            Sürücünü Yarat
+                            {isPending ? (
+                                <>
+                                    <Loader className="animate-spin" size={18} />
+                                    <span>Yaradılır...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <UserPlus size={18} />
+                                    <span>Sürücünü Yarat</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

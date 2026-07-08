@@ -44,6 +44,8 @@ export interface ITour {
     isApproved: boolean;
     isFeatured: boolean;
     availableSlots?: number;
+    latitude?: number;
+    longitude?: number;
     createdAt: string;
     updatedAt: string;
 }

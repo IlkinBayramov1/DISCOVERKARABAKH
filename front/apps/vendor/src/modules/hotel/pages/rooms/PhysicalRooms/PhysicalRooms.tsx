@@ -448,8 +448,11 @@ export default function PhysicalRooms() {
                                             type="number" 
                                             className="input-premium w-full"
                                             required 
-                                            value={bulkForm.startNumber} 
-                                            onChange={e => setBulkForm({...bulkForm, startNumber: parseInt(e.target.value)})}
+                                            value={isNaN(bulkForm.startNumber) ? '' : bulkForm.startNumber} 
+                                            onChange={e => {
+                                                const val = parseInt(e.target.value);
+                                                setBulkForm({...bulkForm, startNumber: isNaN(val) ? 0 : val});
+                                            }}
                                         />
                                     </div>
                                     <div className="form-group">
@@ -458,8 +461,11 @@ export default function PhysicalRooms() {
                                             type="number" 
                                             className="input-premium w-full"
                                             required 
-                                            value={bulkForm.endNumber} 
-                                            onChange={e => setBulkForm({...bulkForm, endNumber: parseInt(e.target.value)})}
+                                            value={isNaN(bulkForm.endNumber) ? '' : bulkForm.endNumber} 
+                                            onChange={e => {
+                                                const val = parseInt(e.target.value);
+                                                setBulkForm({...bulkForm, endNumber: isNaN(val) ? 0 : val});
+                                            }}
                                         />
                                     </div>
                                 </div>

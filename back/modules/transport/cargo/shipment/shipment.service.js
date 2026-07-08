@@ -78,7 +78,7 @@ class ShipmentService {
         const vehicle = await cargoVehicleRepository.findById(cargoVehicleId);
         if (!vehicle) throw ApiError.notFound('Cargo vehicle not found');
 
-        const driver = await prisma.driverProfile.findUnique({
+        const driver = await prisma.driverprofile.findUnique({
             where: { id: driverProfileId },
             include: { capabilities: true }
         });

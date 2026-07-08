@@ -1,21 +1,73 @@
-export type BusinessType = 'hotel' | 'restaurant' | 'tour';
+export type BusinessType = 'hotel' | 'tour' | 'attraction' | 'utility' | 'transport';
 export type BusinessStatus = 'pending' | 'active' | 'rejected' | 'draft' | 'inactive';
 export type UserRole = 'user' | 'vendor' | 'tourist' | 'resident' | 'investor' | 'admin' | 'driver';
 
-// ... (existing interfaces)
+export interface UserOwner {
+    email: string;
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    balance?: number;
+}
 
-export interface AdminBusiness {
+export interface Review {
     id: string;
-    name: string;
-    type: BusinessType;
-    status: BusinessStatus;
-    address: string;
     rating: number;
-    owner: {
+    comment: string | null;
+    createdAt: string;
+    user?: {
+        firstName: string;
+        lastName: string;
+        email: string;
+    };
+}
+
+export interface Booking {
+    id: string;
+    status: string;
+    totalAmount: number;
+    createdAt: string;
+    user?: {
         email: string;
         phone: string;
     };
+}
+
+export interface AdminBusiness {
+    id: string;
+    name?: string;
+    fileName?: string;
+    batchId?: string;
+    type?: BusinessType;
+    bizType?: BusinessType;
+    status?: BusinessStatus | string;
+    address?: string;
+    city?: string;
+    rating?: number;
+    owner?: UserOwner;
+    user?: UserOwner;
+    admin?: any;
     createdAt: string;
+    booking?: Booking[];
+    review?: Review[];
+    starRating?: number;
+    brand?: string;
+    model?: string;
+    plateNumber?: string;
+    seats?: number;
+    price?: number | null;
+    entryType?: string;
+    totalAmount?: number;
+    totalPaid?: number;
+    description?: string | null;
+    year?: number;
+    color?: string;
+    images?: any[];
+    rowCount?: number;
+    successCount?: number;
+    errorCount?: number;
+    bills?: UtilityBill[];
+    isRolledBack?: boolean;
 }
 
 export interface AdminBusinessResponse {
@@ -28,8 +80,10 @@ export interface PendingBusinessesResponse {
     success: boolean;
     data: {
         hotels: Hotel[];
-        restaurants: Restaurant[];
         tours: Tour[];
+        attractions: Attraction[];
+        utility: UtilityUploadLog[];
+        transport: Vehicle[];
     };
 }
 
@@ -88,18 +142,76 @@ export interface Hotel {
     createdAt: string;
 }
 
-export interface Restaurant {
+export interface Attraction {
     id: string;
     name: string;
+    slug: string;
     description: string;
     city: string;
     address: string;
     status: BusinessStatus;
-    owner?: {
+    rating: number;
+    reviewCount: number;
+    price: number | null;
+    entryType: string;
+    owner?: UserOwner;
+    user?: UserOwner;
+    createdAt: string;
+    booking?: Booking[];
+    review?: Review[];
+}
+
+export interface UtilityBill {
+    id: string;
+    abonentCode: string;
+    utilityType: string;
+    amount: number;
+    paidAmount: number;
+    dueDate: string;
+    status: string;
+    billingMonth: string;
+}
+
+export interface UtilityUploadLog {
+    id: string;
+    batchId: string;
+    fileName: string;
+    rowCount: number;
+    successCount: number;
+    errorCount: number;
+    isRolledBack: boolean;
+    rolledBackAt: string | null;
+    createdAt: string;
+    totalAmount?: number;
+    totalPaid?: number;
+    bills?: UtilityBill[];
+    admin?: {
         email: string;
         phone: string;
+        firstName?: string;
+        lastName?: string;
     };
+}
+
+export interface Vehicle {
+    id: string;
+    brand: string;
+    model: string;
+    year: number;
+    color: string;
+    plateNumber: string;
+    category: string;
+    seats: number;
+    luggage: number;
+    description: string | null;
+    status: string;
+    basePrice: number | null;
+    pricePerKm: number | null;
+    owner?: UserOwner;
+    user?: UserOwner;
     createdAt: string;
+    booking?: Booking[];
+    ride?: any[];
 }
 
 export interface Tour {

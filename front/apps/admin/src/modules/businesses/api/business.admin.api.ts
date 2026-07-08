@@ -1,6 +1,5 @@
 import api from '../../../lib/axios';
 import type { 
-    AdminBusinessResponse, 
     PendingBusinessesResponse, 
     AdminBusinessActionResponse,
     BusinessType
@@ -8,7 +7,7 @@ import type {
 
 export const businessAdminApi = {
     /** Bütün biznesləri gətirir (Tip və status filtrli) */
-    getAllBusinesses: async (type?: BusinessType, status?: string): Promise<AdminBusinessResponse> => {
+    getAllBusinesses: async (type?: BusinessType, status?: string): Promise<any> => {
         const response = await api.get('/admins/businesses', {
             params: { type, status }
         });

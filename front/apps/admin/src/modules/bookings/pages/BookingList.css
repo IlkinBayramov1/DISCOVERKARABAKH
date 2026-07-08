@@ -1,0 +1,496 @@
+/* ============================================
+   PREMIUM RECEIPT & TICKET MODAL STYLES
+   ============================================ */
+
+.dk-admin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.dk-admin-modal-container {
+    background: white;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f1f5f9;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.dk-admin-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.dk-admin-modal-close {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dk-admin-modal-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.dk-admin-modal-body {
+    padding: 28px;
+    overflow-y: auto;
+    flex: 1;
+    background: #f8fafc;
+}
+
+/* ============================================
+   RECEIPT PAPER EFFECT (Matches Web confirmation)
+   ============================================ */
+.dk-bc-receipt-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.dk-bc-receipt-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+}
+
+.dk-bc-success-banner {
+    text-align: center;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dk-bc-success-banner .banner-icon {
+    color: #10b981;
+    margin-bottom: 12px;
+    background: #d1fae5;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.dk-bc-success-banner h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
+}
+
+.dk-bc-success-banner p {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ============================================
+   QR CODE CORNER
+   ============================================ */
+.dk-bc-qr-corner {
+    position: absolute;
+    top: 36px;
+    right: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    z-index: 10;
+}
+
+.dk-bc-qr-corner img {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
+}
+
+.dk-bc-qr-corner span {
+    font-size: 9px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   HEADER ROW (Booking ID)
+   ============================================ */
+.dk-bc-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.booking-id-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.booking-id-block .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.booking-id-block .value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #6a28c7;
+}
+
+.dk-btn-download {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dk-btn-download:hover:not(.disabled) {
+    border-color: #6a28c7;
+    color: #6a28c7;
+    background: #fdfaff;
+}
+
+.dk-btn-download.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dk-bc-divider {
+    height: 1px;
+    background: #e2e8f0;
+    border: none;
+    margin: 24px 0;
+}
+
+.dk-bc-section {
+    margin-bottom: 12px;
+}
+
+.dk-bc-section .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+}
+
+.dk-bc-overview-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+}
+
+.property-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.property-info h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+}
+
+.location-text, .room-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+}
+
+.location-text svg, .room-text svg {
+    color: #6a28c7;
+}
+
+.dk-bc-date-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.date-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-divider {
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.date-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.date-value {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.dk-bc-guest-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.guest-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6a28c7 0%, #9d65eb 100%);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.guest-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.guest-details h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.guest-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.guest-status .status-pill {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-pill.confirmed, .status-pill.success { background: #dcfce3; color: #166534; }
+.status-pill.pending { background: #fef3c7; color: #b45309; }
+.status-pill.cancelled { background: #fee2e2; color: #991b1b; }
+
+.dk-bc-payment-row {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 13px;
+}
+
+.pay-label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.pay-value {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.pay-value.success { color: #10b981; }
+.pay-value.warning { color: #f59e0b; }
+
+.dk-bc-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+.total-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.total-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #6a28c7;
+    line-height: 1;
+}
+
+.total-value .currency {
+    font-size: 14px;
+    color: #64748b;
+    margin-left: 2px;
+}
+
+/* ============================================
+   PDF STYLES (Hidden on web, used in cloning)
+   ============================================ */
+.pdf-only {
+    display: none;
+    flex-direction: column;
+}
+
+.dk-pdf-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+}
+
+.pdf-logo {
+    height: 40px;
+}
+
+.pdf-header-text {
+    text-align: right;
+}
+
+.pdf-header-text h4 {
+    margin: 0 0 2px 0;
+    font-size: 16px;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.pdf-header-text p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.dk-pdf-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.pdf-security-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: #10b981;
+    font-size: 12px;
+}
+
+.dk-pdf-footer p {
+    margin: 0;
+    font-size: 11px;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.pdf-watermark {
+    margin-top: 12px;
+    font-size: 9px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media print {
+    .no-print { display: none !important; }
+    .pdf-only { display: flex !important; }
+}

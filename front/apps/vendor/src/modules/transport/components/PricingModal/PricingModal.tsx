@@ -84,8 +84,11 @@ export default function PricingModal({ rule, onSave, onClose }: PricingModalProp
                                 min="0" step="0.1"
                                 required
                                 className="form-input"
-                                value={formData.basePrice}
-                                onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) })}
+                                value={isNaN(formData.basePrice as any) ? '' : formData.basePrice}
+                                onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    setFormData({ ...formData, basePrice: isNaN(val) ? 0 : val });
+                                }}
                             />
                         </div>
 
@@ -97,8 +100,11 @@ export default function PricingModal({ rule, onSave, onClose }: PricingModalProp
                                     min="0" step="0.1"
                                     className="form-input"
                                     required
-                                    value={formData.pricePerKm || 0}
-                                    onChange={(e) => setFormData({ ...formData, pricePerKm: parseFloat(e.target.value) })}
+                                    value={isNaN(formData.pricePerKm as any) ? '' : (formData.pricePerKm || 0)}
+                                    onChange={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        setFormData({ ...formData, pricePerKm: isNaN(val) ? 0 : val });
+                                    }}
                                 />
                             </div>
                         )}
@@ -110,8 +116,11 @@ export default function PricingModal({ rule, onSave, onClose }: PricingModalProp
                                     type="number"
                                     min="0" step="0.1"
                                     className="form-input"
-                                    value={formData.pricePerMin || 0}
-                                    onChange={(e) => setFormData({ ...formData, pricePerMin: parseFloat(e.target.value) })}
+                                    value={isNaN(formData.pricePerMin as any) ? '' : (formData.pricePerMin || 0)}
+                                    onChange={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        setFormData({ ...formData, pricePerMin: isNaN(val) ? 0 : val });
+                                    }}
                                 />
                             </div>
                         )}

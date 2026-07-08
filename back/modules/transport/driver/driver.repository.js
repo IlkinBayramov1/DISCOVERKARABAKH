@@ -49,7 +49,9 @@ class DriverRepository {
             orderBy: { id: 'desc' }, // or createdAt if available
             include: {
                 user_driverprofile_userIdTouser: { select: { email: true } },
-                vehicle: { select: { brand: true, model: true, plateNumber: true } }
+                user_driverprofile_managedByIdTouser: { select: { vendorprofile: { select: { companyName: true } } } },
+                vehicle: { select: { brand: true, model: true, plateNumber: true } },
+                cargovehicle: { select: { brand: true, model: true, licensePlate: true } }
             }
         });
 

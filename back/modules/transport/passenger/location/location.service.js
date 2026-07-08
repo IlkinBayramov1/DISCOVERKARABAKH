@@ -70,7 +70,6 @@ class LocationService {
         return this._mapToFrontend(updated);
     }
 
-    // Helper mapper
     _mapToFrontend(loc) {
         if (!loc) return loc;
         return {
@@ -81,6 +80,7 @@ class LocationService {
             type: loc.type,
             popularity: loc.popularity,
             vendorId: loc.vendorId,
+            vendorCompany: loc.user?.vendorprofile?.companyName || 'discoverkarabakh',
             coordinates: {
                 lat: loc.lat,
                 lng: loc.lng

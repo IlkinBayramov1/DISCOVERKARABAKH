@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   const hashedPassword = await bcrypt.hash('123456', 10);
   await prisma.user.update({
-    where: { email: 'ilkinresident@gmail.com' },
+    where: { email: 'ilkin600@gmail.com' },
     data: { password: hashedPassword }
   });
-  console.log('Password for ilkinresident@gmail.com reset to: 123456');
+  console.log('Password for ilkin600@gmail.com reset to: 123456');
 }
 
 main()

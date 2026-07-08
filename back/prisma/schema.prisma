@@ -1001,6 +1001,7 @@ model tour {
   mapLink          String?            @db.Text
   meetingAddress   String?            @db.Text
   destinationLink  String?            @db.Text
+  status           String             @default("active")
   booking          booking[]
   review           review[]
   user             user               @relation(fields: [ownerId], references: [id], map: "Tour_ownerId_fkey")

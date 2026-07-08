@@ -44,7 +44,7 @@ class DriverService {
             });
 
             // 2. Create Driver Profile
-            const driverProfile = await tx.driverProfile.create({
+            const driverProfile = await tx.driverprofile.create({
                 data: {
                     id: crypto.randomUUID(),
                     userId: user.id,
@@ -83,18 +83,19 @@ class DriverService {
     }
 
     async getTransportVendors() {
-        // Find users with role 'vendor' and a vendorProfile with category 'transport'
+        // Find users with role 'vendor' and a vendorprofile with category 'transport'
         const vendors = await prisma.user.findMany({
             where: {
                 role: 'vendor',
                 isActive: true, // Only active vendors
-                vendorProfile: {
+                vendorprofile: {
                     category: 'transport'
                 }
             },
             select: {
                 id: true,
-                vendorProfile: {
+                email: true,
+                vendorprofile: {
                     select: {
                         companyName: true
                     }
@@ -105,7 +106,8 @@ class DriverService {
         // Map to a simpler format for frontend dropdowns
         return vendors.map(v => ({
             id: v.id,
-            companyName: v.vendorProfile?.companyName || 'Bilinməyən Şirkət'
+            email: v.email,
+            companyName: v.vendorprofile?.companyName || v.email
         }));
     }
 
@@ -139,7 +141,7 @@ class DriverService {
         // Update status AND update User Role to 'driver' if not already
         // Transaction
         const updated = await prisma.$transaction(async (tx) => {
-            const d = await tx.driverProfile.update({
+            const d = await tx.driverprofile.update({
                 where: { id: driverId },
                 data: { status: 'Approved' } // or 'Offline' ready to work
             });
@@ -166,10 +168,16 @@ class DriverService {
 
         const dataToUpdate = {};
         if (payload.vehicleId !== undefined) {
-            dataToUpdate.currentVehicleId = payload.vehicleId === null ? null : payload.vehicleId;
+            dataToUpdate.currentVehicleId = payload.vehicleId;
+            if (payload.vehicleId !== null) {
+                dataToUpdate.currentCargoVehicleId = null;
+            }
         }
         if (payload.cargoVehicleId !== undefined) {
-            dataToUpdate.currentCargoVehicleId = payload.cargoVehicleId === null ? null : payload.cargoVehicleId;
+            dataToUpdate.currentCargoVehicleId = payload.cargoVehicleId;
+            if (payload.cargoVehicleId !== null) {
+                dataToUpdate.currentVehicleId = null;
+            }
         }
 
         const updatedDriver = await driverRepository.update(driverId, dataToUpdate);

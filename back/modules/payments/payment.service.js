@@ -34,7 +34,7 @@ class PaymentService {
         }
 
         // 1. Create Transaction Record in DB
-        const transaction = await prisma.paymentTransaction.create({
+        const transaction = await prisma.paymenttransaction.create({
             data: {
                 bookingId: booking.id,
                 amount: booking.totalPrice,
@@ -53,7 +53,7 @@ class PaymentService {
         });
 
         // 3. Update Transaction with Provider Info
-        const updatedTransaction = await prisma.paymentTransaction.update({
+        const updatedTransaction = await prisma.paymenttransaction.update({
             where: { id: transaction.id },
             data: {
                 paymentUrl: initiationResult.paymentUrl,
@@ -82,7 +82,7 @@ class PaymentService {
         const verification = await provider.verify(params);
         
         // 2. Find Transaction
-        const transaction = await prisma.paymentTransaction.findFirst({
+        const transaction = await prisma.paymenttransaction.findFirst({
             where: { 
                 id: params.transId || params.transactionId,
                 provider: providerName 
@@ -106,7 +106,7 @@ class PaymentService {
 
         // 3. Update Transaction and Booking Atomically
         return await prisma.$transaction(async (tx) => {
-            const updatedTx = await tx.paymentTransaction.update({
+            const updatedTx = await tx.paymenttransaction.update({
                 where: { id: transaction.id },
                 data: {
                     status: verification.status,
@@ -184,7 +184,7 @@ class PaymentService {
     }
 
     async getTransactionByBooking(bookingId, userId) {
-        return prisma.paymentTransaction.findFirst({
+        return prisma.paymenttransaction.findFirst({
             where: { bookingId, booking: { userId } },
             orderBy: { createdAt: 'desc' }
         });

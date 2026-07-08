@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
-    LayoutDashboard, Users, UserCheck, Hotel, Landmark, 
+    LayoutDashboard, Users, Landmark, 
     CreditCard, MessageSquareWarning, Briefcase, 
-    Truck, Layers, BellRing, LogOut, ChevronDown, Utensils, Compass
+    Truck, Layers, BellRing, LogOut, ChevronDown,
+    ShieldAlert
 } from 'lucide-react';
 
 interface NavItem {
@@ -20,22 +21,12 @@ const DesktopSidebar: React.FC = () => {
     const navItems: NavItem[] = [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'İstifadəçilər', path: '/users', icon: Users },
-        { 
-            name: 'Satıcılar (Vendors)', 
-            path: '/vendors', 
-            icon: UserCheck,
-            subItems: [
-                { name: 'Bütün Satıcılar', path: '/vendors', icon: UserCheck },
-                { name: 'Hotellər', path: '/vendors/hotels', icon: Hotel },
-                { name: 'Restoranlar', path: '/vendors/restaurants', icon: Utensils },
-                { name: 'Turlar', path: '/vendors/tours', icon: Compass },
-            ]
-        },
         { name: 'Bizneslər', path: '/businesses', icon: Briefcase },
         { name: 'Rezervasiyalar', path: '/bookings', icon: Layers },
         { name: 'Ödənişlər', path: '/payments', icon: CreditCard },
         { name: 'Nəqliyyat', path: '/transport', icon: Truck },
         { name: 'Moderasiya', path: '/interactions', icon: MessageSquareWarning },
+        { name: 'Təhlükəsizlik', path: '/fraud', icon: ShieldAlert },
         { name: 'Bildirişlər', path: '/notifications', icon: BellRing },
     ];
 

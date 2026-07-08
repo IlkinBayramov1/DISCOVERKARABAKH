@@ -1,15 +1,21 @@
 import prisma from '../../../../config/db.js';
+import crypto from 'crypto';
 
 class CargoVehicleRepository {
     async create(data) {
-        return prisma.cargoVehicle.create({ data });
+        return prisma.cargovehicle.create({
+            data: {
+                id: crypto.randomUUID(),
+                ...data
+            }
+        });
     }
 
     async findById(id) {
-        return prisma.cargoVehicle.findUnique({
+        return prisma.cargovehicle.findUnique({
             where: { id },
             include: {
-                user: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
+                user: { select: { email: true, vendorprofile: { select: { companyName: true } } } }
             }
         });
     }
@@ -22,24 +28,24 @@ class CargoVehicleRepository {
         if (cargoType) where.cargoType = cargoType;
         if (isRefrigerated !== undefined) where.isRefrigerated = isRefrigerated === 'true';
 
-        return prisma.cargoVehicle.findMany({
+        return prisma.cargovehicle.findMany({
             where,
             orderBy: { createdAt: 'desc' },
             include: {
-                user: { select: { email: true, vendorProfile: { select: { companyName: true } } } }
+                user: { select: { email: true, vendorprofile: { select: { companyName: true } } } }
             }
         });
     }
 
     async update(id, data) {
-        return prisma.cargoVehicle.update({
+        return prisma.cargovehicle.update({
             where: { id },
             data
         });
     }
 
     async updateLoad(id, addedWeight, addedVolume) {
-        return prisma.cargoVehicle.update({
+        return prisma.cargovehicle.update({
             where: { id },
             data: {
                 currentLoadWeight: { increment: addedWeight },
@@ -49,7 +55,7 @@ class CargoVehicleRepository {
     }
 
     async delete(id) {
-        return prisma.cargoVehicle.delete({
+        return prisma.cargovehicle.delete({
             where: { id }
         });
     }
