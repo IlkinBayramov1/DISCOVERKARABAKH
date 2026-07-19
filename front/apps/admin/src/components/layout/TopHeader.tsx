@@ -7,9 +7,9 @@ const TopHeader: React.FC = () => {
             {/* Search Section */}
             <div className="flex items-center gap-3 text-slate-400 bg-slate-50/50 px-4 py-2.5 rounded-xl border border-slate-100 w-[420px] focus-within:border-indigo-200 focus-within:bg-white focus-within:shadow-sm focus-within:shadow-indigo-100/20 transition-all duration-300 group">
                 <Search className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                <input 
-                    type="text" 
-                    placeholder="İstifadəçi, mülk və ya tranzaksiya axtar..." 
+                <input
+                    type="text"
+                    placeholder="İstifadəçi, mülk və ya tranzaksiya axtar..."
                     className="bg-transparent border-none outline-none text-[13.5px] w-full text-slate-700 placeholder-slate-400 font-medium"
                 />
                 <div className="flex items-center gap-1.5 opacity-0 group-focus-within:opacity-100 transition-opacity">

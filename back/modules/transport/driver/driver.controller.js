@@ -75,3 +75,21 @@ export const updateDriverStatus = async (req, res, next) => {
         next(error);
     }
 };
+
+export const updateDriverLicense = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        let targetDriverId = id;
+        if (!targetDriverId) {
+            // Self update
+            const ownProfile = await driverService.getMyProfile(req.user.id);
+            targetDriverId = ownProfile.id;
+        }
+
+        const driver = await driverService.updateLicense(req.user.id, req.user.role, targetDriverId, req.body);
+        res.status(200).json({ success: true, data: driver });
+    } catch (error) {
+        next(error);
+    }
+};
+

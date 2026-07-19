@@ -1,4 +1,5 @@
 import prisma from '../../../../config/db.js';
+import crypto from 'crypto';
 
 class FraudDetectionService {
 
@@ -138,8 +139,10 @@ class FraudDetectionService {
             if (riskScore > 0 || !result.isApproved) {
                 await prisma.bookingauditlog.create({
                     data: {
+                        id: crypto.randomUUID(),
+                        bookingId: null,
                         action: 'risk_evaluation',
-                        details: JSON.stringify({
+                        meta: JSON.stringify({
                             score: riskScore,
                             reasons: reasons,
                             isApproved: result.isApproved,
@@ -156,6 +159,31 @@ class FraudDetectionService {
             // Fail open for UX, but flag heavily internally
             return { isApproved: true, score: -1, reasons: ['Calculation Error'] };
         }
+    }
+
+    /**
+     * Formats a raw bookingauditlog record into a structured frontend representation.
+     * @param {Object} log - Prisma bookingauditlog record
+     * @returns {Object} Formatted risk log
+     */
+    formatRiskLog(log) {
+        let parsedMeta = { score: 0, reasons: [], isApproved: true, context: {} };
+        try {
+            parsedMeta = log.meta ? JSON.parse(log.meta) : parsedMeta;
+        } catch (err) {
+            console.error(`[FraudService] Error parsing risk log meta for log ${log?.id}:`, err);
+        }
+        return {
+            id: log.id,
+            action: log.action,
+            createdAt: log.createdAt,
+            details: {
+                score: parsedMeta.score !== undefined ? parsedMeta.score : 0,
+                reasons: parsedMeta.reasons || [],
+                isApproved: parsedMeta.isApproved !== undefined ? parsedMeta.isApproved : true
+            },
+            context: parsedMeta.context || {}
+        };
     }
 }
 

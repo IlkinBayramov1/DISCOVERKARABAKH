@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-    LayoutDashboard, Users, Landmark, 
-    CreditCard, MessageSquareWarning, Briefcase, 
+import {
+    LayoutDashboard, Users,
+    CreditCard, MessageSquareWarning, Briefcase,
     Truck, Layers, BellRing, LogOut, ChevronDown,
     ShieldAlert
 } from 'lucide-react';
+import logoImg from '../../assets/dk-logo3.png';
 
 interface NavItem {
     name: string;
@@ -31,7 +32,7 @@ const DesktopSidebar: React.FC = () => {
     ];
 
     const toggleMenu = (name: string) => {
-        setOpenMenus(prev => 
+        setOpenMenus(prev =>
             prev.includes(name) ? prev.filter(m => m !== name) : [...prev, name]
         );
     };
@@ -39,18 +40,13 @@ const DesktopSidebar: React.FC = () => {
     return (
         <aside className="w-[280px] h-screen bg-[#FDFDFD] border-r border-gray-200/60 flex flex-col fixed left-0 top-0 z-30 shadow-sm">
             {/* Logo Section */}
-            <div className="h-20 flex items-center px-8">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-indigo-100 shadow-lg">
-                        <Landmark className="text-white w-6 h-6" />
-                    </div>
-                    <div>
-                        <span className="text-lg font-bold text-slate-800 block leading-tight">KARABAKH</span>
-                        <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">Admin Portal</span>
-                    </div>
+            <div className="h-24 flex flex-col items-center justify-center px-8 border-b border-gray-100 py-3 gap-2">
+                <img src={logoImg} alt="Discover Karabakh" className="h-12 object-contain" />
+                <div className="bg-indigo-50/80 text-indigo-600 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border border-indigo-100/60">
+                    Admin Portal
                 </div>
             </div>
-            
+
             {/* Navigation */}
             <nav className="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto custom-scrollbar">
                 {navItems.map((item) => {
@@ -63,11 +59,10 @@ const DesktopSidebar: React.FC = () => {
                             {hasSub ? (
                                 <button
                                     onClick={() => toggleMenu(item.name)}
-                                    className={`w-full flex items-center justify-between gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-300 ${
-                                        isActiveBase && !isSubOpen
-                                        ? 'bg-indigo-50/50 text-indigo-600' 
+                                    className={`w-full flex items-center justify-between gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-300 ${isActiveBase && !isSubOpen
+                                        ? 'bg-indigo-50/50 text-indigo-600'
                                         : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3.5">
                                         <item.icon className="w-[18px] h-[18px]" />
@@ -79,9 +74,8 @@ const DesktopSidebar: React.FC = () => {
                                 <NavLink
                                     to={item.path}
                                     className={({ isActive }) =>
-                                        `flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-300 ${
-                                            isActive 
-                                            ? 'bg-indigo-50/50 text-indigo-600 shadow-sm' 
+                                        `flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-300 ${isActive
+                                            ? 'bg-indigo-50/50 text-indigo-600 shadow-sm'
                                             : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                                         }`
                                     }
@@ -100,9 +94,8 @@ const DesktopSidebar: React.FC = () => {
                                             to={sub.path}
                                             end={sub.path === item.path}
                                             className={({ isActive }) =>
-                                                `flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
-                                                    isActive 
-                                                    ? 'text-indigo-600 bg-indigo-50/30' 
+                                                `flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${isActive
+                                                    ? 'text-indigo-600 bg-indigo-50/30'
                                                     : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50/50'
                                                 }`
                                             }

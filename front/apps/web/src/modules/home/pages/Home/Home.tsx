@@ -5,32 +5,32 @@ import './Home.css';
 
 // ─── Static Data ─────────────────────────────────────────────────────────
 const HERO_SLIDES = [
-  { 
-    id: 1, 
-    tag: 'EXPLORE', 
-    title: 'A Karabakh to remember', 
-    desc: 'Immerse yourself in local culture, heritage, dining and unforgettable seasonal experiences across Karabakh.', 
-    img: 'https://i.redd.it/bfp6j7bias841.jpg', 
-    ctaText: 'Learn more', 
-    ctaLink: '/explore/about' 
+  {
+    id: 1,
+    tag: 'EXPLORE',
+    title: 'A Karabakh to remember',
+    desc: 'Immerse yourself in local culture, heritage, dining and unforgettable seasonal experiences across Karabakh.',
+    img: 'https://i.redd.it/bfp6j7bias841.jpg',
+    ctaText: 'Learn more',
+    ctaLink: '/explore/about'
   },
-  { 
-    id: 2, 
-    tag: 'REKLAM', 
-    title: 'Burada Sizin Reklamınız Ola Bilər', 
-    desc: '', 
-    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png', 
-    ctaText: 'Reklam Yerləşdir', 
-    ctaLink: '#' 
+  {
+    id: 2,
+    tag: 'REKLAM',
+    title: 'Burada Sizin Reklamınız Ola Bilər',
+    desc: '',
+    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+    ctaText: 'Reklam Yerləşdir',
+    ctaLink: '#'
   },
-  { 
-    id: 3, 
-    tag: 'REKLAM', 
-    title: 'Burada Sizin Reklamınız Ola Bilər', 
-    desc: '', 
-    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png', 
-    ctaText: 'Reklam Yerləşdir', 
-    ctaLink: '#' 
+  {
+    id: 3,
+    tag: 'REKLAM',
+    title: 'Burada Sizin Reklamınız Ola Bilər',
+    desc: '',
+    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+    ctaText: 'Reklam Yerləşdir',
+    ctaLink: '#'
   },
 ];
 
@@ -109,32 +109,32 @@ const SERVICES = [
 ];
 
 const CITIES = [
-  { slug: 'shusha',    name: 'Shusha',    desc: 'Culture, music heritage, historic streets and viewpoints.',  img: 'https://shusha.gov.az/storage/app/uploads/public/662/0b9/eda/6620b9eda8f16612520717.jpg' },
-  { slug: 'khankendi', name: 'Khankendi', desc: 'Urban life, local dining and events calendar highlights.',   img: 'https://www.azernews.az/media/2023/08/03/eko7spowaaah2rq.jpg' },
-  { slug: 'agdam',     name: 'Aghdam',    desc: 'Modern development, memorial sites and regional routes.',   img: 'https://www.flax.az/images/layiheler/08-agdam-mosque/001.jpg' },
-  { slug: 'lachin',    name: 'Lachin',    desc: 'Mountains, nature trails and panoramic landscapes.',         img: 'https://upload.wikimedia.org/wikipedia/commons/0/08/La%C3%A7%C4%B1n_%C5%9F%C9%99h%C9%99rinin_%C3%BCmumi_g%C3%B6r%C3%BCn%C3%BC%C5%9F%C3%BC.jpg' },
+  { slug: 'shusha', name: 'Shusha', desc: 'Culture, music heritage, historic streets and viewpoints.', img: 'https://shusha.gov.az/storage/app/uploads/public/662/0b9/eda/6620b9eda8f16612520717.jpg' },
+  { slug: 'khankendi', name: 'Khankendi', desc: 'Urban life, local dining and events calendar highlights.', img: 'https://www.azernews.az/media/2023/08/03/eko7spowaaah2rq.jpg' },
+  { slug: 'agdam', name: 'Aghdam', desc: 'Modern development, memorial sites and regional routes.', img: 'https://www.flax.az/images/layiheler/08-agdam-mosque/001.jpg' },
+  { slug: 'lachin', name: 'Lachin', desc: 'Mountains, nature trails and panoramic landscapes.', img: 'https://upload.wikimedia.org/wikipedia/commons/0/08/La%C3%A7%C4%B1n_%C5%9F%C9%99h%C9%99rinin_%C3%BCmumi_g%C3%B6r%C3%BCn%C3%BC%C5%9F%C3%BC.jpg' },
 ];
 
 const ARTICLES_MINI = [
-  { tag: 'GUIDES',      title: 'Where to experience seasonal highlights', min: 7,  href: '/explore/articles', img: 'https://www.virtualkarabakh.az/sekiller/da63108bb0c61515670390.jpg' },
-  { tag: 'FOOD & DRINK',title: 'Local dishes you should try first',       min: 5,  href: '/explore/articles', img: 'https://www.azernews.az/media/2017/11/24/qarabagh_mtb.jpg' },
-  { tag: 'CULTURE',     title: 'Museums & heritage sites worth a visit',  min: 6,  href: '/explore/articles', img: 'https://cdn.iticket.az/event/gallery/wcfM5dcnWaWgPSNGPCkxiDI6OUbJwPD9Bu5vUR2R.jpg' },
-  { tag: 'NATURE',      title: 'Best viewpoints for golden hour photos',  min: 4,  href: '/explore/articles', img: 'https://azerbaijan.travel/resize3000/center/pages/9166/0af37ede-c016-4967-88d6-3ea71a019307.png' },
+  { tag: 'GUIDES', title: 'Where to experience seasonal highlights', min: 7, href: '/explore/articles', img: 'https://www.virtualkarabakh.az/sekiller/da63108bb0c61515670390.jpg' },
+  { tag: 'FOOD & DRINK', title: 'Local dishes you should try first', min: 5, href: '/explore/articles', img: 'https://www.azernews.az/media/2017/11/24/qarabagh_mtb.jpg' },
+  { tag: 'CULTURE', title: 'Museums & heritage sites worth a visit', min: 6, href: '/explore/articles', img: 'https://cdn.iticket.az/event/gallery/wcfM5dcnWaWgPSNGPCkxiDI6OUbJwPD9Bu5vUR2R.jpg' },
+  { tag: 'NATURE', title: 'Best viewpoints for golden hour photos', min: 4, href: '/explore/articles', img: 'https://azerbaijan.travel/resize3000/center/pages/9166/0af37ede-c016-4967-88d6-3ea71a019307.png' },
 ];
 
 const PLAN_CARDS = [
-  { kicker: 'Visa guide',      title: 'Entry rules & permits',    desc: 'What you need before you plan your trip to Karabakh.', href: '/plan/visa-permissions', img: 'https://shusha.gov.az/storage/app/media/9b663a2f-2b51-49ac-8bec-6646e783c957_20250822142737.jpg' },
-  { kicker: 'Transport',       title: 'Getting around',           desc: 'Routes, transfers, and practical tips for moving between cities.', href: '/plan/transportation', img: 'https://konkret.az/cloud/uploads/2020/10/a1-16.jpg' },
-  { kicker: 'Places to stay',  title: 'Hotels & guesthouses',    desc: 'Choose the best area and stay style for your itinerary.', href: '/plan/accommodation', img: 'https://qafqazinfo.az/uploads/1683742802/13.jpg' },
-  { kicker: 'About Karabakh',  title: 'Know before you go',       desc: 'A quick overview of culture, seasons, and local essentials.', href: '/explore/about', img: 'https://wmf.imgix.net/images/ca_aerial_view_of_dadivank_monastery_built_between_the_9th_and_13th_centuries._copy.jpg?auto=format,compress&fit=max&w=4040' },
+  { kicker: 'Visa guide', title: 'Entry rules & permits', desc: 'What you need before you plan your trip to Karabakh.', href: '/plan/visa-permissions', img: 'https://shusha.gov.az/storage/app/media/9b663a2f-2b51-49ac-8bec-6646e783c957_20250822142737.jpg' },
+  { kicker: 'Transport', title: 'Getting around', desc: 'Routes, transfers, and practical tips for moving between cities.', href: '/plan/transportation', img: 'https://konkret.az/cloud/uploads/2020/10/a1-16.jpg' },
+  { kicker: 'Places to stay', title: 'Hotels & guesthouses', desc: 'Choose the best area and stay style for your itinerary.', href: '/plan/accommodation', img: 'https://qafqazinfo.az/uploads/1683742802/13.jpg' },
+  { kicker: 'About Karabakh', title: 'Know before you go', desc: 'A quick overview of culture, seasons, and local essentials.', href: '/explore/about', img: 'https://wmf.imgix.net/images/ca_aerial_view_of_dadivank_monastery_built_between_the_9th_and_13th_centuries._copy.jpg?auto=format,compress&fit=max&w=4040' },
 ];
 
 const TODO_TABS = ['All', 'Attractions', 'Food & Drink', 'Guided Tours', 'Wellness', 'Entertainment'];
 
 const TODO_CARDS = [
-  { tag: 'Attraction', title: 'Shusha Fortress',          desc: 'The 18th-century fortress walls overlooking dramatic cliffs — a symbol of Karabakh\'s cultural capital.', img: 'https://shusha.gov.az/storage/app/media/initial/Gala.jpg',           rating: 4.9, reviews: 412 },
-  { tag: 'Restaurant', title: 'Karabakh Khan Sofrası',    desc: 'Authentic regional cuisine featuring piti, dolma, and tandır bread in a refined historic setting.',         img: 'https://www.shushahotel.com/storage/app/media/initial/Gallery%20Dining.jpg', rating: 4.6, reviews: 238 },
-  { tag: 'Wellness',   title: 'Istisu Thermal Springs',   desc: 'Natural mineral springs in the mountains of Kalbajar — known for therapeutic relaxation and scenic views.',  img: 'https://fed.az/upload/news/358065.jpg',                               rating: 4.8, reviews: 189 },
+  { tag: 'Attraction', title: 'Shusha Fortress', desc: 'The 18th-century fortress walls overlooking dramatic cliffs — a symbol of Karabakh\'s cultural capital.', img: 'https://shusha.gov.az/storage/app/media/initial/Gala.jpg', rating: 4.9, reviews: 412 },
+  { tag: 'Restaurant', title: 'Karabakh Khan Sofrası', desc: 'Authentic regional cuisine featuring piti, dolma, and tandır bread in a refined historic setting.', img: 'https://www.shushahotel.com/storage/app/media/initial/Gallery%20Dining.jpg', rating: 4.6, reviews: 238 },
+  { tag: 'Wellness', title: 'Istisu Thermal Springs', desc: 'Natural mineral springs in the mountains of Kalbajar — known for therapeutic relaxation and scenic views.', img: 'https://fed.az/upload/news/358065.jpg', rating: 4.8, reviews: 189 },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const slidesCount = HERO_SLIDES.length;
-  
+
   // ✅ Correctly defined auto-play time
   const autoPlayTime = 6000;
 
@@ -182,10 +182,10 @@ export default function Home() {
   // Handle resize updates
   useEffect(() => {
     const handleResize = () => {
-        if (trackRef.current) {
-            const slideWidth = trackRef.current.clientWidth;
-            trackRef.current.scrollLeft = slideWidth * currentIndex;
-        }
+      if (trackRef.current) {
+        const slideWidth = trackRef.current.clientWidth;
+        trackRef.current.scrollLeft = slideWidth * currentIndex;
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -199,7 +199,7 @@ export default function Home() {
       <section className="hero" id="home">
         <div className="container">
           <div className="heroCard">
-            
+
             {/* Slides Track */}
             <div className="bannerTrack" ref={trackRef}>
               {HERO_SLIDES.map((slide) => (
@@ -208,12 +208,12 @@ export default function Home() {
                     <img src={slide.img} alt={slide.title} />
                   </div>
                   <div className="heroOverlay" aria-hidden="true" />
-                  
+
                   <div className="heroContent">
                     <span className="heroKicker">{slide.tag}</span>
                     <h1 className="heroTitle">{slide.title}</h1>
                     <p className="heroDesc">{slide.desc}</p>
-                    
+
                     <div className="heroCtas">
                       <Link className="heroBtn heroBtn--primary" to={slide.ctaLink}>
                         {slide.ctaText} <span className="heroArrow" aria-hidden="true">›</span>
@@ -239,9 +239,9 @@ export default function Home() {
             <div className="heroBottom" aria-hidden="true">
               <div className="heroDots">
                 {HERO_SLIDES.map((_, index) => (
-                  <button 
-                    key={index} 
-                    className={`dot ${index === currentIndex ? 'is-active' : ''}`} 
+                  <button
+                    key={index}
+                    className={`dot ${index === currentIndex ? 'is-active' : ''}`}
                     onClick={() => scrollToSlide(index)}
                     aria-label={`Go to slide ${index + 1}`}
                   />
@@ -257,7 +257,7 @@ export default function Home() {
       <section className="svc" id="services">
         <div className="container">
           <div className="svc__headWrap">
-             <h2 className="svc__title">Enjoy a hassle-free trip</h2>
+            <h2 className="svc__title">Enjoy a hassle-free trip</h2>
           </div>
           <div className="svc__wrap">
             <div className="svc__track">
@@ -310,7 +310,7 @@ export default function Home() {
             {/* Featured */}
             <article className="artFeat">
               <Link className="artFeat__media" to="/explore/articles">
-                <img src="https://phoenixtour.org/wp-content/uploads/2021/03/09-ARTSAKH-NATURE.jpg" alt="Featured article" />
+                <img src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1400&q=80" alt="Featured article" />
                 <span className="artFeat__shade" aria-hidden="true" />
               </Link>
               <div className="artFeat__content">
@@ -444,7 +444,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
+
     </div>
   );
 }

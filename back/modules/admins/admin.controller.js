@@ -2,163 +2,167 @@ import { userRepository } from '../users/user.repository.js';
 import { ApiError } from '../../core/api.error.js';
 import prisma from '../../config/db.js';
 import { utilityService } from '../businesses/utility/utility.service.js';
+import { attractionReviewReportService } from '../businesses/attraction/review/attractionReviewReport.service.js';
+import { fraudDetectionService } from '../businesses/hotel/fraud/fraud.service.js';
+import crypto from 'crypto';
+import { getIO } from '../transport/tracking/tracking.gateway.js';
 
 export const getAllUsers = async (req, res, next) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isBanned: true,
-        isApproved: true,
-        createdAt: true,
-        vendorprofile: true,
-        _count: {
-          select: {
-            hotel: true,
-            restaurant: true,
-            tour: true,
-            vehicle: true
-          }
-        }
-      }
-    });
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                isBanned: true,
+                isApproved: true,
+                createdAt: true,
+                vendorprofile: true,
+                _count: {
+                    select: {
+                        hotel: true,
+                        restaurant: true,
+                        tour: true,
+                        vehicle: true
+                    }
+                }
+            }
+        });
 
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users,
-    });
-  } catch (error) {
-    next(error);
-  }
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            data: users,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 export const getUserDetails = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    // 1. Get base user details and role
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        isBanned: true,
-        isApproved: true,
-        createdAt: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        avatarUrl: true,
-        balance: true
-      }
-    });
+        // 1. Get base user details and role
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                isBanned: true,
+                isApproved: true,
+                createdAt: true,
+                firstName: true,
+                lastName: true,
+                phone: true,
+                avatarUrl: true,
+                balance: true
+            }
+        });
 
-    if (!user) {
-      throw ApiError.notFound('İstifadəçi tapılmadı');
+        if (!user) {
+            throw ApiError.notFound('İstifadəçi tapılmadı');
+        }
+
+        // 2. Fetch specific profile dynamically based on role to avoid multiple LEFT JOINs
+        let profile = null;
+        const role = user.role;
+
+        if (role === 'tourist' || role === 'user') {
+            profile = await prisma.touristprofile.findUnique({ where: { userId: id } });
+        } else if (role === 'resident') {
+            profile = await prisma.residentprofile.findUnique({ where: { userId: id } });
+        } else if (role === 'investor') {
+            profile = await prisma.investorprofile.findUnique({ where: { userId: id } });
+        } else if (role === 'driver') {
+            profile = await prisma.driverprofile.findUnique({
+                where: { userId: id },
+                include: { vehicle: true }
+            });
+        } else if (role === 'vendor') {
+            profile = await prisma.vendorprofile.findUnique({ where: { userId: id } });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...user,
+                profile
+            }
+        });
+    } catch (error) {
+        next(error);
     }
-
-    // 2. Fetch specific profile dynamically based on role to avoid multiple LEFT JOINs
-    let profile = null;
-    const role = user.role;
-
-    if (role === 'tourist' || role === 'user') {
-      profile = await prisma.touristprofile.findUnique({ where: { userId: id } });
-    } else if (role === 'resident') {
-      profile = await prisma.residentprofile.findUnique({ where: { userId: id } });
-    } else if (role === 'investor') {
-      profile = await prisma.investorprofile.findUnique({ where: { userId: id } });
-    } else if (role === 'driver') {
-      profile = await prisma.driverprofile.findUnique({
-        where: { userId: id },
-        include: { vehicle: true }
-      });
-    } else if (role === 'vendor') {
-      profile = await prisma.vendorprofile.findUnique({ where: { userId: id } });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        ...user,
-        profile
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 
 export const deleteUser = async (req, res, next) => {
-  try {
-    const user = await userRepository.findById(req.params.id);
+    try {
+        const user = await userRepository.findById(req.params.id);
 
-    if (!user) {
-      throw ApiError.notFound('User not found');
+        if (!user) {
+            throw ApiError.notFound('User not found');
+        }
+
+        await userRepository.delete(req.params.id);
+
+        res.status(200).json({
+            success: true,
+            data: {},
+            message: 'User deleted successfully',
+        });
+    } catch (error) {
+        next(error);
     }
-
-    await userRepository.delete(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      data: {},
-      message: 'User deleted successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 export const banUser = async (req, res, next) => {
-  try {
-    const user = await userRepository.update(req.params.id, { isBanned: true });
-    // Prisma throws if not found usually, but update returns object. 
-    // If we want safe check, findById first or handle prisma error.
-    // updateUser in repo assumes ID exists or prisma throws.
-    // Let's rely on repo or wrap. Repo update maps to prisma.update which throws P2025 if not found.
+    try {
+        const user = await userRepository.update(req.params.id, { isBanned: true });
+        // Prisma throws if not found usually, but update returns object. 
+        // If we want safe check, findById first or handle prisma error.
+        // updateUser in repo assumes ID exists or prisma throws.
+        // Let's rely on repo or wrap. Repo update maps to prisma.update which throws P2025 if not found.
 
-    res.status(200).json({ success: true, message: 'User banned', data: user });
-  } catch (error) {
-    // Handle Prisma "Record to update not found."
-    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
-    next(error);
-  }
+        res.status(200).json({ success: true, message: 'User banned', data: user });
+    } catch (error) {
+        // Handle Prisma "Record to update not found."
+        if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
+        next(error);
+    }
 };
 
 export const unbanUser = async (req, res, next) => {
-  try {
-    const user = await userRepository.update(req.params.id, { isBanned: false });
-    res.status(200).json({ success: true, message: 'User unbanned', data: user });
-  } catch (error) {
-    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
-    next(error);
-  }
+    try {
+        const user = await userRepository.update(req.params.id, { isBanned: false });
+        res.status(200).json({ success: true, message: 'User unbanned', data: user });
+    } catch (error) {
+        if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
+        next(error);
+    }
 };
 
 export const approveUser = async (req, res, next) => {
-  try {
-    const user = await userRepository.update(req.params.id, { isApproved: true });
-    res.status(200).json({ success: true, message: 'User approved', data: user });
-  } catch (error) {
-    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
-    next(error);
-  }
+    try {
+        const user = await userRepository.update(req.params.id, { isApproved: true });
+        res.status(200).json({ success: true, message: 'User approved', data: user });
+    } catch (error) {
+        if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
+        next(error);
+    }
 };
 
 export const rejectUser = async (req, res, next) => {
-  try {
-    const user = await userRepository.update(req.params.id, { isApproved: false });
-    res.status(200).json({ success: true, message: 'User rejected (isApproved=false)', data: user });
-  } catch (error) {
-    if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
-    next(error);
-  }
+    try {
+        const user = await userRepository.update(req.params.id, { isApproved: false });
+        res.status(200).json({ success: true, message: 'User rejected (isApproved=false)', data: user });
+    } catch (error) {
+        if (error.code === 'P2025') return next(ApiError.notFound('User not found'));
+        next(error);
+    }
 };
 
 // ============================================
@@ -170,7 +174,7 @@ export const getPendingBusinesses = async (req, res, next) => {
         const [hotels, tours, attractions, utilityLogs, vehicles] = await Promise.all([
             prisma.hotel.findMany({
                 where: { status: 'pending' },
-                include: { 
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true
@@ -178,7 +182,7 @@ export const getPendingBusinesses = async (req, res, next) => {
             }),
             prisma.tour.findMany({
                 where: { status: 'pending' },
-                include: { 
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true
@@ -186,7 +190,7 @@ export const getPendingBusinesses = async (req, res, next) => {
             }),
             prisma.attraction.findMany({
                 where: { status: 'pending' },
-                include: { 
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true
@@ -198,7 +202,7 @@ export const getPendingBusinesses = async (req, res, next) => {
             }),
             prisma.vehicle.findMany({
                 where: { status: 'Inactive' },
-                include: { 
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     ride: true
@@ -277,15 +281,15 @@ const formatBusiness = (biz, type) => {
 export const getAllBusinesses = async (req, res, next) => {
     try {
         const { type, status } = req.query; // type: 'hotel' | 'tour' | 'attraction' | 'utility' | 'transport'
-        
+
         let data;
         let count = 0;
 
         if (type === 'hotel') {
             const where = status ? { status } : {};
-            const rawData = await prisma.hotel.findMany({ 
-                where, 
-                include: { 
+            const rawData = await prisma.hotel.findMany({
+                where,
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true,
@@ -297,9 +301,9 @@ export const getAllBusinesses = async (req, res, next) => {
             count = data.length;
         } else if (type === 'tour') {
             const where = status ? { status } : {};
-            const rawData = await prisma.tour.findMany({ 
-                where, 
-                include: { 
+            const rawData = await prisma.tour.findMany({
+                where,
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true
@@ -310,9 +314,9 @@ export const getAllBusinesses = async (req, res, next) => {
             count = data.length;
         } else if (type === 'attraction') {
             const where = status ? { status } : {};
-            const rawData = await prisma.attraction.findMany({ 
-                where, 
-                include: { 
+            const rawData = await prisma.attraction.findMany({
+                where,
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     review: true,
@@ -347,11 +351,11 @@ export const getAllBusinesses = async (req, res, next) => {
             let dbStatus;
             if (status === 'active') dbStatus = 'Active';
             else if (status === 'inactive' || status === 'rejected') dbStatus = 'Inactive';
-            
+
             const where = dbStatus ? { status: dbStatus } : {};
-            const rawData = await prisma.vehicle.findMany({ 
-                where, 
-                include: { 
+            const rawData = await prisma.vehicle.findMany({
+                where,
+                include: {
                     user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                     booking: { include: { user: { select: { email: true, phone: true } } } },
                     ride: true
@@ -362,8 +366,8 @@ export const getAllBusinesses = async (req, res, next) => {
             count = data.length;
         } else {
             const [hotelsRaw, toursRaw, attractionsRaw, rawUtilityLogs, vehiclesRaw] = await Promise.all([
-                prisma.hotel.findMany({ 
-                    include: { 
+                prisma.hotel.findMany({
+                    include: {
                         user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                         booking: { include: { user: { select: { email: true, phone: true } } } },
                         review: true,
@@ -371,16 +375,16 @@ export const getAllBusinesses = async (req, res, next) => {
                     },
                     orderBy: { createdAt: 'desc' }
                 }),
-                prisma.tour.findMany({ 
-                    include: { 
+                prisma.tour.findMany({
+                    include: {
                         user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                         booking: { include: { user: { select: { email: true, phone: true } } } },
                         review: true
                     },
                     orderBy: { createdAt: 'desc' }
                 }),
-                prisma.attraction.findMany({ 
-                    include: { 
+                prisma.attraction.findMany({
+                    include: {
                         user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                         booking: { include: { user: { select: { email: true, phone: true } } } },
                         review: true,
@@ -388,12 +392,12 @@ export const getAllBusinesses = async (req, res, next) => {
                     },
                     orderBy: { createdAt: 'desc' }
                 }),
-                prisma.utilityuploadlog.findMany({ 
+                prisma.utilityuploadlog.findMany({
                     include: { admin: { select: { email: true, phone: true, firstName: true, lastName: true } } },
                     orderBy: { createdAt: 'desc' }
                 }),
-                prisma.vehicle.findMany({ 
-                    include: { 
+                prisma.vehicle.findMany({
+                    include: {
                         user: { select: { email: true, phone: true, firstName: true, lastName: true, balance: true } },
                         booking: { include: { user: { select: { email: true, phone: true } } } },
                         ride: true
@@ -628,38 +632,187 @@ export const updateBookingStatus = async (req, res, next) => {
 /** Bütün rəyləri (ve ya tip üzrə) gətirir */
 export const getAllReviews = async (req, res, next) => {
     try {
-        const { type, status, rating } = req.query; // type: 'general' | 'room' | 'attraction'
-        const where = status ? { status } : {};
-        if (rating) where.rating = Number(rating);
+        const { type, status, rating, page = 1, limit = 10 } = req.query;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+        const skipNum = (pageNum - 1) * limitNum;
 
-        let data;
-        if (type === 'room') {
-            data = await prisma.roomReview.findMany({
-                where,
-                include: { user: { select: { email: true } }, roomType: { select: { name: true } } },
-                orderBy: { createdAt: 'desc' }
-            });
-        } else if (type === 'attraction') {
-            data = await prisma.attractionReview.findMany({
-                where,
-                include: { user: { select: { email: true } }, attraction: { select: { name: true } } },
-                orderBy: { createdAt: 'desc' }
-            });
-        } else {
-            // Default: General reviews
-            data = await prisma.review.findMany({
-                where,
-                include: { 
-                    user: { select: { email: true } },
-                    hotel: { select: { name: true } },
-                    restaurant: { select: { name: true } },
-                    tour: { select: { name: true } }
-                },
-                orderBy: { createdAt: 'desc' }
-            });
+        // Construct where clauses for raw queries
+        const roomConditions = [];
+        const attractionConditions = [];
+        const generalConditions = [];
+        const queryParams = [];
+
+        if (rating) {
+            const ratingVal = Number(rating);
+            roomConditions.push('r.rating = ?');
+            attractionConditions.push('r.rating = ?');
+            generalConditions.push('r.rating = ?');
+            queryParams.push(ratingVal, ratingVal, ratingVal);
         }
 
-        res.status(200).json({ success: true, count: data.length, data });
+        if (status) {
+            roomConditions.push('r.status = ?');
+            attractionConditions.push('r.status = ?');
+            generalConditions.push('r.status = ?');
+            queryParams.push(status, status, status);
+        }
+
+        const roomWhere = roomConditions.length ? 'WHERE ' + roomConditions.join(' AND ') : '';
+        const attractionWhere = attractionConditions.length ? 'WHERE ' + attractionConditions.join(' AND ') : '';
+        const generalWhere = generalConditions.length ? 'WHERE ' + generalConditions.join(' AND ') : '';
+
+        let unionSql = '';
+        const countQueryParams = [...queryParams];
+
+        if (type === 'room') {
+            unionSql = `
+                SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId, 'room' as businessType, r.roomTypeId as businessId, u.email as userEmail, rt.name as businessName
+                FROM roomreview r
+                LEFT JOIN user u ON r.userId = u.id
+                LEFT JOIN roomtype rt ON r.roomTypeId = rt.id
+                ${roomWhere}
+                ORDER BY r.createdAt DESC
+                LIMIT ? OFFSET ?
+            `;
+            queryParams.push(limitNum, skipNum);
+        } else if (type === 'attraction') {
+            unionSql = `
+                SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId, 'attraction' as businessType, r.attractionId as businessId, u.email as userEmail, a.name as businessName
+                FROM attractionreview r
+                LEFT JOIN user u ON r.userId = u.id
+                LEFT JOIN attraction a ON r.attractionId = a.id
+                ${attractionWhere}
+                ORDER BY r.createdAt DESC
+                LIMIT ? OFFSET ?
+            `;
+            queryParams.push(limitNum, skipNum);
+        } else if (type && type !== 'all' && type !== 'general') {
+            const typeCol = `${type}Id`;
+            generalConditions.push(`r.${typeCol} IS NOT NULL`);
+            const updatedGeneralWhere = generalConditions.length ? 'WHERE ' + generalConditions.join(' AND ') : '';
+
+            unionSql = `
+                SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId,
+                    '${type}' as businessType,
+                    r.${typeCol} as businessId,
+                    u.email as userEmail,
+                    ${type === 'hotel' ? 'h.name' : type === 'tour' ? 't.name' : type === 'event' ? 'e.title' : 'rest.name'} as businessName
+                FROM review r
+                LEFT JOIN user u ON r.userId = u.id
+                ${type === 'hotel' ? 'LEFT JOIN hotel h ON r.hotelId = h.id' : ''}
+                ${type === 'tour' ? 'LEFT JOIN tour t ON r.tourId = t.id' : ''}
+                ${type === 'event' ? 'LEFT JOIN event e ON r.eventId = e.id' : ''}
+                ${type === 'restaurant' ? 'LEFT JOIN restaurant rest ON r.restaurantId = rest.id' : ''}
+                ${updatedGeneralWhere}
+                ORDER BY r.createdAt DESC
+                LIMIT ? OFFSET ?
+            `;
+            queryParams.push(limitNum, skipNum);
+        } else {
+            unionSql = `
+                SELECT * FROM (
+                    SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId, 'room' as businessType, r.roomTypeId as businessId, u.email as userEmail, rt.name as businessName
+                    FROM roomreview r
+                    LEFT JOIN user u ON r.userId = u.id
+                    LEFT JOIN roomtype rt ON r.roomTypeId = rt.id
+                    ${roomWhere}
+
+                    UNION ALL
+
+                    SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId, 'attraction' as businessType, r.attractionId as businessId, u.email as userEmail, a.name as businessName
+                    FROM attractionreview r
+                    LEFT JOIN user u ON r.userId = u.id
+                    LEFT JOIN attraction a ON r.attractionId = a.id
+                    ${attractionWhere}
+
+                    UNION ALL
+
+                    SELECT r.id, r.rating, r.comment, r.status, r.createdAt, r.userId,
+                        CASE 
+                            WHEN r.hotelId IS NOT NULL THEN 'hotel'
+                            WHEN r.tourId IS NOT NULL THEN 'tour'
+                            WHEN r.eventId IS NOT NULL THEN 'event'
+                            WHEN r.restaurantId IS NOT NULL THEN 'restaurant'
+                            ELSE 'general'
+                        END as businessType,
+                        COALESCE(r.hotelId, r.tourId, r.eventId, r.restaurantId) as businessId,
+                        u.email as userEmail,
+                        COALESCE(h.name, t.name, e.title, rest.name) as businessName
+                    FROM review r
+                    LEFT JOIN user u ON r.userId = u.id
+                    LEFT JOIN hotel h ON r.hotelId = h.id
+                    LEFT JOIN tour t ON r.tourId = t.id
+                    LEFT JOIN event e ON r.eventId = e.id
+                    LEFT JOIN restaurant rest ON r.restaurantId = rest.id
+                    ${generalWhere}
+                ) as merged_reviews
+                ORDER BY createdAt DESC
+                LIMIT ? OFFSET ?
+            `;
+            queryParams.push(limitNum, skipNum);
+        }
+
+        let totalCount = 0;
+        if (type === 'room') {
+            const countRes = await prisma.$queryRawUnsafe(
+                `SELECT COUNT(*) as count FROM roomreview r ${roomWhere}`,
+                ...countQueryParams
+            );
+            totalCount = Number(countRes[0]?.count || 0);
+        } else if (type === 'attraction') {
+            const countRes = await prisma.$queryRawUnsafe(
+                `SELECT COUNT(*) as count FROM attractionreview r ${attractionWhere}`,
+                ...countQueryParams
+            );
+            totalCount = Number(countRes[0]?.count || 0);
+        } else if (type && type !== 'all' && type !== 'general') {
+            const typeCol = `${type}Id`;
+            generalConditions.push(`r.${typeCol} IS NOT NULL`);
+            const updatedGeneralWhere = generalConditions.length ? 'WHERE ' + generalConditions.join(' AND ') : '';
+            const countRes = await prisma.$queryRawUnsafe(
+                `SELECT COUNT(*) as count FROM review r ${updatedGeneralWhere}`,
+                ...countQueryParams
+            );
+            totalCount = Number(countRes[0]?.count || 0);
+        } else {
+            const roomCountQuery = `SELECT COUNT(*) as count FROM roomreview r ${roomWhere}`;
+            const attractionCountQuery = `SELECT COUNT(*) as count FROM attractionreview r ${attractionWhere}`;
+            const generalCountQuery = `SELECT COUNT(*) as count FROM review r ${generalWhere}`;
+
+            const [roomCount, attractionCount, generalCount] = await Promise.all([
+                prisma.$queryRawUnsafe(roomCountQuery, ...countQueryParams),
+                prisma.$queryRawUnsafe(attractionCountQuery, ...countQueryParams),
+                prisma.$queryRawUnsafe(generalCountQuery, ...countQueryParams)
+            ]);
+
+            totalCount = Number(roomCount[0]?.count || 0) +
+                         Number(attractionCount[0]?.count || 0) +
+                         Number(generalCount[0]?.count || 0);
+        }
+
+        const reviews = await prisma.$queryRawUnsafe(unionSql, ...queryParams);
+
+        const formattedReviews = reviews.map(r => ({
+            id: r.id,
+            rating: Number(r.rating),
+            comment: r.comment,
+            status: r.status || 'approved',
+            createdAt: r.createdAt,
+            userEmail: r.userEmail || 'Anonymous',
+            businessName: r.businessName || 'Naməlum',
+            businessType: r.businessType
+        }));
+
+        res.status(200).json({
+            success: true,
+            count: formattedReviews.length,
+            total: totalCount,
+            page: pageNum,
+            limit: limitNum,
+            totalPages: Math.ceil(totalCount / limitNum),
+            data: formattedReviews
+        });
     } catch (error) {
         next(error);
     }
@@ -669,14 +822,41 @@ export const getAllReviews = async (req, res, next) => {
 export const updateReviewStatus = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { status, type } = req.body; // type: 'general' | 'attraction' (room has no status in schema)
+        const { status, type, reason } = req.body; // type: 'general' | 'attraction' | 'room'
+        const adminId = req.user.id;
 
-        let updated;
-        if (type === 'attraction') {
-            updated = await prisma.attractionReview.update({ where: { id }, data: { status } });
-        } else {
-            updated = await prisma.review.update({ where: { id }, data: { status } });
-        }
+        const updated = await prisma.$transaction(async (tx) => {
+            let oldReview;
+            let updatedReview;
+
+            if (type === 'attraction') {
+                oldReview = await tx.attractionreview.findUnique({ where: { id } });
+                if (!oldReview) throw ApiError.notFound('Attraction review not found');
+                updatedReview = await tx.attractionreview.update({ where: { id }, data: { status } });
+            } else if (type === 'room') {
+                oldReview = await tx.roomreview.findUnique({ where: { id } });
+                if (!oldReview) throw ApiError.notFound('Room review not found');
+                updatedReview = await tx.roomreview.update({ where: { id }, data: { status } });
+            } else {
+                oldReview = await tx.review.findUnique({ where: { id } });
+                if (!oldReview) throw ApiError.notFound('General review not found');
+                updatedReview = await tx.review.update({ where: { id }, data: { status } });
+            }
+
+            await tx.reviewauditlog.create({
+                data: {
+                    id: crypto.randomUUID(),
+                    reviewId: id,
+                    reviewType: type || 'general',
+                    adminId,
+                    oldStatus: oldReview.status || 'approved',
+                    newStatus: status,
+                    reason: reason || null
+                }
+            });
+
+            return updatedReview;
+        });
 
         res.status(200).json({ success: true, message: 'Rəy statusu yeniləndi', data: updated });
     } catch (error) {
@@ -685,23 +865,52 @@ export const updateReviewStatus = async (req, res, next) => {
     }
 };
 
-/** Rəyi tamamilə silir */
+/** Rəyi tamamilə silir (və bağlı olan şikayətləri təmizləyir) */
 export const deleteReview = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { type } = req.query;
 
-        if (type === 'room') {
-            await prisma.roomReview.delete({ where: { id } });
-        } else if (type === 'attraction') {
-            await prisma.attractionReview.delete({ where: { id } });
-        } else {
-            await prisma.review.delete({ where: { id } });
-        }
+        await prisma.$transaction(async (tx) => {
+            // Delete associated reports first to avoid constraint/orphan issues
+            await tx.reviewreport.deleteMany({
+                where: { reviewId: id }
+            });
+
+            if (type === 'room') {
+                await tx.roomreview.delete({ where: { id } });
+            } else if (type === 'attraction') {
+                await tx.attractionreview.delete({ where: { id } });
+            } else {
+                await tx.review.delete({ where: { id } });
+            }
+        });
 
         res.status(200).json({ success: true, message: 'Rəy silindi' });
     } catch (error) {
         if (error.code === 'P2025') return next(ApiError.notFound('Rəy tapılmadı'));
+        next(error);
+    }
+};
+
+/** Bütün rəy şikayətlərini gətirir */
+export const getReviewReports = async (req, res, next) => {
+    try {
+        const reports = await attractionReviewReportService.getAllReports(req.query);
+        res.status(200).json({ success: true, data: reports });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/** Şikayətin statusunu yeniləyir */
+export const updateReviewReportStatus = async (req, res, next) => {
+    try {
+        const { reportId } = req.params;
+        const { status } = req.body;
+        const updated = await attractionReviewReportService.updateReportStatus(reportId, status);
+        res.status(200).json({ success: true, data: updated });
+    } catch (error) {
         next(error);
     }
 };
@@ -759,16 +968,16 @@ export const getAllTransactions = async (req, res, next) => {
             take: limitNum
         });
 
-        res.status(200).json({ 
-            success: true, 
-            count: transactions.length, 
+        res.status(200).json({
+            success: true,
+            count: transactions.length,
             pagination: limit === 'all' ? null : {
                 total: count,
                 page: pageNum,
                 limit: limitNum,
                 totalPages: Math.ceil(count / limitNum)
             },
-            data: transactions 
+            data: transactions
         });
     } catch (error) {
         next(error);
@@ -779,7 +988,7 @@ export const getAllTransactions = async (req, res, next) => {
 export const getCompanyTurnoverStats = async (req, res, next) => {
     try {
         const { startDate, endDate } = req.query;
-        
+
         const where = {};
         if (startDate || endDate) {
             where.createdAt = {};
@@ -819,8 +1028,8 @@ export const getCompanyTurnoverStats = async (req, res, next) => {
             const stats = companyMap[key];
             stats.bookingsCount += 1;
 
-            const isPaid = ['confirmed', 'checked_in', 'checked_out', 'refunded'].includes(booking.status) || 
-                           ['captured', 'success', 'completed'].includes(booking.paymentStatus?.toLowerCase() || '');
+            const isPaid = ['confirmed', 'checked_in', 'checked_out', 'refunded'].includes(booking.status) ||
+                ['captured', 'success', 'completed'].includes(booking.paymentStatus?.toLowerCase() || '');
 
             if (isPaid) {
                 stats.grossTurnover += booking.totalPrice;
@@ -1023,7 +1232,7 @@ export const getUserWalletStats = async (req, res, next) => {
 
         const data = users.map(user => {
             const stats = statsMap[user.id] || { cardSpend: 0, walletSpend: 0, totalDeposits: 0, totalWithdrawals: 0 };
-            
+
             const cSpend = Math.round(stats.cardSpend * 100) / 100;
             const wSpend = Math.round(stats.walletSpend * 100) / 100;
             const totalSpent = Math.round((cSpend + wSpend) * 100) / 100;
@@ -1248,15 +1457,18 @@ export const removeFromBlacklist = async (req, res, next) => {
     }
 };
 
-/** Risk loqları (Hələlik mock/simulyasiya) */
+/** Risk loqları */
 export const getRiskLogs = async (req, res, next) => {
     try {
-        // Gələcəkdə bu məlumatlar bazadan çəkiləcək
-        const mockLogs = [
-            { id: '1', action: 'risk_evaluation', details: { score: 85, reasons: ['High cancellation velocity'], isApproved: false }, createdAt: new Date().toISOString() },
-            { id: '2', action: 'risk_evaluation', details: { score: 20, reasons: [], isApproved: true }, createdAt: new Date().toISOString() }
-        ];
-        res.status(200).json({ success: true, data: mockLogs });
+        const logs = await prisma.bookingauditlog.findMany({
+            where: { action: 'risk_evaluation' },
+            orderBy: { createdAt: 'desc' },
+            take: 100
+        });
+
+        const formattedLogs = logs.map(log => fraudDetectionService.formatRiskLog(log));
+
+        res.status(200).json({ success: true, data: formattedLogs });
     } catch (error) {
         next(error);
     }
@@ -1268,49 +1480,257 @@ export const getRiskLogs = async (req, res, next) => {
  * ============================================
  */
 
+let dashboardCache = null;
+let cacheExpiry = 0;
+const CACHE_DURATION = 30000; // 30 seconds cache
+
 export const getPlatformAnalytics = async (req, res, next) => {
     try {
-        const { startDate, endDate } = req.query;
-        
-        const stats = await prisma.hotelDailyStat.aggregate({
-            _sum: {
-                totalRevenue: true,
-                totalBookings: true,
-                impressions: true
-            },
-            _avg: {
-                occupancyRate: true,
-                conversionRate: true
+        const forceRefresh = req.query.refresh === 'true';
+
+        // Check if cache is still valid and refresh is not forced
+        if (!forceRefresh && dashboardCache && Date.now() < cacheExpiry) {
+            console.log('[Analytics Cache] Serving from memory cache...');
+            return res.status(200).json({
+                success: true,
+                data: dashboardCache
+            });
+        }
+
+        console.log('[Analytics Cache] Querying live database...');
+
+        const queries = [
+            // 0: Total Users count
+            prisma.user.count(),
+            // 1: Active Users count
+            prisma.user.count({ where: { isActive: true } }),
+            // 2: Banned Users count
+            prisma.user.count({ where: { isBanned: true } }),
+
+            // 3: Total bookings sum/count aggregation
+            prisma.booking.aggregate({
+                _sum: { totalPrice: true },
+                _count: { id: true }
+            }),
+            // 4: Bookings grouped by type
+            prisma.booking.groupBy({
+                by: ['bookingType'],
+                _count: { id: true },
+                _sum: { totalPrice: true }
+            }),
+            // 5: Recent bookings list
+            prisma.booking.findMany({
+                orderBy: { createdAt: 'desc' },
+                take: 5,
+                include: {
+                    user: { select: { email: true, firstName: true, lastName: true } }
+                }
+            }),
+
+            // 6: Hotel count
+            prisma.hotel.count(),
+            // 7: Tour count
+            prisma.tour.count(),
+            // 8: Attraction count
+            prisma.attraction.count(),
+
+            // 9: Pending Hotels list
+            prisma.hotel.findMany({
+                where: { status: 'pending' },
+                take: 5,
+                select: { id: true, name: true, createdAt: true }
+            }),
+            // 10: Pending Tours list
+            prisma.tour.findMany({
+                where: { status: 'pending' },
+                take: 5,
+                select: { id: true, name: true, createdAt: true }
+            }),
+            // 11: Pending Attractions list
+            prisma.attraction.findMany({
+                where: { status: 'pending' },
+                take: 5,
+                select: { id: true, name: true, createdAt: true }
+            }),
+            // 12: Inactive vehicles count
+            prisma.vehicle.count({ where: { status: 'Inactive' } }),
+
+            // 13: Payments aggregation
+            prisma.paymenttransaction.aggregate({
+                _sum: { amount: true },
+                _count: { id: true }
+            }),
+
+            // 14: Promocode count
+            prisma.promocode.count(),
+            // 15: Promotion count
+            prisma.promotion.count(),
+
+            // 16: Driver count
+            prisma.driverprofile.count(),
+            // 17: Cargo vehicle count
+            prisma.cargovehicle.count(),
+
+            // 18: Total reviews
+            prisma.review.count(),
+            // 19: Unresolved/Pending reports count
+            prisma.reviewreport.count({ where: { status: 'pending' } }),
+
+            // 20: Blacklist count
+            prisma.blacklist.count(),
+            // 21: High-risk logs count
+            prisma.bookingauditlog.count({
+                where: { action: 'risk_evaluation' }
+            })
+        ];
+
+        // Concurrently run queries without throwing on single failures
+        const results = await Promise.allSettled(queries);
+
+        const getValue = (result, defaultValue = null) => {
+            return result.status === 'fulfilled' ? result.value : defaultValue;
+        };
+
+        const userCount = getValue(results[0], null);
+        const activeUserCount = getValue(results[1], null);
+        const bannedUserCount = getValue(results[2], null);
+
+        const bookingAgg = getValue(results[3], null);
+        const bookingsByType = getValue(results[4], []);
+        const recentBookings = getValue(results[5], []);
+
+        const hotelCount = getValue(results[6], null);
+        const tourCount = getValue(results[7], null);
+        const attractionCount = getValue(results[8], null);
+
+        const pendingHotels = getValue(results[9], []);
+        const pendingTours = getValue(results[10], []);
+        const pendingAttractions = getValue(results[11], []);
+        const inactiveVehicles = getValue(results[12], null);
+
+        const transactionAgg = getValue(results[13], null);
+
+        const promocodeCount = getValue(results[14], null);
+        const promotionCount = getValue(results[15], null);
+
+        const driverCount = getValue(results[16], null);
+        const vehicleCount = getValue(results[17], null);
+
+        const reviewCount = getValue(results[18], null);
+        const pendingReportCount = getValue(results[19], null);
+
+        const blacklistCount = getValue(results[20], null);
+        const highRiskCount = getValue(results[21], null);
+
+        // Combine pending lists into a single recent pending approvals list
+        const pendingList = [
+            ...pendingHotels.map(h => ({ id: h.id, name: h.name, type: 'Hotel', createdAt: h.createdAt })),
+            ...pendingTours.map(t => ({ id: t.id, name: t.name, type: 'Tour', createdAt: t.createdAt })),
+            ...pendingAttractions.map(a => ({ id: a.id, name: a.name, type: 'Obyekt', createdAt: a.createdAt }))
+        ]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 5);
+
+        // Calculate total pending businesses count
+        const pendingCount = (hotelCount === null || tourCount === null || attractionCount === null || inactiveVehicles === null)
+            ? null
+            : (pendingHotels.length + pendingTours.length + pendingAttractions.length + inactiveVehicles);
+
+        // Calculate 7-day revenue trend in server local time
+        const now = new Date();
+        const localTimezoneOffset = now.getTimezoneOffset() * 60 * 1000;
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000 - localTimezoneOffset);
+
+        let dailyStats = [];
+        try {
+            dailyStats = await prisma.booking.findMany({
+                where: {
+                    createdAt: { gte: sevenDaysAgo }
+                },
+                select: {
+                    createdAt: true,
+                    totalPrice: true
+                }
+            });
+        } catch (trendErr) {
+            console.error('[PlatformAnalytics] Failed to fetch trend data:', trendErr);
+        }
+
+        // Group by local date string
+        const dailyRevenue = {};
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            const dateStr = d.toLocaleDateString('az-AZ', { day: '2-digit', month: 'short' });
+            dailyRevenue[dateStr] = 0;
+        }
+
+        dailyStats.forEach(b => {
+            const localDate = new Date(b.createdAt.getTime());
+            const dateStr = localDate.toLocaleDateString('az-AZ', { day: '2-digit', month: 'short' });
+            if (dailyRevenue[dateStr] !== undefined) {
+                dailyRevenue[dateStr] += b.totalPrice;
             }
         });
 
-        // Trendləri hesablamaq üçün son 30 günü çəkirik
-        const trends = await prisma.hotelDailyStat.findMany({
-            orderBy: { date: 'asc' },
-            take: 30,
-            select: { date: true, totalRevenue: true }
-        });
+        const trends = Object.keys(dailyRevenue).map(date => ({
+            date,
+            amount: dailyRevenue[date]
+        }));
+
+        const analyticsData = {
+            users: {
+                total: userCount,
+                active: activeUserCount,
+                banned: bannedUserCount
+            },
+            bookings: {
+                total: bookingAgg ? (bookingAgg._count?.id || 0) : null,
+                totalRevenue: bookingAgg ? (bookingAgg._sum?.totalPrice || 0) : null,
+                byType: bookingsByType,
+                recent: recentBookings
+            },
+            businesses: {
+                totalHotels: hotelCount,
+                totalTours: tourCount,
+                totalAttractions: attractionCount,
+                pendingCount,
+                pendingList
+            },
+            payments: {
+                totalTransactions: transactionAgg ? (transactionAgg._count?.id || 0) : null,
+                totalTurnover: transactionAgg ? (transactionAgg._sum?.amount || 0) : null
+            },
+            promotions: {
+                totalPromocodes: promocodeCount,
+                totalPromotions: promotionCount
+            },
+            transport: {
+                totalDrivers: driverCount,
+                totalVehicles: vehicleCount
+            },
+            interactions: {
+                totalReviews: reviewCount,
+                pendingReports: pendingReportCount
+            },
+            fraud: {
+                blacklistCount,
+                highRiskLogsCount: highRiskCount
+            },
+            trends
+        };
+
+        // Cache the newly computed data and update expiry time
+        dashboardCache = analyticsData;
+        cacheExpiry = Date.now() + CACHE_DURATION;
 
         res.status(200).json({
             success: true,
-            data: {
-                summary: {
-                    totalRevenue: stats._sum.totalRevenue || 0,
-                    bookingCount: stats._sum.totalBookings || 0,
-                    occupancyRate: stats._avg.occupancyRate || 0,
-                    impressions: stats._sum.impressions || 0
-                },
-                trends: {
-                    revenue: trends.map(t => ({ date: t.date, amount: t.totalRevenue }))
-                }
-            }
+            data: analyticsData
         });
     } catch (error) {
         next(error);
     }
-};
-
-/**
+};/**
  * ============================================
  * Gəlir İdarəetməsi (Revenue Management)
  * ============================================
@@ -1343,6 +1763,62 @@ export const deletePricingRule = async (req, res, next) => {
     try {
         await prisma.pricingRule.delete({ where: { id: req.params.ruleId } });
         res.status(200).json({ success: true, message: 'Qayda silindi' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/** 10. Bildirişlər və Elanlar */
+export const getNotifications = async (req, res, next) => {
+    try {
+        const notifications = await prisma.notification.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        res.status(200).json({ success: true, data: notifications });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const sendAnnouncement = async (req, res, next) => {
+    try {
+        const { title, message, target } = req.body;
+        if (!title || !message || !target) {
+            return next(ApiError.badRequest('Başlıq, mətn və hədəf məcburidir.'));
+        }
+
+        const announcement = await prisma.notification.create({
+            data: {
+                id: crypto.randomUUID(),
+                title,
+                message,
+                type: 'announcement',
+                target,
+                senderId: req.user?.id || null
+            }
+        });
+
+        // Broadcast to online socket clients
+        try {
+            const io = getIO();
+            io.emit('new_announcement', announcement);
+        } catch (socketErr) {
+            console.warn('[AdminController] Socket.io not initialized, skipping broadcast:', socketErr.message);
+        }
+
+        res.status(201).json({ success: true, message: 'Elan uğurla göndərildi.', data: announcement });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteNotification = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        await prisma.notification.delete({
+            where: { id }
+        });
+        res.status(200).json({ success: true, message: 'Bildiriş silindi.' });
     } catch (error) {
         next(error);
     }

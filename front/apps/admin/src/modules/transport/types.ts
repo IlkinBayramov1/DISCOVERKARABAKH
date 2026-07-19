@@ -1,7 +1,17 @@
+import type { LicenseCategory } from '@dk/ui';
+
 export type DriverStatus = 'Pending' | 'Approved' | 'Rejected' | 'Suspended';
 export type VehicleStatus = 'Active' | 'Maintenance' | 'Inactive';
 export type RideStatus = 'Pending' | 'Accepted' | 'Ongoing' | 'Completed' | 'Cancelled';
 export type VehicleCategory = 'Sedan' | 'SUV' | 'Minivan' | 'Bus' | 'Cargo';
+
+export interface UpdateDriverLicenseRequest {
+    licenseNumber: string;
+    licenseExpiryDate: string;
+    licenseCategories: LicenseCategory[];
+    licenseImages: string[];
+    idCardImages: string[];
+}
 
 export interface DriverProfile {
     id: string;
@@ -11,6 +21,10 @@ export interface DriverProfile {
     lastName: string;
     phone: string;
     licenseNumber?: string;
+    licenseExpiryDate?: string;
+    licenseCategories?: LicenseCategory[];
+    licenseImages?: string[];
+    idCardImages?: string[];
     rating: number;
     totalRides: number;
     currentVehicleId?: string | null;
@@ -59,8 +73,8 @@ export interface Ride {
     driverId?: string;
     vehicleId?: string;
     status: RideStatus;
-    pickupLocation: string;
-    dropoffLocation: string;
+    pickupLocation: string | { address: string; lat?: number; lng?: number };
+    dropoffLocation: string | { address: string; lat?: number; lng?: number };
     price?: number;
     distanceKm?: number;
     durationMin?: number;
@@ -137,8 +151,8 @@ export interface Shipment {
     driverId?: string;
     cargoVehicleId?: string;
     status: ShipmentStatus;
-    pickupLocation: string;
-    dropoffLocation: string;
+    pickupLocation: string | { address: string; lat?: number; lng?: number };
+    dropoffLocation: string | { address: string; lat?: number; lng?: number };
     weightKg: number;
     volumeM3?: number;
     dimensions?: string;

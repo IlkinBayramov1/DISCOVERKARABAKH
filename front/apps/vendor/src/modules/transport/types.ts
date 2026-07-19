@@ -27,6 +27,16 @@ export interface ICargoVehicle {
     updatedAt?: string;
 }
 
+import type { LicenseCategory } from '@dk/ui';
+
+export interface UpdateDriverLicenseRequest {
+    licenseNumber: string;
+    licenseExpiryDate: string;
+    licenseCategories: LicenseCategory[];
+    licenseImages: string[];
+    idCardImages: string[];
+}
+
 export interface IDriverProfile {
     id: string;
     userId: string;
@@ -34,6 +44,10 @@ export interface IDriverProfile {
     lastName: string;
     phone: string;
     licenseNumber: string;
+    licenseExpiryDate?: string;
+    licenseCategories?: LicenseCategory[];
+    licenseImages?: string[];
+    idCardImages?: string[];
     status: 'Pending' | 'Approved' | 'Rejected' | 'Available' | 'OnTrip' | 'Offline';
     vendorId: string;
     currentVehicleId?: string;

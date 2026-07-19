@@ -1,17 +1,15 @@
 import { attractionReviewRepository } from './attractionReview.repository.js';
 import { attractionEvents, REVIEW_CREATED } from '../attraction.events.js';
 import { ApiError } from '../../../../core/api.error.js';
+import prisma from '../../../../config/db.js';
+import { ReviewEligibilityService } from '../../../interactions/review/reviewEligibility.service.js';
 
 class AttractionReviewService {
     async createReview(userId, attractionId, reviewData) {
-        // Ensure user hasn't already reviewed this attraction
-        const existingReview = await attractionReviewRepository.findOne({ 
-            userId, 
-            attractionId 
-        });
-        
-        if (existingReview) {
-            throw ApiError.badRequest('You have already reviewed this attraction.');
+        // Centralized Eligibility Check
+        const eligibility = await ReviewEligibilityService.canReview(prisma, userId, 'attraction', attractionId);
+        if (!eligibility.eligible) {
+            throw new ApiError(403, eligibility.message, eligibility.code);
         }
 
         const data = {

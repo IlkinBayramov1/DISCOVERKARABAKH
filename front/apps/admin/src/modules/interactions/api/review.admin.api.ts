@@ -18,6 +18,18 @@ export const reviewAdminApi = {
     deleteReview: async (id: string, type: 'general' | 'room' | 'attraction'): Promise<AdminReviewActionResponse> => {
         const response = await api.delete(`/admins/reviews/${id}`, { params: { type } });
         return response.data;
+    },
+
+    /** Bütün şikayətləri gətirir */
+    getReports: async (params?: any): Promise<{ success: boolean; data: any[] }> => {
+        const response = await api.get('/admins/reviews/reports', { params });
+        return response.data;
+    },
+
+    /** Şikayətin statusunu yeniləyir */
+    updateReportStatus: async (reportId: string, status: string): Promise<{ success: boolean; data: any }> => {
+        const response = await api.patch(`/admins/reviews/reports/${reportId}`, { status });
+        return response.data;
     }
 };
 

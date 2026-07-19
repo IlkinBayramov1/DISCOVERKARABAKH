@@ -6,16 +6,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     isLoading?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ 
-    children, 
-    variant = 'primary', 
-    size = 'md', 
-    isLoading, 
-    className = '', 
-    ...props 
+const Button: React.FC<ButtonProps> = ({
+    children,
+    variant = 'primary',
+    size = 'md',
+    isLoading,
+    className = '',
+    ...props
 }) => {
     const baseStyles = 'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none';
-    
+
     const variants = {
         primary: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100',
         secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
@@ -31,7 +31,7 @@ const Button: React.FC<ButtonProps> = ({
     };
 
     return (
-        <button 
+        <button
             className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
             disabled={isLoading || props.disabled}
             {...props}

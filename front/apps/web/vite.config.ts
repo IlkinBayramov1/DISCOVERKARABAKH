@@ -16,12 +16,10 @@ export default defineConfig({
       '/vendor': {
         target: 'http://localhost:5175',
         changeOrigin: true,
-        ws: true,
       },
       '/admin': {
         target: 'http://localhost:5176',
         changeOrigin: true,
-        ws: true,
       }
     }
   }

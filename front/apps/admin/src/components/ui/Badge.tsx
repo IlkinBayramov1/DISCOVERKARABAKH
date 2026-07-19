@@ -7,11 +7,11 @@ interface BadgeProps {
     dot?: boolean;
 }
 
-const Badge: React.FC<BadgeProps> = ({ 
-    children, 
-    variant = 'neutral', 
-    className = '', 
-    dot = false 
+const Badge: React.FC<BadgeProps> = ({
+    children,
+    variant = 'neutral',
+    className = '',
+    dot = false
 }) => {
     const variants = {
         success: 'bg-emerald-50 text-emerald-700 border-emerald-100/50',

@@ -17,6 +17,16 @@ class TransferRepository {
             parsedRide.passenger = { firstName: 'Client', lastName: '', email: 'N/A', phone: 'N/A' };
         }
 
+        // Fallback to vehicle's driver profile if ride.driverprofile is null
+        if (!parsedRide.driverprofile && ride.vehicle?.driverprofile) {
+            parsedRide.driverprofile = {
+                id: ride.vehicle.driverprofile.id,
+                firstName: ride.vehicle.driverprofile.firstName,
+                lastName: ride.vehicle.driverprofile.lastName,
+                phone: ride.vehicle.driverprofile.phone || 'N/A'
+            };
+        }
+
         try {
             parsedRide.pickupLocation = typeof ride.pickupLocation === 'string' ? JSON.parse(ride.pickupLocation) : ride.pickupLocation;
         } catch (e) {
@@ -38,7 +48,11 @@ class TransferRepository {
             include: {
                 user: { select: { email: true, phone: true } },
                 driverprofile: { select: { firstName: true, lastName: true, phone: true } },
-                vehicle: true
+                vehicle: {
+                    include: {
+                        driverprofile: true
+                    }
+                }
             }
         });
     }
@@ -49,7 +63,11 @@ class TransferRepository {
             include: {
                 user: { select: { email: true, phone: true, firstName: true, lastName: true } },
                 driverprofile: { select: { firstName: true, lastName: true, phone: true, currentLocation: true } },
-                vehicle: true,
+                vehicle: {
+                    include: {
+                        driverprofile: true
+                    }
+                },
                 ridepricing: true
             }
         });
@@ -93,8 +111,19 @@ class TransferRepository {
             orderBy: { createdAt: 'desc' },
             include: {
                 user: { select: { email: true, firstName: true, lastName: true, phone: true } },
-                driverprofile: { select: { firstName: true, lastName: true } },
-                vehicle: { select: { brand: true, model: true, plateNumber: true } }
+                driverprofile: { select: { firstName: true, lastName: true, phone: true } },
+                vehicle: {
+                    include: {
+                        driverprofile: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                phone: true
+                            }
+                        }
+                    }
+                }
             }
         });
 

@@ -9,13 +9,13 @@ interface CardProps {
     noPadding?: boolean;
 }
 
-const Card: React.FC<CardProps> = ({ 
-    children, 
-    title, 
-    description, 
-    extra, 
-    className = '', 
-    noPadding = false 
+const Card: React.FC<CardProps> = ({
+    children,
+    title,
+    description,
+    extra,
+    className = '',
+    noPadding = false
 }) => {
     return (
         <div className={`bg-white rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:shadow-gray-200/40 ${className}`}>

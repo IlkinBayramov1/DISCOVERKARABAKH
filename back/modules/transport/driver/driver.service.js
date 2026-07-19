@@ -4,6 +4,8 @@ import { ApiError } from '../../../core/api.error.js';
 import { createClient } from 'redis';
 import { hashPassword } from '../../../utils/hash.util.js';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 let redisClient;
 try {
@@ -16,15 +18,90 @@ try {
     console.error("Redis connection failed to initialize in Driver Service");
 }
 
+const deleteLocalFile = (fileUrl) => {
+    if (!fileUrl) return;
+    try {
+        let filename = fileUrl;
+        if (fileUrl.includes('/uploads/')) {
+            filename = fileUrl.split('/uploads/').pop();
+        } else if (fileUrl.startsWith('uploads/')) {
+            filename = fileUrl.replace('uploads/', '');
+        }
+
+        // Prevent path traversal
+        filename = path.basename(filename);
+
+        const isProduction = process.env.NODE_ENV === 'production';
+        const uploadDir = isProduction 
+            ? '/data/uploads' 
+            : path.join(process.cwd(), 'uploads');
+
+        const filePath = path.join(uploadDir, filename);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error(`[Media Cleanup] Fayl silinərkən xəta: ${filePath}`, err);
+                } else {
+                    console.log(`[Media Cleanup] Köhnə fayl silindi: ${filePath}`);
+                }
+            });
+        }
+    } catch (err) {
+        console.error(`[Media Cleanup] Fayl təmizlənməsində gözlənilməz xəta:`, err);
+    }
+};
+
 class DriverService {
     async createDriverByVendor(vendorId, data) {
-        const { email, password, firstName, lastName, phone, licenseNumber } = data;
+        const { 
+            email, 
+            password, 
+            firstName, 
+            lastName, 
+            phone, 
+            licenseNumber,
+            licenseExpiryDate,
+            licenseCategories,
+            licenseImages,
+            idCardImages
+        } = data;
 
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) throw ApiError.badRequest('Bu email ilə istifadəçi artıq mövcuddur.');
 
+        // Check if licenseNumber already exists
+        if (licenseNumber) {
+            const existingLicense = await prisma.driverprofile.findUnique({ where: { licenseNumber } });
+            if (existingLicense) throw ApiError.badRequest('Bu vəsiqə nömrəsi artıq başqa bir sürücü tərəfindən istifadə olunur.');
+        }
+
         const hashedPassword = await hashPassword(password || 'driver123456'); // Default password if not provided
+
+        const insertDriverData = {
+            id: crypto.randomUUID(),
+            userId: null, // will be set from created user
+            managedById: vendorId,
+            firstName,
+            lastName,
+            phone,
+            licenseNumber,
+            licenseExpiryDate: licenseExpiryDate ? new Date(licenseExpiryDate) : null,
+            status: 'Approved' // Vendor created drivers are approved by default
+        };
+
+        if (licenseImages) {
+            insertDriverData.licenseImages = typeof licenseImages === 'string' ? licenseImages : JSON.stringify(licenseImages);
+        }
+        if (idCardImages) {
+            insertDriverData.idCardImages = typeof idCardImages === 'string' ? idCardImages : JSON.stringify(idCardImages);
+        }
+        if (licenseCategories) {
+            insertDriverData.licenseCategories = Array.isArray(licenseCategories)
+                ? Array.from(new Set(licenseCategories.map(c => c.trim()))).join(',')
+                : licenseCategories;
+        }
 
         return await prisma.$transaction(async (tx) => {
             // 1. Create User
@@ -43,18 +120,12 @@ class DriverService {
                 }
             });
 
+            // Update insert driver data with user id
+            insertDriverData.userId = user.id;
+
             // 2. Create Driver Profile
             const driverProfile = await tx.driverprofile.create({
-                data: {
-                    id: crypto.randomUUID(),
-                    userId: user.id,
-                    managedById: vendorId,
-                    firstName,
-                    lastName,
-                    phone,
-                    licenseNumber,
-                    status: 'Approved' // Vendor created drivers are approved by default
-                }
+                data: insertDriverData
             });
 
             return driverProfile;
@@ -65,6 +136,12 @@ class DriverService {
         const existing = await driverRepository.findByUserId(userId);
         if (existing) throw ApiError.badRequest('Driver profile already exists');
 
+        const { licenseNumber } = data;
+        if (licenseNumber) {
+            const existingLicense = await prisma.driverprofile.findUnique({ where: { licenseNumber } });
+            if (existingLicense) throw ApiError.badRequest('Bu vəsiqə nömrəsi artıq başqa bir sürücü tərəfindən istifadə olunur.');
+        }
+
         const { driverType, ...driverData } = data;
 
         // Simply create Driver Profile (without a vehicle). 
@@ -74,6 +151,60 @@ class DriverService {
             status: 'Pending',
             ...driverData
         });
+    }
+
+    async updateLicense(userId, role, driverId, licenseData) {
+        const driver = await driverRepository.findById(driverId);
+        if (!driver) throw ApiError.notFound('Sürücü tapılmadı.');
+
+        // Authorization check
+        if (role !== 'admin') {
+            if (role === 'vendor' && driver.managedById !== userId) {
+                throw ApiError.forbidden('Bu sürücünü idarə etmək üçün icazəniz yoxdur.');
+            } else if (role === 'driver' && driver.userId !== userId) {
+                throw ApiError.forbidden('Özünüzdən başqa digər sürücünün profilini yeniləyə bilməzsiniz.');
+            } else if (role !== 'vendor' && role !== 'driver') {
+                throw ApiError.forbidden('Bu əməliyyatı icra etmək üçün icazəniz yoxdur.');
+            }
+        }
+
+        // Check if licenseNumber is unique if it's changing
+        if (licenseData.licenseNumber !== driver.licenseNumber) {
+            const duplicate = await prisma.driverprofile.findUnique({
+                where: { licenseNumber: licenseData.licenseNumber }
+            });
+            if (duplicate && duplicate.id !== driverId) {
+                throw ApiError.badRequest('Bu vəsiqə nömrəsi artıq başqa bir sürücü tərəfindən istifadə olunur.');
+            }
+        }
+
+        // Limit fields we can update
+        const updatePayload = {
+            licenseNumber: licenseData.licenseNumber,
+            licenseExpiryDate: new Date(licenseData.licenseExpiryDate),
+            licenseCategories: licenseData.licenseCategories,
+            licenseImages: licenseData.licenseImages,
+            idCardImages: licenseData.idCardImages || []
+        };
+
+        const updatedDriver = await driverRepository.update(driverId, updatePayload);
+
+        // Safe Media Clean-up: only after DB is updated successfully
+        try {
+            const oldImages = [...(driver.licenseImages || []), ...(driver.idCardImages || [])];
+            const newImages = [...(updatePayload.licenseImages || []), ...(updatePayload.idCardImages || [])];
+            
+            const imagesToDelete = oldImages.filter(img => img && !newImages.includes(img));
+            
+            imagesToDelete.forEach(img => {
+                deleteLocalFile(img);
+            });
+        } catch (cleanupErr) {
+            console.error('[Media Cleanup] Köhnə faylların silinməsi zamanı gözlənilməz xəta baş verdi:', cleanupErr);
+            // We do NOT throw here so user receives successful response
+        }
+
+        return updatedDriver;
     }
 
     async getMyProfile(userId) {

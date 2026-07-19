@@ -180,11 +180,11 @@ model booking {
 
 model bookingauditlog {
   id        String   @id
-  bookingId String
+  bookingId String?
   action    String
   meta      String?  @db.LongText
   createdAt DateTime @default(now())
-  booking   booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "BookingAuditLog_bookingId_fkey")
+  booking   booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade, map: "BookingAuditLog_bookingId_fkey")
 
   @@index([bookingId], map: "BookingAuditLog_bookingId_fkey")
 }
@@ -284,7 +284,9 @@ model driverprofile {
   firstName                            String
   lastName                             String
   phone                                String
-  licenseNumber                        String?
+  licenseNumber                        String?              @unique(map: "DriverProfile_licenseNumber_key")
+  licenseExpiryDate                    DateTime?
+  licenseCategories                    String?              @db.VarChar(255)
   licenseImages                        String?              @db.LongText
   idCardImages                         String?              @db.LongText
   currentLocation                      String?              @db.LongText
@@ -740,6 +742,7 @@ model review {
   @@unique([userId, eventId], map: "Review_userId_eventId_key")
   @@unique([userId, hotelId], map: "Review_userId_hotelId_key")
   @@unique([userId, tourId], map: "Review_userId_tourId_key")
+  @@unique([userId, restaurantId], map: "Review_userId_restaurantId_key")
   @@index([attractionId], map: "Review_attractionId_fkey")
   @@index([eventId], map: "Review_eventId_fkey")
   @@index([hotelId], map: "Review_hotelId_fkey")
@@ -761,6 +764,20 @@ model reviewreport {
 
   @@index([reporterId], map: "ReviewReport_reporterId_fkey")
   @@index([reviewId], map: "ReviewReport_reviewId_idx")
+}
+
+model reviewauditlog {
+  id         String   @id
+  reviewId   String
+  reviewType String   // 'general', 'room', 'attraction'
+  adminId    String
+  oldStatus  String
+  newStatus  String
+  reason     String?  @db.Text
+  createdAt  DateTime @default(now())
+  user       user     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
 }
 
 model ride {
@@ -858,11 +875,13 @@ model roomreview {
   userId      String
   rating      Float
   comment     String?  @db.Text
+  status      String   @default("approved")
   createdAt   DateTime @default(now())
   vendorReply String?  @db.Text
   roomtype    roomtype @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, map: "RoomReview_roomTypeId_fkey")
   user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "RoomReview_userId_fkey")
 
+  @@unique([userId, roomTypeId], map: "RoomReview_userId_roomTypeId_key")
   @@index([roomTypeId], map: "RoomReview_roomTypeId_fkey")
   @@index([userId], map: "RoomReview_userId_fkey")
 }
@@ -1094,6 +1113,7 @@ model user {
   restaurant                                    restaurant[]
   review                                        review[]
   reviewreport                                  reviewreport[]
+  reviewauditlog                                reviewauditlog[]
   ride                                          ride[]
   roomreview                                    roomreview[]
   shipment                                      shipment[]
@@ -1371,4 +1391,16 @@ enum attraction_category {
   Tebiet_Abidesi
   Memorial_Kompleks
   Idman_Eylence
+}
+
+model notification {
+  id        String   @id
+  title     String
+  message   String   @db.Text
+  type      String   // 'announcement', 'booking_alert', 'system'
+  target    String   // 'all', 'guest', 'vendor', or specific user.id
+  bookingId String?  // Optional booking link
+  senderId  String?  // Announcement göndərən adminin ID-si
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

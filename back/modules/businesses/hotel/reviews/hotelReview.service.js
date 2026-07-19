@@ -1,5 +1,6 @@
 import prisma from '../../../../config/db.js';
 import { ApiError } from '../../../../core/api.error.js';
+import { ReviewEligibilityService } from '../../../interactions/review/reviewEligibility.service.js';
 
 class HotelReviewService {
 
@@ -10,34 +11,10 @@ class HotelReviewService {
      * 3. The user can only leave ONE review per booking.
      */
     async createReview(userId, hotelId, reviewData) {
-
-        // 1. Verify Ownership & Completed Stay
-        const eligibleBooking = await prisma.booking.findFirst({
-            where: {
-                userId: userId,
-                hotelId: hotelId,
-            },
-            include: { bookingitem: true },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // if (!eligibleBooking) {
-        //     throw ApiError.forbidden('You can only review hotels after you have completed a stay.');
-        // }
-
-        // 2. Prevent Double Reviewing for the same Booking explicitly
-        // (Booking model doesn't link directly to Review currently, so we check general duplicate lock)
-        const recentReview = await prisma.review.findUnique({
-            where: {
-                userId_hotelId: {
-                    userId: userId,
-                    hotelId: hotelId
-                }
-            }
-        });
-
-        if (recentReview) {
-            throw ApiError.badRequest('You have already submitted a review for this hotel.');
+        // 1. Centralized Eligibility Check
+        const eligibility = await ReviewEligibilityService.canReview(prisma, userId, 'hotel', hotelId);
+        if (!eligibility.eligible) {
+            throw new ApiError(403, eligibility.message, eligibility.code);
         }
 
         // 3. Extract Detailed Scoring for Hotel Subdomain

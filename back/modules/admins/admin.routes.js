@@ -25,6 +25,8 @@ import {
     getAllReviews,
     updateReviewStatus,
     deleteReview,
+    getReviewReports,
+    updateReviewReportStatus,
     getAllTransactions,
     getTransactionDetails,
     getCompanyTurnoverStats,
@@ -32,7 +34,10 @@ import {
     getUserFinancialDetails,
     getAllPromotions,
     createPromotion,
-    deletePromotion
+    deletePromotion,
+    getNotifications,
+    sendAnnouncement,
+    deleteNotification
 } from './admin.controller.js';
 import { authMiddleware } from '../../middlewares/auth.middleware.js';
 import roleMiddleware from '../../middlewares/role.middleware.js';
@@ -67,6 +72,8 @@ router.patch('/bookings/:id/status', updateBookingStatus);
 router.get('/reviews', getAllReviews);
 router.patch('/reviews/:id/status', updateReviewStatus);
 router.delete('/reviews/:id', deleteReview);
+router.get('/reviews/reports', getReviewReports);
+router.patch('/reviews/reports/:reportId', updateReviewReportStatus);
 
 // 5. Maliyyə Nəzarəti (Financial Control)
 router.get('/finance/transactions', getAllTransactions);
@@ -89,9 +96,9 @@ router.get('/fraud/risk-logs', getRiskLogs);
 // 8. Analitika
 router.get('/analytics', getPlatformAnalytics);
 
-// 9. Gəlir İdarəetməsi (Revenue)
-router.get('/hotels/:hotelId/pricing-rules', getPricingRules);
-router.post('/hotels/:hotelId/pricing-rules', createPricingRule);
-router.delete('/hotels/:hotelId/pricing-rules/:ruleId', deletePricingRule);
+// 10. Bildirişlər və Elanlar (Notifications)
+router.get('/notifications', getNotifications);
+router.post('/notifications/announcement', sendAnnouncement);
+router.delete('/notifications/:id', deleteNotification);
 
 export default router;

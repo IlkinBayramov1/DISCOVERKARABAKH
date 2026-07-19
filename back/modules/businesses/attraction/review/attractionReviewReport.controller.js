@@ -22,7 +22,7 @@ class AttractionReviewReportController {
 
     async updateStatus(req, res, next) {
         try {
-            const result = await attractionReviewReportService.updateReportStatus(req.params.id, req.body.status);
+            const result = await attractionReviewReportService.updateReportStatus(req.params.reportId, req.body.status);
             return successResponse(res, result);
         } catch (error) {
             next(error);

@@ -5,8 +5,15 @@ export const errorMiddleware = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
+  // Resolve status code
+  const statusCode = err.statusCode || error.statusCode || 500;
+
   // Log error for dev
-  console.error(err);
+  if (statusCode >= 500) {
+    console.error(err);
+  } else {
+    console.warn(`[Client Error - ${statusCode}]: ${err.message}`);
+  }
 
   // Prisma Errors
   // P2002: Unique constraint failed

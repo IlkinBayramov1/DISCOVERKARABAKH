@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
-    Truck, Check, RefreshCw, Eye, Calendar, MapPin, DollarSign, Users, Award, Shield, FileText, ChevronRight, Activity, Search
+    Truck, Check, RefreshCw, Eye, Calendar, MapPin, DollarSign, Users, Award, Shield, FileText, ChevronRight, Activity, Search,
+    Edit2, UploadCloud, Trash2, RotateCcw, AlertTriangle, Loader, X
 } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -9,9 +10,17 @@ import {
     useDrivers, useApproveDriver,
     useVehicles, useCargoVehicles,
     usePricingRules, useRides, useCargoShipments,
-    useTransportVendors, useLocations
+    useTransportVendors, useLocations,
+    useUpdateDriverLicense, useUploadImages
 } from '../hooks/useTransport';
-import type { RidePricingRule, CargoVehicle, Vehicle } from '../types';
+import type { RidePricingRule, CargoVehicle, Vehicle, UpdateDriverLicenseRequest } from '../types';
+import { LICENSE_CATEGORIES, Lightbox, type LicenseCategory } from '@dk/ui';
+
+const formatLocation = (loc: string | { address: string; lat?: number; lng?: number } | undefined | null): string => {
+    if (!loc) return 'Qeyd olunmayıb';
+    if (typeof loc === 'string') return loc;
+    return loc.address || 'Qeyd olunmayıb';
+};
 
 const TransportManagement: React.FC = () => {
     // Navigation & View States
@@ -26,7 +35,29 @@ const TransportManagement: React.FC = () => {
     // Selected Driver for Details Modal
     const [selectedDriverDetails, setSelectedDriverDetails] = useState<any>(null);
 
+    // Edit Form State for Driver License in Admin
+    interface UploadItem {
+        id: string;
+        file: File | null;
+        status: 'uploading' | 'failed' | 'success';
+        url?: string;
+    }
+
+    const [isEditingLicense, setIsEditingLicense] = useState(false);
+    const [licenseNumber, setLicenseNumber] = useState('');
+    const [licenseExpiryDate, setLicenseExpiryDate] = useState('');
+    const [selectedCategories, setSelectedCategories] = useState<LicenseCategory[]>([]);
+    const [licenseUploads, setLicenseUploads] = useState<UploadItem[]>([]);
+    const [idCardUploads, setIdCardUploads] = useState<UploadItem[]>([]);
+
+    // Lightbox states
+    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [showLightbox, setShowLightbox] = useState(false);
+
     // Queries
+    const { mutateAsync: uploadImagesAsync } = useUploadImages();
+    const { mutateAsync: updateLicenseAsync, isPending: isSavingLicense } = useUpdateDriverLicense();
     const { data: vendorsRes, isLoading: isVendorsLoading } = useTransportVendors();
     const { data: driversRes, isLoading: isDriversLoading } = useDrivers();
     const { mutateAsync: approveDriver, isPending: isApproving } = useApproveDriver();
@@ -112,8 +143,8 @@ const TransportManagement: React.FC = () => {
         const matchesVendor = !selectedVendorId || driverVendorId === selectedVendorId;
 
         const matchesSearch = searchQuery === '' ||
-            r.pickupLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.dropoffLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            formatLocation(r.pickupLocation).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            formatLocation(r.dropoffLocation).toLowerCase().includes(searchQuery.toLowerCase()) ||
             (r.user && r.user.email.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesVendor && matchesSearch;
     });
@@ -126,8 +157,8 @@ const TransportManagement: React.FC = () => {
         const matchesVendor = !selectedVendorId || driverVendorId === selectedVendorId;
 
         const matchesSearch = searchQuery === '' ||
-            s.pickupLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.dropoffLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            formatLocation(s.pickupLocation).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            formatLocation(s.dropoffLocation).toLowerCase().includes(searchQuery.toLowerCase()) ||
             (s.user && s.user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (s.cargoDescription && s.cargoDescription.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesVendor && matchesSearch;
@@ -155,6 +186,191 @@ const TransportManagement: React.FC = () => {
                 alert('Təsdiqləmə zamanı xəta baş verdi.');
             }
         }
+    };
+
+    const handleStartEditLicense = (driver: any) => {
+        setLicenseNumber(driver.licenseNumber || '');
+        setLicenseExpiryDate(() => {
+            if (!driver.licenseExpiryDate) return '';
+            const d = new Date(driver.licenseExpiryDate);
+            if (isNaN(d.getTime())) return '';
+            return d.toISOString().split('T')[0];
+        });
+        setSelectedCategories(driver.licenseCategories || []);
+        setLicenseUploads(
+            (driver.licenseImages || []).map((url: string) => ({
+                id: url,
+                file: null,
+                status: 'success',
+                url
+            }))
+        );
+        setIdCardUploads(
+            (driver.idCardImages || []).map((url: string) => ({
+                id: url,
+                file: null,
+                status: 'success',
+                url
+            }))
+        );
+        setIsEditingLicense(true);
+    };
+
+    const handleCategoryChange = (category: LicenseCategory) => {
+        setSelectedCategories(prev =>
+            prev.includes(category)
+                ? prev.filter(c => c !== category)
+                : [...prev, category]
+        );
+    };
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'license' | 'idCard') => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const files = Array.from(e.target.files);
+        const targetUploads = type === 'license' ? licenseUploads : idCardUploads;
+        const setTargetUploads = type === 'license' ? setLicenseUploads : setIdCardUploads;
+
+        if (targetUploads.length + files.length > 5) {
+            alert('Maksimum 5 şəkil yükləyə bilərsiniz.');
+            return;
+        }
+
+        const invalidSize = files.some(file => file.size > 5 * 1024 * 1024);
+        if (invalidSize) {
+            alert('Fayl ölçüsü maksimum 5MB ola bilər.');
+            return;
+        }
+
+        const allowedExtensions = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const invalidFormat = files.some(file => !allowedExtensions.includes(file.type));
+        if (invalidFormat) {
+            alert('Yalnız JPG, JPEG, PNG və WEBP formatları dəstəklənir.');
+            return;
+        }
+
+        const newItems: UploadItem[] = files.map(file => ({
+            id: Math.random().toString(36).substring(2, 9),
+            file,
+            status: 'uploading'
+        }));
+
+        setTargetUploads(prev => [...prev, ...newItems]);
+
+        await Promise.all(
+            newItems.map(async (item) => {
+                try {
+                    const urls = await uploadImagesAsync([item.file!]);
+                    if (urls && urls[0]) {
+                        setTargetUploads(prev =>
+                            prev.map(p => p.id === item.id ? { ...p, status: 'success', url: urls[0] } : p)
+                        );
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } catch (err) {
+                    setTargetUploads(prev =>
+                        prev.map(p => p.id === item.id ? { ...p, status: 'failed' } : p)
+                    );
+                }
+            })
+        );
+        e.target.value = '';
+    };
+
+    const handleRetryUpload = async (itemId: string, type: 'license' | 'idCard') => {
+        const targetUploads = type === 'license' ? licenseUploads : idCardUploads;
+        const setTargetUploads = type === 'license' ? setLicenseUploads : setIdCardUploads;
+        const item = targetUploads.find(i => i.id === itemId);
+        if (!item || !item.file) return;
+
+        setTargetUploads(prev =>
+            prev.map(p => p.id === itemId ? { ...p, status: 'uploading' } : p)
+        );
+
+        try {
+            const urls = await uploadImagesAsync([item.file]);
+            if (urls && urls[0]) {
+                setTargetUploads(prev =>
+                    prev.map(p => p.id === itemId ? { ...p, status: 'success', url: urls[0] } : p)
+                );
+            } else {
+                throw new Error('Upload failed');
+            }
+        } catch (err) {
+            setTargetUploads(prev =>
+                prev.map(p => p.id === itemId ? { ...p, status: 'failed' } : p)
+            );
+        }
+    };
+
+    const handleRemoveUpload = (itemId: string, type: 'license' | 'idCard') => {
+        const setTargetUploads = type === 'license' ? setLicenseUploads : setIdCardUploads;
+        setTargetUploads(prev => prev.filter(p => p.id !== itemId));
+    };
+
+    const handleSaveLicense = async (e: React.FormEvent, driverId: string) => {
+        e.preventDefault();
+
+        if (!licenseNumber.trim()) {
+            alert('Vəsiqə nömrəsi daxil edilməlidir.');
+            return;
+        }
+
+        if (!licenseExpiryDate) {
+            alert('Bitmə tarixi daxil edilməlidir.');
+            return;
+        }
+
+        const selectedDate = new Date(licenseExpiryDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+            alert('Bitmə tarixi keçmiş zaman ola bilməz.');
+            return;
+        }
+
+        if (selectedCategories.length === 0) {
+            alert('Ən azı 1 kateqoriya seçilməlidir.');
+            return;
+        }
+
+        const finalLicenseImages = licenseUploads.filter(i => i.status === 'success').map(i => i.url!);
+        const finalIdCardImages = idCardUploads.filter(i => i.status === 'success').map(i => i.url!);
+
+        if (finalLicenseImages.length === 0) {
+            alert('Ən azı 1 sürücülük vəsiqəsi şəkli yüklənməlidir.');
+            return;
+        }
+
+        const dateWithBuffer = new Date(licenseExpiryDate);
+        dateWithBuffer.setHours(23, 59, 59, 999);
+        const isoExpiryDate = dateWithBuffer.toISOString();
+
+        const payload: UpdateDriverLicenseRequest = {
+            licenseNumber: licenseNumber.trim(),
+            licenseExpiryDate: isoExpiryDate,
+            licenseCategories: selectedCategories,
+            licenseImages: finalLicenseImages,
+            idCardImages: finalIdCardImages
+        };
+
+        try {
+            const updatedRes = await updateLicenseAsync({
+                driverId,
+                data: payload
+            });
+            setSelectedDriverDetails(updatedRes.data);
+            setIsEditingLicense(false);
+        } catch (err: any) {
+            console.error(err);
+            alert('Xəta baş verdi: ' + (err.message || 'Naməlum xəta.'));
+        }
+    };
+
+    const handleOpenLightbox = (images: string[], index: number) => {
+        setLightboxImages(images);
+        setLightboxIndex(index);
+        setShowLightbox(true);
     };
 
     // Helper Badges
@@ -453,7 +669,7 @@ const TransportManagement: React.FC = () => {
                                                         <span className="text-slate-400 font-medium">{new Date(op.createdAt).toLocaleTimeString()}</span>
                                                     </div>
                                                     <div className="text-slate-700 font-bold mt-1">
-                                                        {op.pickupLocation} &rarr; {op.dropoffLocation}
+                                                        {formatLocation(op.pickupLocation)} &rarr; {formatLocation(op.dropoffLocation)}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
@@ -983,8 +1199,8 @@ const TransportManagement: React.FC = () => {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-slate-500 font-medium max-w-xs truncate">
-                                                <span className="text-indigo-600 font-bold block">A: {ride.pickupLocation}</span>
-                                                <span className="text-emerald-600 font-bold block mt-0.5">B: {ride.dropoffLocation}</span>
+                                                <span className="text-indigo-600 font-bold block">A: {formatLocation(ride.pickupLocation)}</span>
+                                                <span className="text-emerald-600 font-bold block mt-0.5">B: {formatLocation(ride.dropoffLocation)}</span>
                                             </td>
                                             <td className="px-6 py-4 font-bold text-slate-700">
                                                 {ride.price ? `${ride.price} AZN` : 'Hesablanır...'}
@@ -1050,8 +1266,8 @@ const TransportManagement: React.FC = () => {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-slate-500 font-medium max-w-xs truncate">
-                                                <span className="text-indigo-600 font-bold block">A: {shipment.pickupLocation}</span>
-                                                <span className="text-emerald-600 font-bold block mt-0.5">B: {shipment.dropoffLocation}</span>
+                                                <span className="text-indigo-600 font-bold block">A: {formatLocation(shipment.pickupLocation)}</span>
+                                                <span className="text-emerald-600 font-bold block mt-0.5">B: {formatLocation(shipment.dropoffLocation)}</span>
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-slate-700">
                                                 ⚖️ {shipment.weightKg} kg
@@ -1078,57 +1294,347 @@ const TransportManagement: React.FC = () => {
                 </Card>
             )}
 
-            {/* Read-Only Driver Details Modal */}
+            {/* Driver Details & Edit Modal in Admin */}
             {selectedDriverDetails && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-250">
-                    <div className="w-full max-w-md bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden animate-in scale-in duration-300">
+                    <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden animate-in scale-in duration-300 flex flex-col" style={{ maxHeight: '85vh' }}>
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <Users className="w-5 h-5 text-indigo-500" />
-                                Sürücü Profili Detalları
+                                {isEditingLicense ? 'Vəsiqə Məlumatlarını Yenilə' : 'Sürücü Profili Detalları'}
                             </h3>
-                            <button onClick={() => setSelectedDriverDetails(null)} className="p-1 text-slate-400 hover:text-slate-600">
-                                <Check className="w-5 h-5" />
+                            <button 
+                                onClick={() => { setSelectedDriverDetails(null); setIsEditingLicense(false); }} 
+                                className="p-1 text-slate-400 hover:text-slate-600"
+                            >
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4 text-xs">
-                            <div className="bg-slate-50 p-4 rounded-xl space-y-2.5 border border-slate-150">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase">Sürücü adı:</div>
-                                <div className="font-extrabold text-sm text-slate-800">{selectedDriverDetails.firstName} {selectedDriverDetails.lastName}</div>
-                                <div className="text-[10px] font-bold text-slate-400 uppercase mt-2">Əlaqə məlumatları:</div>
-                                <div className="font-bold text-slate-700">📞 {selectedDriverDetails.phone}</div>
-                            </div>
+                        
+                        <div className="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+                            {!isEditingLicense ? (
+                                <>
+                                    <div className="bg-slate-50 p-4 rounded-xl space-y-2.5 border border-slate-150 relative">
+                                        <button 
+                                            onClick={() => handleStartEditLicense(selectedDriverDetails)}
+                                            className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors"
+                                        >
+                                            <Edit2 size={11} /> Redaktə
+                                        </button>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase">Sürücü adı:</div>
+                                        <div className="font-extrabold text-sm text-slate-800">{selectedDriverDetails.firstName} {selectedDriverDetails.lastName}</div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase mt-2">Əlaqə məlumatları:</div>
+                                        <div className="font-bold text-slate-700">📞 {selectedDriverDetails.phone}</div>
+                                    </div>
 
-                            <div className="space-y-2">
-                                <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Təhlükəsizlik Lisenziyası</span>
-                                    <span className="font-mono text-slate-700 font-bold">{selectedDriverDetails.licenseNumber || 'Mövcud deyil'}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Reytinq xalı</span>
-                                    <span className="font-bold text-amber-500">⭐️ {selectedDriverDetails.rating ? selectedDriverDetails.rating.toFixed(1) : '5.0'} / 5.0</span>
-                                </div>
-                                <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Cəmi reys sayı</span>
-                                    <span className="font-extrabold text-slate-700">{selectedDriverDetails.totalRides || 0} reys</span>
-                                </div>
-                                <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Təsdiqlənmə Statusu</span>
-                                    <Badge variant={getDriverBadgeVariant(selectedDriverDetails.status)}>{selectedDriverDetails.status}</Badge>
-                                </div>
-                                <div className="flex justify-between pb-1">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Aid Olduğu Vendor</span>
-                                    <span className="font-extrabold text-indigo-600">🏢 {getDriverVendorName(selectedDriverDetails)}</span>
-                                </div>
-                            </div>
-                            <div className="pt-2">
-                                <Button type="button" variant="primary" onClick={() => setSelectedDriverDetails(null)} className="w-full">
-                                    Bağla
-                                </Button>
-                            </div>
+                                    <div className="space-y-2 border-b border-slate-100 pb-3">
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Təhlükəsizlik Lisenziyası</span>
+                                            <span className="font-mono text-indigo-600 font-bold">{selectedDriverDetails.licenseNumber || 'Mövcud deyil'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Bitmə Tarixi</span>
+                                            <span className="font-bold text-slate-700">
+                                                {selectedDriverDetails.licenseExpiryDate ? new Date(selectedDriverDetails.licenseExpiryDate).toLocaleDateString('az-AZ') : 'Mövcud deyil'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Kateqoriyalar</span>
+                                            <div className="flex flex-wrap gap-1">
+                                                {selectedDriverDetails.licenseCategories && selectedDriverDetails.licenseCategories.length > 0 ? (
+                                                    selectedDriverDetails.licenseCategories.map((cat: string) => (
+                                                        <span key={cat} className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-bold text-[9px] uppercase">
+                                                            {cat}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-slate-400">Mövcud deyil</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Reytinq xalı</span>
+                                            <span className="font-bold text-amber-500">⭐️ {selectedDriverDetails.rating ? selectedDriverDetails.rating.toFixed(1) : '5.0'} / 5.0</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Cəmi reys sayı</span>
+                                            <span className="font-extrabold text-slate-700">{selectedDriverDetails.totalRides || 0} reys</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Təsdiqlənmə Statusu</span>
+                                            <Badge variant={getDriverBadgeVariant(selectedDriverDetails.status)}>{selectedDriverDetails.status}</Badge>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-slate-400 font-bold uppercase text-[10px]">Aid Olduğu Vendor</span>
+                                            <span className="font-extrabold text-indigo-600">🏢 {getDriverVendorName(selectedDriverDetails)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Document Previews */}
+                                    <div className="space-y-3 pt-2">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Sürücülük Vəsiqəsi Şəkilləri:</div>
+                                            {selectedDriverDetails.licenseImages && selectedDriverDetails.licenseImages.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedDriverDetails.licenseImages.map((img: string, idx: number) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                                            onClick={() => handleOpenLightbox(selectedDriverDetails.licenseImages, idx)}
+                                                        >
+                                                            <img src={img} alt="License" className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-slate-400 italic">Yüklənmiş vəsiqə şəkli yoxdur.</div>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Şəxsiyyət Vəsiqəsi Şəkilləri:</div>
+                                            {selectedDriverDetails.idCardImages && selectedDriverDetails.idCardImages.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedDriverDetails.idCardImages.map((img: string, idx: number) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                                            onClick={() => handleOpenLightbox(selectedDriverDetails.idCardImages, idx)}
+                                                        >
+                                                            <img src={img} alt="ID Card" className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-slate-400 italic">Yüklənmiş şəxsiyyət vəsiqəsi şəkli yoxdur.</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 flex justify-end">
+                                        <Button type="button" variant="primary" onClick={() => setSelectedDriverDetails(null)} className="px-6">
+                                            Bağla
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <form onSubmit={(e) => handleSaveLicense(e, selectedDriverDetails.id)} className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Vəsiqə Nömrəsi (ŞN) *</label>
+                                        <input 
+                                            type="text"
+                                            value={licenseNumber}
+                                            onChange={(e) => setLicenseNumber(e.target.value)}
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500 outline-none"
+                                            placeholder="AZE1234567"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Bitmə Tarixi *</label>
+                                        <input 
+                                            type="date"
+                                            value={licenseExpiryDate}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => setLicenseExpiryDate(e.target.value)}
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500 outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase block">Kateqoriyalar *</label>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {LICENSE_CATEGORIES.map(cat => {
+                                                const isSelected = selectedCategories.includes(cat);
+                                                return (
+                                                    <button
+                                                        key={cat}
+                                                        type="button"
+                                                        onClick={() => handleCategoryChange(cat)}
+                                                        className={`px-3 py-1.5 rounded-lg border font-bold text-[10px] uppercase transition-all ${
+                                                            isSelected 
+                                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
+                                                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                        }`}
+                                                    >
+                                                        {cat}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* License Images Uploader */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase block">Sürücülük Vəsiqəsi Şəkilləri (Maks 5) *</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {licenseUploads.map(item => (
+                                                <div key={item.id} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 group">
+                                                    {item.status === 'success' && item.url && (
+                                                        <>
+                                                            <img src={item.url} alt="License" className="w-full h-full object-cover" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveUpload(item.id, 'license')}
+                                                                className="absolute inset-0 bg-black/60 hidden group-hover:flex items-center justify-center text-white"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {item.status === 'uploading' && (
+                                                        <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                                                            <Loader className="animate-spin text-indigo-500" size={16} />
+                                                        </div>
+                                                    )}
+                                                    {item.status === 'failed' && (
+                                                        <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center p-1 text-center">
+                                                            <AlertTriangle className="text-red-500 mb-0.5" size={12} />
+                                                            <div className="flex gap-1">
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => handleRetryUpload(item.id, 'license')}
+                                                                    className="text-[8px] font-bold text-indigo-600"
+                                                                >
+                                                                    <RotateCcw size={8} />
+                                                                </button>
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => handleRemoveUpload(item.id, 'license')}
+                                                                    className="text-[8px] font-bold text-red-600"
+                                                                >
+                                                                    <X size={8} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            {licenseUploads.length < 5 && (
+                                                <label className="w-16 h-16 flex flex-col items-center justify-center border border-dashed border-slate-200 hover:border-indigo-400 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors text-slate-400">
+                                                    <UploadCloud size={16} />
+                                                    <span className="text-[8px] mt-1 font-semibold">Yüklə</span>
+                                                    <input 
+                                                        type="file" 
+                                                        multiple 
+                                                        accept="image/*" 
+                                                        onChange={(e) => handleFileSelect(e, 'license')} 
+                                                        className="hidden" 
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* ID Card Images Uploader */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase block">Şəxsiyyət Vəsiqəsi Şəkilləri (Maks 5, Könüllü)</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {idCardUploads.map(item => (
+                                                <div key={item.id} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 group">
+                                                    {item.status === 'success' && item.url && (
+                                                        <>
+                                                            <img src={item.url} alt="ID Card" className="w-full h-full object-cover" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveUpload(item.id, 'idCard')}
+                                                                className="absolute inset-0 bg-black/60 hidden group-hover:flex items-center justify-center text-white"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {item.status === 'uploading' && (
+                                                        <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                                                            <Loader className="animate-spin text-indigo-500" size={16} />
+                                                        </div>
+                                                    )}
+                                                    {item.status === 'failed' && (
+                                                        <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center p-1 text-center">
+                                                            <AlertTriangle className="text-red-500 mb-0.5" size={12} />
+                                                            <div className="flex gap-1">
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => handleRetryUpload(item.id, 'idCard')}
+                                                                    className="text-[8px] font-bold text-indigo-600"
+                                                                >
+                                                                    <RotateCcw size={8} />
+                                                                </button>
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => handleRemoveUpload(item.id, 'idCard')}
+                                                                    className="text-[8px] font-bold text-red-600"
+                                                                >
+                                                                    <X size={8} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            {idCardUploads.length < 5 && (
+                                                <label className="w-16 h-16 flex flex-col items-center justify-center border border-dashed border-slate-200 hover:border-indigo-400 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors text-slate-400">
+                                                    <UploadCloud size={16} />
+                                                    <span className="text-[8px] mt-1 font-semibold">Yüklə</span>
+                                                    <input 
+                                                        type="file" 
+                                                        multiple 
+                                                        accept="image/*" 
+                                                        onChange={(e) => handleFileSelect(e, 'idCard')} 
+                                                        className="hidden" 
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsEditingLicense(false)}
+                                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-50 transition-colors text-[11px]"
+                                            disabled={isSavingLicense}
+                                        >
+                                            Ləğv Et
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors text-[11px] flex items-center gap-1.5"
+                                            disabled={isSavingLicense || [...licenseUploads, ...idCardUploads].some(i => i.status === 'uploading')}
+                                        >
+                                            {isSavingLicense ? (
+                                                <>
+                                                    <Loader className="animate-spin" size={13} />
+                                                    <span>Yadda Saxlanılır...</span>
+                                                </>
+                                            ) : [...licenseUploads, ...idCardUploads].some(i => i.status === 'uploading') ? (
+                                                <>
+                                                    <Loader className="animate-spin" size={13} />
+                                                    <span>Şəkillər Yüklənir...</span>
+                                                </>
+                                            ) : (
+                                                <span>Yadda Saxla</span>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Custom Lightbox */}
+            {showLightbox && (
+                <Lightbox 
+                    images={lightboxImages} 
+                    currentIndex={lightboxIndex} 
+                    onClose={() => setShowLightbox(false)} 
+                />
             )}
         </div>
     );

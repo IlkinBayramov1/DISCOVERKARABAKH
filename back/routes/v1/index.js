@@ -15,6 +15,7 @@ import bookingRoutes from '../../modules/booking/booking.routes.js';
 import reviewRoutes from '../../modules/interactions/review/review.routes.js';
 import uploadRoutes from '../../modules/shared/upload/upload.routes.js';
 import paymentRoutes from '../../modules/payments/payment.routes.js';
+import notificationRoutes from '../../modules/shared/notification/notification.routes.js';
 
 const router = Router();
 
@@ -37,6 +38,7 @@ router.use('/utility', utilityRoutes);
 router.use('/bookings', bookingRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/notifications', notificationRoutes);
 
 // Transport Routes
 import transportRoutes from '../../modules/transport/transport.routes.js';

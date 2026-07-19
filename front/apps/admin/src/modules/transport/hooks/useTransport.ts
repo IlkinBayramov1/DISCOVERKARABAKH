@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import transportAdminApi from '../api/transport.admin.api';
-import type { Vehicle, RidePricingRule, CargoVehicle } from '../types';
+import type { Vehicle, RidePricingRule, CargoVehicle, UpdateDriverLicenseRequest } from '../types';
 
 // 1. Drivers Hooks
 export const useDrivers = () => {
@@ -45,6 +45,23 @@ export const useAssignDriverVehicle = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'transport', 'drivers'] });
         }
+    });
+};
+
+export const useUpdateDriverLicense = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ driverId, data }: { driverId: string; data: UpdateDriverLicenseRequest }) =>
+            transportAdminApi.updateDriverLicense(driverId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'transport', 'drivers'] });
+        }
+    });
+};
+
+export const useUploadImages = () => {
+    return useMutation({
+        mutationFn: (files: File[]) => transportAdminApi.uploadImages(files)
     });
 };
 

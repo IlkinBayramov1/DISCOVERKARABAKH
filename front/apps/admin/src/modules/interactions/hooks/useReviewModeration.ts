@@ -40,3 +40,29 @@ export const useReviewActions = () => {
         isDeleting: deleteMutation.isPending
     };
 };
+
+/** Bütün şikayətləri (filtrli) gətirən hook */
+export const useReports = (params?: any) => {
+    return useQuery({
+        queryKey: ['admin', 'reports', params],
+        queryFn: () => reviewAdminApi.getReports(params)
+    });
+};
+
+/** Şikayət əməliyyatları üçün hook */
+export const useReportActions = () => {
+    const queryClient = useQueryClient();
+
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ reportId, status }: { reportId: string, status: string }) => 
+            reviewAdminApi.updateReportStatus(reportId, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+        }
+    });
+
+    return {
+        updateReportStatus: updateStatusMutation.mutateAsync,
+        isUpdatingStatus: updateStatusMutation.isPending
+    };
+};

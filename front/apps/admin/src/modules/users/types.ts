@@ -26,8 +26,12 @@ export interface InvestorProfile {
     companyName?: string;
 }
 
+import type { LicenseCategory } from '@dk/ui';
+
 export interface DriverProfile {
     licenseNumber: string;
+    licenseExpiryDate?: string;
+    licenseCategories?: LicenseCategory[];
     licenseImages?: string[];
     idCardImages?: string[];
     rating?: number;

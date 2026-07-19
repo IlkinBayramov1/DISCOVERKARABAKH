@@ -1,5 +1,5 @@
 import { httpClient } from '../../../shared/api/httpClient';
-import type { IVehicle, ICargoVehicle, IDriverProfile, IPricingRule, IRide, IShipment, ITransportLocation } from '../types';
+import type { IVehicle, ICargoVehicle, IDriverProfile, IPricingRule, IRide, IShipment, ITransportLocation, UpdateDriverLicenseRequest } from '../types';
 
 interface IApiResponse<T> {
     success: boolean;
@@ -25,6 +25,7 @@ export const transportVendorApi = {
     createDriver: (data: any) => httpClient<IDriverProfile>('/transport/drivers/create', { method: 'POST', body: JSON.stringify(data) }),
     approveDriver: (id: string, status: string) => httpClient<IDriverProfile>(`/transport/drivers/${id}/approve`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     assignDriverVehicle: (id: string, vehicleId?: string, cargoVehicleId?: string) => httpClient<IDriverProfile>(`/transport/drivers/${id}/assign`, { method: 'PATCH', body: JSON.stringify({ vehicleId, cargoVehicleId }) }),
+    updateDriverLicense: (id: string, data: UpdateDriverLicenseRequest) => httpClient<IApiResponse<IDriverProfile>>(`/transport/drivers/${id}/license`, { method: 'PUT', body: JSON.stringify(data) }),
 
     // Pricing Rules
     getPricingRules: () => httpClient<IApiResponse<IPricingRule[]>>('/transport/pricing'),

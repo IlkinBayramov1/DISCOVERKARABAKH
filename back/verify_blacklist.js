@@ -1,5 +1,6 @@
 import { fraudDetectionService } from './modules/businesses/hotel/fraud/fraud.service.js';
 import prisma from './config/db.js';
+import crypto from 'crypto';
 
 async function verifyBlacklist() {
     try {
@@ -10,12 +11,14 @@ async function verifyBlacklist() {
         console.log("Creating test user...");
         const user = await prisma.user.upsert({
             where: { email: testEmail },
-            update: { phone: testPhone },
+            update: { phone: testPhone, updatedAt: new Date() },
             create: {
+                id: crypto.randomUUID(),
                 email: testEmail,
                 password: "hashed_password",
                 phone: testPhone,
-                role: "user"
+                role: "user",
+                updatedAt: new Date()
             }
         });
 
@@ -25,6 +28,7 @@ async function verifyBlacklist() {
             where: { value: testEmail },
             update: { reason: "Chargeback fraud" },
             create: {
+                id: crypto.randomUUID(),
                 type: "email",
                 value: testEmail,
                 reason: "Chargeback fraud"

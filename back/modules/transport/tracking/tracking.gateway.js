@@ -33,6 +33,10 @@ export const initSocket = (server) => {
     io.on('connection', (socket) => {
         console.log(`✅ User connected: ${socket.user.id} (${socket.user.role})`);
 
+        // Join personal notification room
+        socket.join(`user_${socket.user.id}`);
+        console.log(`📡 User ${socket.user.id} joined personal notification room`);
+
         if (socket.user.role === 'driver') {
             socket.join(`driver_${socket.user.id}`);
             console.log(`📡 Driver ${socket.user.id} joined personal receive channel`);

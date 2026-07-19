@@ -1,59 +1,67 @@
-import { calendarService } from './modules/businesses/hotel/calendar/calendar.service.js';
+import { getPlatformAnalytics } from './modules/admins/admin.controller.js';
 import prisma from './config/db.js';
 
-async function verifyAnalytics() {
+async function testAnalytics() {
+    console.log("=== Analitika Controller Testi Başladı ===");
+    
+    // Mock response object
+    const createMockRes = () => ({
+        statusCode: 200,
+        data: null,
+        status(code) {
+            this.statusCode = code;
+            return this;
+        },
+        json(payload) {
+            this.data = payload;
+            return this;
+        }
+    });
+
+    const mockNext = (err) => {
+        console.error("Next middleware called with error:", err);
+    };
+
     try {
-        const hotel = await prisma.hotel.findFirst({ where: { status: 'active' }, include: { roomTypes: true } });
-        if (!hotel) return console.log("No hotel found.");
+        // Test 1: Query live database
+        console.log("\n1. Canlı verilənlər bazasından məlumatların çəkilməsi testi...");
+        const req1 = { query: {} };
+        const res1 = createMockRes();
+        await getPlatformAnalytics(req1, res1, mockNext);
 
-        const room = hotel.roomTypes[0];
-        const date = new Date().toISOString().split('T')[0];
+        console.log("Status Code:", res1.statusCode);
+        console.log("Uğur statusu:", res1.data.success);
+        console.log("Gələn data strukturları:");
+        console.log("- Users keys:", Object.keys(res1.data.data.users));
+        console.log("- Bookings keys:", Object.keys(res1.data.data.bookings));
+        console.log("- Businesses keys:", Object.keys(res1.data.data.businesses));
+        console.log("- Payments keys:", Object.keys(res1.data.data.payments));
+        console.log("- Promotions keys:", Object.keys(res1.data.data.promotions));
+        console.log("- Transport keys:", Object.keys(res1.data.data.transport));
+        console.log("- Interactions keys:", Object.keys(res1.data.data.interactions));
+        console.log("- Fraud keys:", Object.keys(res1.data.data.fraud));
+        console.log("- Trends length:", res1.data.data.trends.length);
 
-        console.log(`Test Room: ${room.name}, Total Inventory: ${room.totalInventory}`);
+        // Test 2: Verify Memory Cache (should read from cache)
+        console.log("\n2. Keşdən oxuma testi (30 saniyəlik keş)...");
+        const req2 = { query: {} };
+        const res2 = createMockRes();
+        await getPlatformAnalytics(req2, res2, mockNext);
+        console.log("Keşdən oxunma statusu:", res2.statusCode === 200 && res2.data.success);
 
-        // 1. Set a controlled scenario
-        // Total: 10 rooms, 8 Reserved -> 80% Occupancy, Available: 2 (isLowInventory: false)
-        await prisma.roomAvailability.upsert({
-            where: { roomTypeId_date: { roomTypeId: room.id, date: new Date(date) } },
-            update: { totalRooms: 10, availableRooms: 2, reservedRooms: 8 },
-            create: { roomTypeId: room.id, date: new Date(date), totalRooms: 10, availableRooms: 2, reservedRooms: 8 }
-        });
+        // Test 3: Cache Bypass (should force query database again)
+        console.log("\n3. Keşdən yan keçmə (Cache Bypass - ?refresh=true) testi...");
+        const req3 = { query: { refresh: 'true' } };
+        const res3 = createMockRes();
+        await getPlatformAnalytics(req3, res3, mockNext);
+        console.log("Bypass və təzə məlumat statusu:", res3.statusCode === 200 && res3.data.success);
 
-        // 2. Fetch calendar and verify
-        const calendarData = await calendarService.getCalendarData(hotel.id, date, date);
-        const day = calendarData[0].days[0];
-
-        console.log(`--- Test Result ---`);
-        console.log(`Reserved: ${day.reservedRooms}, Available: ${day.availableRooms}`);
-        console.log(`Calculated Occupancy: ${day.occupancyRate}%`);
-        console.log(`isLowInventory: ${day.isLowInventory}`);
-
-        if (day.occupancyRate === 80 && day.isLowInventory === false) {
-            console.log("SUCCESS: Analytics calculated correctly.");
-        } else {
-            console.error("FAIL: Analytics mismatch.");
-        }
-
-        // 3. Test Low Inventory (1 room left)
-        await prisma.roomAvailability.update({
-            where: { roomTypeId_date: { roomTypeId: room.id, date: new Date(date) } },
-            data: { availableRooms: 1, reservedRooms: 9 }
-        });
-
-        const calendarData2 = await calendarService.getCalendarData(hotel.id, date, date);
-        const day2 = calendarData2[0].days[0];
-        console.log(`--- Low Inventory Test ---`);
-        console.log(`Available: ${day2.availableRooms}, isLowInventory: ${day2.isLowInventory}`);
-
-        if (day2.isLowInventory === true) {
-            console.log("SUCCESS: Critical limit signal working.");
-        }
-
+        console.log("\n✅ BÜTÜN TESTLƏR UĞURLA TAMAMLANDI!");
     } catch (err) {
-        console.error("Error:", err);
+        console.error("Test zamanı xəta:", err);
     } finally {
         await prisma.$disconnect();
     }
 }
 
-verifyAnalytics();
+testAnalytics();

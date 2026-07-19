@@ -5,17 +5,28 @@ export interface AdminReview {
     rating: number;
     comment: string;
     status: ReviewStatus;
-    user: {
-        id: string;
-        email: string;
-        fullName?: string;
-    };
-    target: {
-        id: string;
-        name: string;
-        type: 'hotel' | 'restaurant' | 'tour';
-    };
     createdAt: string;
+    userEmail: string;
+    businessName: string;
+    businessType: string;
+}
+
+export interface AdminReport {
+    id: string;
+    reviewId: string;
+    reviewType: string;
+    reason: string;
+    customNote?: string;
+    status: 'pending' | 'resolved' | 'dismissed';
+    createdAt: string;
+    reporterEmail: string;
+    reviewDetail: {
+        userEmail: string;
+        comment: string;
+        rating: number;
+        businessName: string;
+        businessType: string;
+    };
 }
 
 export interface AdminReviewsResponse {

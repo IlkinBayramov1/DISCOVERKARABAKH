@@ -1,5 +1,5 @@
 import api from '../../../lib/axios';
-import type { DriverProfile, Vehicle, RidePricingRule, Ride, CargoVehicle, Shipment } from '../types';
+import type { DriverProfile, Vehicle, RidePricingRule, Ride, CargoVehicle, Shipment, UpdateDriverLicenseRequest } from '../types';
 
 export const transportAdminApi = {
     // 1. Drivers
@@ -26,6 +26,24 @@ export const transportAdminApi = {
     assignDriverVehicle: async (driverId: string, data: { vehicleId?: string | null; cargoVehicleId?: string | null }): Promise<{ success: boolean; data: DriverProfile }> => {
         const response = await api.patch(`/transport/drivers/${driverId}/assign`, data);
         return response.data;
+    },
+
+    updateDriverLicense: async (driverId: string, data: UpdateDriverLicenseRequest): Promise<{ success: boolean; data: DriverProfile }> => {
+        const response = await api.put(`/transport/drivers/${driverId}/license`, data);
+        return response.data;
+    },
+
+    uploadImages: async (files: File[]): Promise<string[]> => {
+        const formData = new FormData();
+        files.forEach(file => {
+            formData.append('images', file);
+        });
+        const response = await api.post('/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data.urls;
     },
 
     // 2. Vehicles (Passenger)

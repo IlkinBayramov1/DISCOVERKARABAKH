@@ -1,6 +1,7 @@
 import prisma from '../../../../config/db.js';
 import { successResponse } from '../../../../core/api.response.js';
 import { ApiError } from '../../../../core/api.error.js';
+import { fraudDetectionService } from './fraud.service.js';
 
 class BlacklistController {
     /**
@@ -57,24 +58,17 @@ class BlacklistController {
         }
     }
 
-    /**
-     * Get history of fraud risk evaluations
-     */
     async getRiskLogs(req, res, next) {
         try {
-            const logs = await prisma.bookingAuditLog.findMany({
+            const logs = await prisma.bookingauditlog.findMany({
                 where: { action: 'risk_evaluation' },
                 orderBy: { createdAt: 'desc' },
                 take: 100 // Last 100 entries
             });
 
-            // Parse details if they are stored as JSON stirngs
-            const parsedLogs = logs.map(log => ({
-                ...log,
-                details: typeof log.details === 'string' ? JSON.parse(log.details) : log.details
-            }));
+            const formattedLogs = logs.map(log => fraudDetectionService.formatRiskLog(log));
 
-            return successResponse(res, parsedLogs);
+            return successResponse(res, formattedLogs);
         } catch (error) {
             next(error);
         }
