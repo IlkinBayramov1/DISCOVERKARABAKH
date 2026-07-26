@@ -3,8 +3,22 @@ import cors from 'cors';
 import routes from './routes/index.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import fs from 'fs';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
+import * as Sentry from '@sentry/node';
+import env from './config/env.js';
 
 const app = express();
+
+// Initialize Sentry if configured
+if (env.sentryDsn) {
+    Sentry.init({
+        dsn: env.sentryDsn,
+        environment: env.nodeEnv,
+        tracesSampleRate: 1.0
+    });
+    console.log('🛡️ Sentry monitoring initialized successfully.');
+}
 
 // Helper to split comma-separated env vars, or fallback to localhost
 const getOrigins = (envVar, fallback) => {
@@ -21,16 +35,12 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
-        // Check strict list first
         if (allowedOrigins.indexOf(origin) !== -1) {
             return callback(null, true);
         }
 
-        // DEVELOPMENT MODE HELPER: 
-        // Bütün localhost və 127.0.0.1 portlarına avtomatik icazə veririk
         if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
             return callback(null, true);
         }
@@ -41,6 +51,64 @@ app.use(cors({
     },
     credentials: true
 }));
+
+// Apply Helmet Security Headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            imgSrc: ["'self'", "data:", "blob:", "*"], // Allow images from any source (for R2)
+            connectSrc: ["'self'", "*"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'", "*"],
+            frameSrc: ["'self'", "https://challenges.cloudflare.com"]
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false
+}));
+
+// Granular Rate Limiters
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 mins
+    max: 300,
+    message: {
+        success: false,
+        message: 'Həddindən artıq sorğu göndərilib. Zəhmət olmasa 15 dəqiqə sonra yenidən cəhd edin.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        message: 'Həddindən artıq cəhd edilib. Zəhmət olmasa 15 dəqiqə sonra yenidən cəhd edin.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const uploadLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 mins
+    max: 20,
+    message: {
+        success: false,
+        message: 'Qısa müddətdə çox sayda fayl yükləndi. Zəhmət olmasa 10 dəqiqə sonra yenidən cəhd edin.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Bind rate limiters to matching routes
+app.use('/api', generalLimiter);
+app.use('/api/v1/auth', authLimiter);
+app.use('/api/v1/upload', uploadLimiter);
 
 // Body parser
 app.use(express.json());

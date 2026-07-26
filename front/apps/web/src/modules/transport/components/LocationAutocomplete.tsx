@@ -23,19 +23,15 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     const [loading, setLoading] = useState(false);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const popularCacheRef = useRef<any[] | null>(null);
 
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (query && isOpen) {
-                // Ensure we only search if they've typed at least 2 chars
-                if (query.length >= 2) {
-                    searchLocations(query);
-                }
-            } else if (!query) {
-                setResults([]);
+            if (isOpen) {
+                searchLocations(query);
             }
-        }, 400); // 400ms debounce
+        }, 250); // 250ms debounce
 
         return () => clearTimeout(timer);
     }, [query, isOpen]);
@@ -52,18 +48,30 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }, [wrapperRef]);
 
     const searchLocations = async (searchTerm: string) => {
+        const isSearchTermEmpty = !searchTerm || !searchTerm.trim();
+
+        // Use cache if it's an empty query and cache exists
+        if (isSearchTermEmpty && popularCacheRef.current !== null) {
+            setResults(popularCacheRef.current);
+            return;
+        }
+
         setLoading(true);
         try {
-            // Adjust to the actual route we defined: /transport/passenger/location/search?q=...
             const res = await httpClient.get<any>(`/transport/passenger/location/search?q=${encodeURIComponent(searchTerm)}`);
-            // Normally httpClient returns { data } from Axios, but depending on interceptor it could be { success, data }
             const responseData = res.data;
+            let finalResults: any[] = [];
             if (responseData && responseData.success && Array.isArray(responseData.data)) {
-                setResults(responseData.data);
+                finalResults = responseData.data;
             } else if (Array.isArray(responseData)) {
-                setResults(responseData);
-            } else {
-                setResults([]);
+                finalResults = responseData;
+            }
+
+            setResults(finalResults);
+
+            // Store in cache if query is empty (representing default popular locations)
+            if (isSearchTermEmpty) {
+                popularCacheRef.current = finalResults;
             }
         } catch (error) {
             console.error("Failed to search locations", error);
@@ -82,6 +90,9 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         });
         setIsOpen(false);
 
+        // Invalidate cache since selection increments popularity
+        popularCacheRef.current = null;
+
         // Optional: Fire background request to increment popularity
         try {
             httpClient.post(`/transport/passenger/location/${loc._id || loc.id}/select`, {});
@@ -89,17 +100,13 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setQuery(e.target.value);
+        const val = e.target.value;
+        setQuery(val);
         setIsOpen(true);
-        // Also update parent with plain text just in case they don't select an autocomplete suggestion
         onChange({
             ...value,
-            address: e.target.value
+            address: val
         });
-
-        if (!e.target.value) {
-            setResults([]);
-        }
     };
 
     return (
@@ -112,22 +119,32 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                 onChange={handleChange}
                 onFocus={() => {
                     setIsOpen(true);
-                    if (query.length >= 2) searchLocations(query);
+                    searchLocations(query);
                 }}
             />
             {loading && <div className="autocomplete-spinner"></div>}
 
-            {isOpen && results.length > 0 && (
+            {isOpen && (
                 <ul className="autocomplete-dropdown">
-                    {results.map((loc) => (
-                        <li key={loc._id || loc.id} onClick={() => handleSelect(loc)}>
-                            <MapPin size={16} className="text-muted mr-2" />
-                            <div className="autocomplete-text">
-                                <strong>{loc.name}</strong>
-                                <span className="text-sm text-muted block">{loc.address}</span>
-                            </div>
-                        </li>
-                    ))}
+                    {results.length > 0 ? (
+                        results.map((loc) => (
+                            <li key={loc._id || loc.id} onClick={() => handleSelect(loc)}>
+                                <div className="autocomplete-icon-container">
+                                    <MapPin size={16} />
+                                </div>
+                                <div className="autocomplete-text">
+                                    <strong>{loc.name}</strong>
+                                    <span className="text-sm text-muted block">{loc.address}</span>
+                                </div>
+                            </li>
+                        ))
+                    ) : (
+                        query.trim().length > 0 && !loading && (
+                            <li className="autocomplete-no-results">
+                                No locations found
+                            </li>
+                        )
+                    )}
                 </ul>
             )}
         </div>

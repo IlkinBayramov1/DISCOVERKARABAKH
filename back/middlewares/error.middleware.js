@@ -1,5 +1,6 @@
 import { ApiError } from '../core/api.error.js';
 import { env } from '../config/index.js';
+import * as Sentry from '@sentry/node';
 
 export const errorMiddleware = (err, req, res, next) => {
   let error = { ...err };
@@ -11,6 +12,16 @@ export const errorMiddleware = (err, req, res, next) => {
   // Log error for dev
   if (statusCode >= 500) {
     console.error(err);
+    if (env.sentryDsn) {
+      Sentry.captureException(err, {
+        extra: {
+          url: req.originalUrl,
+          method: req.method,
+          body: req.body,
+          user: req.user ? { id: req.user.id, role: req.user.role } : null
+        }
+      });
+    }
   } else {
     console.warn(`[Client Error - ${statusCode}]: ${err.message}`);
   }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckCircle2, Download, X } from 'lucide-react';
 import '../pages/Utility.css';
 

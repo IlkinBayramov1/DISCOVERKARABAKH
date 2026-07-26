@@ -5,6 +5,8 @@ import { ApiError } from '../../core/api.error.js';
 import prisma from '../../config/db.js'; // Direct prisma access for transactions
 import crypto from 'crypto';
 
+import redisClient from '../../cache/redis.client.js';
+
 const ROLE_PERMISSIONS = {
   tourist: [
     'passenger_only',
@@ -114,6 +116,16 @@ class AuthService {
       throw ApiError.badRequest('Please provide email and password');
     }
 
+    const emailKey = email.toLowerCase().trim();
+
+    // 1. Check if user is locked out in Redis
+    if (redisClient.isReady()) {
+      const isLocked = await redisClient.get(`lockout:${emailKey}`);
+      if (isLocked) {
+        throw ApiError.forbidden('Hesabınız çoxlu sayda yanlış şifrə cəhdi səbəbindən 15 dəqiqəlik kilidlənib.');
+      }
+    }
+
     const user = await userRepository.findByEmail(email);
     if (!user) {
       throw ApiError.unauthorized('Invalid credentials');
@@ -121,7 +133,29 @@ class AuthService {
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
+      // Increment failed attempts in Redis
+      if (redisClient.isReady()) {
+        const attemptsKey = `attempts:${emailKey}`;
+        const attemptsVal = await redisClient.get(attemptsKey);
+        const attempts = attemptsVal ? parseInt(attemptsVal) + 1 : 1;
+        
+        if (attempts >= 5) {
+          // Lock out user for 15 minutes (900 seconds)
+          await redisClient.setEx(`lockout:${emailKey}`, 900, 'locked');
+          await redisClient.del(attemptsKey);
+          throw ApiError.forbidden('Hesabınız 5 dəfə yanlış şifrə daxil edildiyi üçün 15 dəqiqəlik kilidləndi.');
+        } else {
+          // Store attempts with 15 minutes expiry
+          await redisClient.setEx(attemptsKey, 900, attempts.toString());
+        }
+      }
       throw ApiError.unauthorized('Invalid credentials');
+    }
+
+    // Clear failed attempts on successful login
+    if (redisClient.isReady()) {
+      await redisClient.del(`attempts:${emailKey}`);
+      await redisClient.del(`lockout:${emailKey}`);
     }
 
     // Check Status

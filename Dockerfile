@@ -21,6 +21,7 @@ WORKDIR /app
 COPY back ./back
 WORKDIR /app/back
 RUN npm install
+RUN chmod +x start.sh
 
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /app/front/dist /app/front/dist
@@ -28,6 +29,9 @@ COPY --from=frontend-builder /app/front/dist /app/front/dist
 # Expose port (default Express port)
 EXPOSE 4000
 
-# Start command
-# Adjust if your backend port is different
-CMD ["npm", "start"]
+# Health check using wget (pre-installed in Alpine node images)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
+
+# Start command running migrations first
+CMD ["./start.sh"]

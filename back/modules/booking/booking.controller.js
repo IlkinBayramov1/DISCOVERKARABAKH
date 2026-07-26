@@ -10,8 +10,11 @@ class BookingController {
             }
 
             const { type, entityId, ...data } = req.body;
-            // e.g. body: { entityId: 'uuid', type: 'hotel', items: [...], guests: [...], ... }
-            const booking = await bookingService.createBooking(req.user.id, type, entityId, data);
+            const contextInfo = {
+                ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                userAgent: req.headers['user-agent']
+            };
+            const booking = await bookingService.createBooking(req.user.id, type, entityId, data, contextInfo);
             return successResponse(res, booking, { message: 'Booking initialized successfully' }, 201);
         } catch (error) {
             next(error);
@@ -58,7 +61,6 @@ class BookingController {
 
     async getVendorDashboard(req, res, next) {
         try {
-            // Admin can bypass, but currently restricted strictly to Vendor mapping
             const bookings = await bookingService.getVendorBookings(req.user.id);
             return successResponse(res, bookings, { count: bookings.length });
         } catch (error) {
@@ -70,8 +72,12 @@ class BookingController {
         try {
             const { id } = req.params;
             const { action } = req.body; // 'approve', 'reject'
+            const contextInfo = {
+                ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                userAgent: req.headers['user-agent']
+            };
 
-            const updated = await bookingService.updateVendorBookingStatus(id, req.user.id, action);
+            const updated = await bookingService.updateVendorBookingStatus(id, req.user.id, action, contextInfo);
             return successResponse(res, updated, { message: `Booking successfully ${action}ed` });
         } catch (error) {
             next(error);
@@ -80,7 +86,11 @@ class BookingController {
 
     async cancel(req, res, next) {
         try {
-            const updated = await bookingService.cancelBooking(req.params.id, req.user.id);
+            const contextInfo = {
+                ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                userAgent: req.headers['user-agent']
+            };
+            const updated = await bookingService.cancelBooking(req.params.id, req.user.id, contextInfo);
             return successResponse(res, updated, { message: 'Booking cancelled successfully' });
         } catch (error) {
             next(error);
