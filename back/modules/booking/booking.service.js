@@ -75,7 +75,7 @@ class BookingService {
         return 'BKG-' + crypto.randomBytes(3).toString('hex').toUpperCase();
     }
 
-    async createBooking(userId, type, entityId, data) {
+    async createBooking(userId, type, entityId, data, contextInfo = {}) {
         const strategy = bookingStrategyRegistry.getStrategy(type);
         if (!strategy) throw ApiError.badRequest(`Unsupported booking type: ${type}`);
 
@@ -173,7 +173,19 @@ class BookingService {
                         create: [{
                             id: crypto.randomUUID(),
                             action: 'created',
-                            meta: JSON.stringify({ source: 'api', message: 'Booking Confirmed (Payment Deducted from Wallet)' })
+                            meta: JSON.stringify({
+                                source: 'api',
+                                message: 'Booking Confirmed (Payment Deducted from Wallet)',
+                                ip: contextInfo.ip || null,
+                                userAgent: contextInfo.userAgent || null,
+                                before: null,
+                                after: {
+                                    status: 'confirmed',
+                                    paymentStatus: 'captured',
+                                    totalPrice,
+                                    currency: data.currency || 'AZN'
+                                }
+                            })
                         }]
                     }
                 },
@@ -317,7 +329,7 @@ class BookingService {
         return bookings.map(b => this._mapBooking(b));
     }
 
-    async updateVendorBookingStatus(bookingId, vendorId, action) {
+    async updateVendorBookingStatus(bookingId, vendorId, action, contextInfo = {}) {
         const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
         if (!booking) throw ApiError.notFound('Booking not found');
         if (booking.vendorId !== vendorId) throw ApiError.forbidden('You are not authorized to update this booking.');
@@ -343,7 +355,15 @@ class BookingService {
                     id: crypto.randomUUID(),
                     bookingId,
                     action: action === 'approve' ? 'vendor_approved' : 'vendor_rejected',
-                    meta: JSON.stringify({ initator: 'vendor', vendorId, timestamp: new Date() })
+                    meta: JSON.stringify({
+                        initiator: 'vendor',
+                        vendorId,
+                        timestamp: new Date(),
+                        ip: contextInfo.ip || null,
+                        userAgent: contextInfo.userAgent || null,
+                        before: { status: booking.status },
+                        after: { status: newStatus }
+                    })
                 }
             });
 
@@ -357,7 +377,7 @@ class BookingService {
         return updatedBooking;
     }
 
-    async cancelBooking(bookingId, userId) {
+    async cancelBooking(bookingId, userId, contextInfo = {}) {
         const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
         if (!booking) throw ApiError.notFound('Booking not found');
         if (booking.userId !== userId) throw ApiError.forbidden('Not authorized to cancel this booking');
@@ -378,7 +398,14 @@ class BookingService {
                     id: crypto.randomUUID(),
                     bookingId,
                     action: 'cancelled',
-                    meta: JSON.stringify({ initator: 'user', timestamp: new Date() })
+                    meta: JSON.stringify({
+                        initiator: 'user',
+                        timestamp: new Date(),
+                        ip: contextInfo.ip || null,
+                        userAgent: contextInfo.userAgent || null,
+                        before: { status: booking.status },
+                        after: { status: 'cancelled' }
+                    })
                 }
             });
 

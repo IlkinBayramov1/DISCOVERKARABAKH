@@ -4,10 +4,8 @@ import prisma from '../../../../config/db.js';
 
 class LocationService {
     async search(query) {
-        if (!query || query.trim().length === 0) {
-            return [];
-        }
-        const results = await locationRepository.searchLocations(query.trim());
+        const trimmedQuery = query ? query.trim() : "";
+        const results = await locationRepository.searchLocations(trimmedQuery, 4);
         return results.map(this._mapToFrontend);
     }
 

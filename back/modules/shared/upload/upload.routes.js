@@ -9,5 +9,6 @@ const router = Router();
 // We use 'images' as the form-data key
 router.post('/', authMiddleware, upload.array('images', 10), uploadController.uploadImages);
 router.post('/single', authMiddleware, upload.single('image'), uploadController.uploadSingle);
+router.get('/secure-url', authMiddleware, uploadController.getSecureUrl);
 
 export default router;

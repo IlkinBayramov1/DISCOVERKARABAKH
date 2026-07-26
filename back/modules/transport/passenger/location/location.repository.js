@@ -1,14 +1,20 @@
 import prisma from '../../../../config/db.js';
 
 class LocationRepository {
-    async searchLocations(query, limit = 10) {
-        // Because @@fulltext is available via Prisma preview Feature
+    async searchLocations(query, limit = 4) {
         try {
+            if (!query || !query.trim()) {
+                return await prisma.location.findMany({
+                    orderBy: { popularity: 'desc' },
+                    take: limit
+                });
+            }
+            const trimmedQuery = query.trim();
             return await prisma.location.findMany({
                 where: {
                     OR: [
-                        { name: { contains: query } },
-                        { address: { contains: query } }
+                        { name: { contains: trimmedQuery } },
+                        { address: { contains: trimmedQuery } }
                     ]
                 },
                 orderBy: { popularity: 'desc' },
@@ -16,7 +22,6 @@ class LocationRepository {
             });
         } catch (error) {
             console.error("Location Search Error", error);
-            // Fallback
             return [];
         }
     }
