@@ -31,10 +31,7 @@ const deleteLocalFile = (fileUrl) => {
         // Prevent path traversal
         filename = path.basename(filename);
 
-        const isProduction = process.env.NODE_ENV === 'production';
-        const uploadDir = isProduction 
-            ? '/data/uploads' 
-            : path.join(process.cwd(), 'uploads');
+        const uploadDir = path.join(process.cwd(), 'uploads');
 
         const filePath = path.join(uploadDir, filename);
 
