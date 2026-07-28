@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { hotelWebApi } from '../../api/hotel.web.api';
 import { useHotelRooms } from '../../hooks/useHotelRooms';
 import type { IHotel } from '../../types';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './HotelDetailPage.css';
 
 export const HotelDetailPage: React.FC = () => {
@@ -109,12 +110,7 @@ export const HotelDetailPage: React.FC = () => {
     if (error) return <div className="error-state">{error}</div>;
     if (!hotel) return <div className="empty-state">Hotel not found</div>;
 
-    const getImageUrl = (url: string) => {
-        if (!url) return 'https://placehold.co/800x600?text=No+Image';
-        if (url.startsWith('http') || url.startsWith('/images/')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '';
-        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-    };
+    const getImageUrlLocal = (url: string) => getImageUrl(url, 'https://placehold.co/800x600?text=No+Image');
 
     const images = hotel.images && hotel.images.length > 0 ? hotel.images : [{ id: '1', url: '/images/shusha-hotel.png', order: 0 }];
     const mainImg = getImageUrl(images[0].url);
