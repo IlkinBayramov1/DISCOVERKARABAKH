@@ -52,7 +52,7 @@ export const attractionApi = {
 
     reportReview: async (attractionId: string, reviewId: string, data: { reason: string; customNote?: string }, token: string) => {
         const response = await axios.post(
-            `${API_URL}/attractions/${attractionId}/reviews/${reviewId}/report`,
+            `${getApiUrl()}/attractions/${attractionId}/reviews/${reviewId}/report`,
             data,
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -62,7 +62,7 @@ export const attractionApi = {
     // USER ACTIONS (Requires Auth via token interceptor or manual config) //
     toggleFavorite: async (id: string, token: string) => {
         const response = await axios.post(
-            `${API_URL}/user/attractions/${id}/favorite`,
+            `${getApiUrl()}/user/attractions/${id}/favorite`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -70,7 +70,7 @@ export const attractionApi = {
     },
 
     getUserFavorites: async (token: string) => {
-        const response = await axios.get(`${API_URL}/user/attractions/favorites`, {
+        const response = await axios.get(`${getApiUrl()}/user/attractions/favorites`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         return response.data;
@@ -78,7 +78,7 @@ export const attractionApi = {
 
     submitReview: async (id: string, data: { rating: number; comment?: string; images?: string[] }, token: string) => {
         const response = await axios.post(
-            `${API_URL}/attractions/${id}/reviews`,
+            `${getApiUrl()}/attractions/${id}/reviews`,
             data,
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -87,7 +87,7 @@ export const attractionApi = {
 
     updateReview: async (id: string, reviewId: string, data: { rating?: number; comment?: string }, token: string) => {
         const response = await axios.put(
-            `${API_URL}/attractions/${id}/reviews/${reviewId}`,
+            `${getApiUrl()}/attractions/${id}/reviews/${reviewId}`,
             data,
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -96,7 +96,7 @@ export const attractionApi = {
 
     deleteReview: async (id: string, reviewId: string, token: string) => {
         const response = await axios.delete(
-            `${API_URL}/attractions/${id}/reviews/${reviewId}`,
+            `${getApiUrl()}/attractions/${id}/reviews/${reviewId}`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
         return response.data;
