@@ -16,6 +16,16 @@ export default defineConfig({
     strictPort: true,
     hmr: {
       port: 5176
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4004',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:4004',
+        changeOrigin: true,
+      }
     }
   }
 })
