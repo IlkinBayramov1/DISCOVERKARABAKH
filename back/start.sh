@@ -3,7 +3,7 @@
 set -e
 
 echo "🚀 Production Bootstrap: Running database migrations..."
-npx prisma migrate deploy || { echo "❌ Database migration failed! Exiting bootstrap."; exit 1; }
+npx prisma db push --accept-data-loss || { echo "❌ Database migration failed! Exiting bootstrap."; exit 1; }
 
 echo "✅ Database migrations successfully applied!"
 
