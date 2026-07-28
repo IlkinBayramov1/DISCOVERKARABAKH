@@ -1,6 +1,7 @@
 import React from 'react';
 import type { IHotel } from '../../types';
 import { FavoriteButton } from '../../../../shared/components/FavoriteButton/FavoriteButton';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './HotelCard.css';
 
 interface HotelCardProps {
@@ -10,9 +11,10 @@ interface HotelCardProps {
 }
 
 export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorited }) => {
-    const imageUrl = hotel.images && hotel.images.length > 0 
-        ? hotel.images[0].url 
-        : 'https://placehold.co/400x300?text=No+Image';
+    const rawUrl = hotel.images && hotel.images.length > 0 
+        ? (typeof hotel.images[0] === 'string' ? hotel.images[0] : hotel.images[0]?.url)
+        : undefined;
+    const imageUrl = getImageUrl(rawUrl, 'https://placehold.co/400x300?text=No+Image');
 
     const getAmenityConfig = (rawName?: string) => {
         if (!rawName) return { icon: 'fa-solid fa-check' };

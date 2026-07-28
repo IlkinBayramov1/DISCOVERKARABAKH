@@ -1,6 +1,7 @@
 import React from 'react';
 import type { IRoomType } from '../../types';
 import { RoomReviewSection } from './RoomReviewSection';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './RoomCard.css';
 
 interface RoomCardProps {
@@ -10,9 +11,10 @@ interface RoomCardProps {
 }
 
 export const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onSelect }) => {
-    const imageUrl = room.images && room.images.length > 0
-        ? room.images[0].url
-        : 'https://placehold.co/400x300?text=Room+Image';
+    const rawUrl = room.images && room.images.length > 0
+        ? (typeof room.images[0] === 'string' ? room.images[0] : room.images[0]?.url)
+        : undefined;
+    const imageUrl = getImageUrl(rawUrl, 'https://placehold.co/400x300?text=Room+Image');
 
     return (
         <div className="room-card">
