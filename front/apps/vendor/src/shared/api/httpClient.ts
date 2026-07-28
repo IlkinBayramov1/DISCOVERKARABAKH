@@ -1,11 +1,12 @@
 import { getToken, removeToken } from '../utils/token';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const getApiBaseUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
 
 export async function httpClient<T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
+    const API_BASE_URL = getApiBaseUrl();
     const token = getToken();
 
     const headers = new Headers(options.headers || {});

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 
-const API_URL = import.meta.env.VITE_API_URL;
+const getApiUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
+const API_URL = getApiUrl();
 
 export const attractionApi = {
     // PUBLIC //
