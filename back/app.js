@@ -140,21 +140,32 @@ app.use(routes);
 // ─── Serve Built Frontend Apps (Production) ──────────────────────────
 const DIST_PATH = path.join(__dirname, '../front/dist');
 
+const noCacheOptions = {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        }
+    }
+};
+
 // 1. Vendor Portal (Subpath /vendor)
-app.use('/vendor', express.static(path.join(DIST_PATH, 'vendor'), { index: false }));
+app.use('/vendor', express.static(path.join(DIST_PATH, 'vendor'), noCacheOptions));
 app.get(/^\/vendor(\/.*)?$/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'vendor/index.html'));
 });
 
 // 2. Admin Portal (Subpath /admin)
-app.use('/admin', express.static(path.join(DIST_PATH, 'admin'), { index: false }));
+app.use('/admin', express.static(path.join(DIST_PATH, 'admin'), noCacheOptions));
 app.get(/^\/admin(\/.*)?$/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'admin/index.html'));
 });
 
 // 3. Web (Main App at Root)
-app.use(express.static(DIST_PATH));
+app.use(express.static(DIST_PATH, noCacheOptions));
 app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
