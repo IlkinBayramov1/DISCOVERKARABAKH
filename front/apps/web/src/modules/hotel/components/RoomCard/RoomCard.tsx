@@ -1,6 +1,6 @@
 import React from 'react';
 import type { IRoomType } from '../../types';
-import { RoomReviewSection } from './RoomReviewSection';
+import { RoomReviewSection } from '../RoomReviewSection';
 import { getImageUrl } from '../../../../shared/utils/image';
 import './RoomCard.css';
 
