@@ -110,15 +110,13 @@ export const HotelDetailPage: React.FC = () => {
     if (error) return <div className="error-state">{error}</div>;
     if (!hotel) return <div className="empty-state">Hotel not found</div>;
 
-    const getImageUrlLocal = (url: string) => getImageUrl(url, 'https://placehold.co/800x600?text=No+Image');
-
     const images = hotel.images && hotel.images.length > 0 ? hotel.images : [{ id: '1', url: '/images/shusha-hotel.png', order: 0 }];
-    const mainImg = getImageUrl(images[0].url);
+    const mainImg = getImageUrl(images[0].url, 'https://placehold.co/800x600?text=No+Image');
     const sideImgs = [
-        getImageUrl(images[1 % images.length].url),
-        getImageUrl(images[2 % images.length].url),
-        getImageUrl(images[3 % images.length].url),
-        getImageUrl(images[4 % images.length].url),
+        getImageUrl(images[1 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
+        getImageUrl(images[2 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
+        getImageUrl(images[3 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
+        getImageUrl(images[4 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
     ];
 
     const getAmenityConfig = (name: string) => {
