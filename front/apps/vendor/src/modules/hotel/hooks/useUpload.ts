@@ -21,13 +21,14 @@ export function useUpload() {
 
         try {
             // httpClient automatically adds the JWT token
-            const response = await httpClient<{ success: boolean; urls: string[] }>('/upload', {
+            const response = await httpClient<{ success: boolean; urls?: string[]; files?: Array<{ url: string }> }>('/upload', {
                 method: 'POST',
                 body: formData
             });
 
-            if (response && response.urls) {
-                return response.urls;
+            if (response) {
+                if (Array.isArray(response.urls)) return response.urls;
+                if (Array.isArray(response.files)) return response.files.map(f => f.url);
             }
             return [];
         } catch (error: any) {
