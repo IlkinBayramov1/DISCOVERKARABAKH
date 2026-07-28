@@ -7,7 +7,7 @@ export const updateProfileSchema = Joi.object({
   gender: Joi.string().valid('male', 'female', 'other').optional().allow('', null),
   birthDate: Joi.date().iso().optional().allow(null, ''),
   language: Joi.string().valid('AZ', 'EN', 'RU').optional().default('AZ'),
-  avatarUrl: Joi.string().uri().optional().allow('', null),
+  avatarUrl: Joi.string().uri({ allowRelative: true }).optional().allow('', null),
 
   // Tourist specific
   nationality: Joi.string().optional().allow('', null),

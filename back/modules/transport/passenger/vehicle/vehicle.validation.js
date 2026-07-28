@@ -10,7 +10,7 @@ export const createVehicleSchema = Joi.object({
     seats: Joi.number().integer().min(1).required(),
     luggage: Joi.number().integer().min(0).required(),
     description: Joi.string().allow('').optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(), // Image URLs
+    images: Joi.array().items(Joi.string().uri({ allowRelative: true })).optional(), // Image URLs
     basePrice: Joi.number().positive().required(),
     pricePerKm: Joi.number().positive().required(),
     status: Joi.string().valid('Active', 'Inactive', 'Maintenance').optional()
@@ -26,7 +26,7 @@ export const updateVehicleSchema = Joi.object({
     seats: Joi.number().integer().optional(),
     luggage: Joi.number().integer().optional(),
     description: Joi.string().allow('').optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(),
+    images: Joi.array().items(Joi.string().uri({ allowRelative: true })).optional(),
     basePrice: Joi.number().positive().optional(),
     pricePerKm: Joi.number().positive().optional(),
     status: Joi.string().valid('Active', 'Inactive', 'Maintenance').optional()
