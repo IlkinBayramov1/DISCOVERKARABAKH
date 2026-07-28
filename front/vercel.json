@@ -1,0 +1,18 @@
+{
+  "buildCommand": "node scripts/build.js",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/vendor/(.*)",
+      "destination": "/vendor/index.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/((?!vendor|admin|assets|favicon).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
