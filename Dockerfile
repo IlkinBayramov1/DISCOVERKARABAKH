@@ -15,6 +15,7 @@ RUN node scripts/build.js
 
 # Stage 2: Build Backend & Final Image
 FROM node:18-alpine
+RUN apk add --no-cache openssl libc6-compat
 WORKDIR /app
 
 # Copy backend source
