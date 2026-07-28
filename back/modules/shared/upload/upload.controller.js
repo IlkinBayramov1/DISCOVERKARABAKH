@@ -122,10 +122,12 @@ class UploadController {
 
             const uploadPromises = req.files.map(file => uploadFileToStorage(file, isPrivate));
             const results = await Promise.all(uploadPromises);
+            const urls = results.map(f => f.url);
 
             res.json({
                 success: true,
-                files: results
+                files: results,
+                urls: urls
             });
         } catch (error) {
             next(error);
@@ -144,7 +146,8 @@ class UploadController {
 
             res.json({
                 success: true,
-                file: result
+                file: result,
+                url: result.url
             });
         } catch (error) {
             next(error);

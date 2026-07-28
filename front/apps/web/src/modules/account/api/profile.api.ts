@@ -15,11 +15,12 @@ export const profileApi = {
     uploadAvatar: async (file: File): Promise<{ success: boolean; url: string }> => {
         const formData = new FormData();
         formData.append('image', file);
-        const response = await httpClient.post<{ success: boolean; url: string }>('/upload/single', formData, {
+        const response = await httpClient.post<{ success: boolean; url?: string; file?: { url: string } }>('/upload/single', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
-        return response.data;
+        const url = response.data.url || response.data.file?.url || '';
+        return { success: response.data.success, url };
     }
 };
