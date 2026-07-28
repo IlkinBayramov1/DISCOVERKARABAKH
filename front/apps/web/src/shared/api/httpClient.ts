@@ -12,6 +12,9 @@ export const httpClient = axios.create({
 
 httpClient.interceptors.request.use(
     (config) => {
+        if (!config.baseURL || config.baseURL.includes('localhost')) {
+            config.baseURL = typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1';
+        }
         const token = getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

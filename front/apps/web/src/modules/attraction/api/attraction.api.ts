@@ -1,48 +1,52 @@
 import axios from 'axios';
 
 
-const getApiUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
-const API_URL = getApiUrl();
+const getApiUrl = () => {
+    if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+        return import.meta.env.VITE_API_URL;
+    }
+    return typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1';
+};
 
 export const attractionApi = {
     // PUBLIC //
     getAttractions: async (params?: { q?: string; city?: string; category?: string; status?: string; isFeatured?: boolean; entryType?: string; page?: number; limit?: number; sort?: string }) => {
-        const response = await axios.get(`${API_URL}/attractions`, { params });
+        const response = await axios.get(`${getApiUrl()}/attractions`, { params });
         return response.data;
     },
 
     getNearbyAttractions: async (params: { lat: number; lng: number; radiusKm?: number; limit?: number }) => {
-        const response = await axios.get(`${API_URL}/attractions/nearby`, { params });
+        const response = await axios.get(`${getApiUrl()}/attractions/nearby`, { params });
         return response.data;
     },
 
     getAttractionById: async (idOrSlug: string) => {
-        const response = await axios.get(`${API_URL}/attractions/${idOrSlug}`);
+        const response = await axios.get(`${getApiUrl()}/attractions/${idOrSlug}`);
         return response.data;
     },
 
     getCategories: async () => {
-        const response = await axios.get(`${API_URL}/attractions/categories`);
+        const response = await axios.get(`${getApiUrl()}/attractions/categories`);
         return response.data;
     },
 
     getReviews: async (attractionId: string, params?: Record<string, any>) => {
-        const response = await axios.get(`${API_URL}/attractions/${attractionId}/reviews`, { params });
+        const response = await axios.get(`${getApiUrl()}/attractions/${attractionId}/reviews`, { params });
         return response.data;
     },
 
     recordView: async (id: string) => {
-        const response = await axios.post(`${API_URL}/attractions/${id}/view`);
+        const response = await axios.post(`${getApiUrl()}/attractions/${id}/view`);
         return response.data;
     },
 
     getWeather: async (id: string) => {
-        const response = await axios.get(`${API_URL}/attractions/${id}/weather`);
+        const response = await axios.get(`${getApiUrl()}/attractions/${id}/weather`);
         return response.data;
     },
 
     getWeatherByCity: async (city: string) => {
-        const response = await axios.get(`${API_URL}/attractions/weather`, { params: { city } });
+        const response = await axios.get(`${getApiUrl()}/attractions/weather`, { params: { city } });
         return response.data;
     },
 
