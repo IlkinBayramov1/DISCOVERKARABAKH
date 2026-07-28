@@ -103,9 +103,18 @@ export default function Header() {
         const token = getToken();
         if (!token) return;
 
-        const SOCKET_URL = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '';
+        const getSocketUrl = () => {
+            if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+                try {
+                    return new URL(import.meta.env.VITE_API_URL).origin;
+                } catch {
+                    return typeof window !== 'undefined' ? window.location.origin : '';
+                }
+            }
+            return typeof window !== 'undefined' ? window.location.origin : '';
+        };
 
-        const socket: Socket = io(SOCKET_URL, {
+        const socket: Socket = io(getSocketUrl(), {
             auth: { token }
         });
 
