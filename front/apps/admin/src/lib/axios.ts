@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const getApiBaseUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
+const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+        return import.meta.env.VITE_API_URL;
+    }
+    return typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1';
+};
 
 // Backend xidməti üçün baza URL
 export const api = axios.create({
@@ -13,6 +18,9 @@ export const api = axios.create({
 // Admin üçün token əlavə edən interseptor
 api.interceptors.request.use(
     (config) => {
+        if (!config.baseURL || config.baseURL.includes('localhost')) {
+            config.baseURL = getApiBaseUrl();
+        }
         const token = sessionStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

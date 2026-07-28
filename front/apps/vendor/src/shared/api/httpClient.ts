@@ -1,6 +1,11 @@
 import { getToken, removeToken } from '../utils/token';
 
-const getApiBaseUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
+const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+        return import.meta.env.VITE_API_URL;
+    }
+    return typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1';
+};
 
 export async function httpClient<T>(
     endpoint: string,
