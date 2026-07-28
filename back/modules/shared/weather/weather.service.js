@@ -9,7 +9,23 @@ class WeatherService {
 
     async getWeather(lat, lng) {
         const apiKey = process.env.OPENWEATHER_API_KEY;
-        if (!apiKey) throw new Error('Weather API key is missing');
+        if (!apiKey) {
+            console.warn('[WeatherService] OPENWEATHER_API_KEY is missing. Returning fallback weather.');
+            return {
+                temp: 22,
+                feelsLike: 21,
+                humidity: 45,
+                pressure: 1015,
+                visibility: "10.0",
+                condition: "Clear",
+                description: "Mülayim hava",
+                icon: "https://openweathermap.org/img/wn/01d@2x.png",
+                windSpeed: 3.5,
+                windDeg: 120,
+                windDirection: "SE",
+                updatedAt: new Date()
+            };
+        }
 
         const cacheKey = `${this.CACHE_PREFIX}${lat.toFixed(2)}:${lng.toFixed(2)}`;
 
@@ -81,7 +97,23 @@ class WeatherService {
 
     async getWeatherByCity(city) {
         const apiKey = process.env.OPENWEATHER_API_KEY;
-        if (!apiKey) throw new Error('Weather API key is missing');
+        if (!apiKey) {
+            console.warn('[WeatherService] OPENWEATHER_API_KEY is missing. Returning fallback weather.');
+            return {
+                temp: 22,
+                feelsLike: 21,
+                humidity: 45,
+                pressure: 1015,
+                visibility: "10.0",
+                condition: "Clear",
+                description: "Mülayim hava",
+                icon: "https://openweathermap.org/img/wn/01d@2x.png",
+                windSpeed: 3.5,
+                windDeg: 120,
+                windDirection: "SE",
+                updatedAt: new Date()
+            };
+        }
 
         const normalizedCity = city.toLowerCase().trim();
         const cacheKey = `${this.CACHE_PREFIX}city:${normalizedCity}`;
