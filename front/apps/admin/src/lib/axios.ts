@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const getApiBaseUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
+
 // Backend xidməti üçün baza URL
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: getApiBaseUrl(),
     headers: {
         'Content-Type': 'application/json'
     }

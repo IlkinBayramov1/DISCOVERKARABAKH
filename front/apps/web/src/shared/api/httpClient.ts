@@ -1,10 +1,10 @@
 import axios, { AxiosError } from 'axios';
 import { getToken, removeToken } from '../utils/token';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4004/api/v1';
+const getApiBaseUrl = () => import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : '/api/v1');
 
 export const httpClient = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: getApiBaseUrl(),
     headers: {
         'Content-Type': 'application/json',
     },
