@@ -15,7 +15,7 @@ async function seed() {
 
   for (const cat of categories) {
     try {
-      const created = await prisma.attractionCategory.upsert({
+      const created = await prisma.attractioncategory.upsert({
         where: { slug: cat.slug },
         update: {},
         create: cat,
