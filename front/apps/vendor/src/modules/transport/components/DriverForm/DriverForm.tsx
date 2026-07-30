@@ -9,6 +9,7 @@ interface DriverFormProps {
 
 export default function DriverForm({ onClose }: DriverFormProps) {
     const { mutate: createDriver, isPending } = useCreateDriver();
+    const [error, setError] = useState<string | null>(null);
     
     const [formData, setFormData] = useState({
         firstName: '',
@@ -21,9 +22,27 @@ export default function DriverForm({ onClose }: DriverFormProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createDriver(formData, {
+        setError(null);
+
+        const payload: Record<string, any> = {
+            firstName: formData.firstName.trim(),
+            lastName: formData.lastName.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim(),
+            licenseNumber: formData.licenseNumber.trim()
+        };
+
+        if (formData.password.trim()) {
+            payload.password = formData.password.trim();
+        }
+
+        createDriver(payload, {
             onSuccess: () => {
                 onClose();
+            },
+            onError: (err: any) => {
+                const msg = err.response?.data?.message || err.message || 'Sürücü yaradılarkən xəta baş verdi.';
+                setError(msg);
             }
         });
     };
@@ -42,6 +61,12 @@ export default function DriverForm({ onClose }: DriverFormProps) {
 
                 <form className="modal-form" onSubmit={handleSubmit}>
                     <p className="text-muted mb-4">Sürücüyə dair detallar və tənzimləmələr.</p>
+
+                    {error && (
+                        <div className="p-3 mb-4 text-xs font-semibold text-red-600 bg-red-50 rounded-lg border border-red-200">
+                            {error}
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
