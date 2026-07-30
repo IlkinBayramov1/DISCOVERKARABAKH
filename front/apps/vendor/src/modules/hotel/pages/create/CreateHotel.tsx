@@ -36,6 +36,7 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './CreateHotel.css';
 
 interface AmenityDef {
@@ -557,7 +558,7 @@ export default function CreateHotel() {
                             <div className="dk-media-preview-grid">
                                 {formData.images?.map((url, idx) => (
                                     <div key={idx} className="media-preview-card">
-                                        <img src={url} alt="Hotel" />
+                                        <img src={getImageUrl(url)} alt="Hotel" />
                                         <button type="button" className="btn-remove" onClick={() => setFormData(p => ({ ...p, images: p.images?.filter((_, i) => i !== idx) }))}>
                                             <X size={14} strokeWidth={3}/>
                                         </button>

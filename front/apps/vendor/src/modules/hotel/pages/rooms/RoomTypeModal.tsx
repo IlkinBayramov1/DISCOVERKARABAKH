@@ -18,6 +18,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { useUpload } from '../../hooks/useUpload';
+import { getImageUrl } from '../../../../shared/utils/image';
 import type { IRoomTypePayload, IRoomType } from '../../types';
 import './RoomTypeModal.css';
 
@@ -398,7 +399,7 @@ export default function RoomTypeModal({ isOpen, onClose, onSave, editingRoom, is
                             <div className="dk-rt-media-grid">
                                 {formData.images.map((url: string, idx: number) => (
                                     <div key={idx} className="dk-rt-media-item">
-                                        <img src={url} alt="room" />
+                                        <img src={getImageUrl(url)} alt="room" />
                                         <button 
                                             type="button" 
                                             className="dk-rt-media-remove"

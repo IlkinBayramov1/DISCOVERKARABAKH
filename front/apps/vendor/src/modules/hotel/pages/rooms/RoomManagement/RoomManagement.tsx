@@ -19,6 +19,7 @@ import {
     Check,
 } from 'lucide-react';
 import type { IRoomTypePayload, IRoomType } from '../../../types';
+import { getImageUrl } from '../../../../../shared/utils/image';
 import RoomTypeModal from '../RoomTypeModal'; 
 import './RoomManagement.css';
 
@@ -44,7 +45,8 @@ const ImageSlider = ({ images, name }: { images: any[], name: string }) => {
         setCurrentIndex((prevIndex) => prevIndex === images.length - 1 ? 0 : prevIndex + 1);
     };
 
-    const currentImage = images[currentIndex].url || images[currentIndex];
+    const rawImage = images[currentIndex]?.url || images[currentIndex];
+    const currentImage = getImageUrl(rawImage);
 
     return (
         <div className="room-slider-container">
