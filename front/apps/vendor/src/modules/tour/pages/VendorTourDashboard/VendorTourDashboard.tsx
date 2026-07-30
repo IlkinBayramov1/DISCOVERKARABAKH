@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTours } from '../../hooks/useTours';
+import { getImageUrl } from '../../../../shared/utils/image';
 import type { ITour } from '../../types';
 import './VendorTourDashboard.css';
 
@@ -41,7 +42,7 @@ const ImageSlider = ({ images, name }: { images: string[], name: string }) => {
 
     return (
         <div className="dk-image-slider">
-            <img src={images[currentIndex]} alt={`${name} - ${currentIndex + 1}`} className="dk-slider-img" />
+            <img src={getImageUrl(images[currentIndex])} alt={`${name} - ${currentIndex + 1}`} className="dk-slider-img" />
             {images.length > 1 && (
                 <>
                     <button className="dk-slider-btn prev" onClick={handlePrevious}>

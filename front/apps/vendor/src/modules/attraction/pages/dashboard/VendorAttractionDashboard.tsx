@@ -5,6 +5,7 @@ import {
     MapPin, Search, BarChart3, CloudSun, RefreshCw, Ticket
 } from 'lucide-react';
 import { vendorAttractionApi } from '../../api/attraction.api';
+import { getImageUrl } from '../../../../shared/utils/image';
 import type { Attraction } from '../../types';
 import './VendorAttractionDashboard.css';
 
@@ -91,10 +92,7 @@ export default function VendorAttractionDashboard() {
         : 0;
 
     const getFullImageUrl = (url: string) => {
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '';
-        return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
+        return getImageUrl(url);
     };
 
     return (
