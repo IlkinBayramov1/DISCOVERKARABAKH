@@ -17,10 +17,10 @@ export const createDriverSchema = Joi.object({
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).optional(),
+    password: Joi.string().min(6).empty('').optional(),
     phone: Joi.string().required(),
     licenseNumber: Joi.string().required(),
-    licenseExpiryDate: Joi.date().iso().min('now').optional(),
+    licenseExpiryDate: Joi.date().iso().min('now').empty('').optional(),
     licenseCategories: Joi.array().items(Joi.string().min(1)).min(1).optional(),
     licenseImages: Joi.array().items(Joi.string().min(3)).optional(),
     idCardImages: Joi.array().items(Joi.string().min(3)).optional()
