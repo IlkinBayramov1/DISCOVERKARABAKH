@@ -16,6 +16,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { HOTEL_AMENITIES, PROPERTY_TYPES } from '../../constants';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './PhotosAndContent.css';
 
 type TabType = 'gallery' | 'info' | 'amenities';
@@ -185,7 +186,7 @@ export default function PhotosAndContent() {
                             {images.map((img, idx) => (
                                 <div key={img.id || idx} className="image-thumbnail">
                                     {idx === 0 && <div className="main-badge">Cover</div>}
-                                    <img src={img.url} alt="Hotel" />
+                                    <img src={getImageUrl(img.url)} alt="Hotel" />
                                     <button className="remove-btn" onClick={() => handleRemoveExistingImage(img.id)}>
                                         <X size={16} />
                                     </button>

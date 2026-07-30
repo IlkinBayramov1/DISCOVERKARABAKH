@@ -128,8 +128,13 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Serve static files (uploads)
-app.use('/uploads', express.static(uploadDir));
+// Serve static files (uploads) with open CORS & CORP headers
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    next();
+}, express.static(uploadDir));
 
 // Routes (API)
 app.use(routes);

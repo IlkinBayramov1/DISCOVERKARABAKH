@@ -17,6 +17,7 @@ import {
     AlertCircle,
     Sparkles
 } from 'lucide-react';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './MyHotel.css';
 
 // Minimal Daxili Image Slider Komponenti
@@ -42,7 +43,8 @@ const PropertyImageSlider = ({ images, name }: { images: any[], name: string }) 
         setCurrentIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
     };
 
-    const currentImage = images[currentIndex].url || images[currentIndex];
+    const rawImage = images[currentIndex]?.url || images[currentIndex];
+    const currentImage = getImageUrl(rawImage);
 
     return (
         <div className="dk-prop-slider">
