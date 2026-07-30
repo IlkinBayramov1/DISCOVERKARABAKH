@@ -14,18 +14,28 @@ export const getImageUrl = (url?: string, fallback = 'https://placehold.co/600x4
 
     if (import.meta.env.VITE_API_URL) {
         try {
-            apiOrigin = new URL(import.meta.env.VITE_API_URL).origin;
+            const parsed = new URL(import.meta.env.VITE_API_URL).origin;
+            if (!parsed.includes('localhost') && !parsed.includes('127.0.0.1')) {
+                apiOrigin = parsed;
+            }
         } catch (e) {
             // fallback
         }
     }
 
     if (!apiOrigin && typeof window !== 'undefined') {
-        if (window.location.origin.includes('vercel.app')) {
+        const origin = window.location.origin;
+        if (origin.includes('vercel.app')) {
             apiOrigin = 'http://191.218.163.50:4004';
+        } else if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+            apiOrigin = origin;
         } else {
-            apiOrigin = window.location.origin;
+            apiOrigin = 'http://191.218.163.50:4004';
         }
+    }
+
+    if (!apiOrigin) {
+        apiOrigin = 'http://191.218.163.50:4004';
     }
 
     return `${apiOrigin}${cleanPath}`;
