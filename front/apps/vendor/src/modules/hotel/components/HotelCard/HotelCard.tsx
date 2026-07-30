@@ -12,6 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import type { IHotel } from '../../types';
 
+import { getImageUrl } from '../../../../shared/utils/image';
 import './HotelCard.css';
 
 interface HotelCardProps {
@@ -40,7 +41,8 @@ const ImageSlider = ({ images, name }: { images: any[], name: string }) => {
         setCurrentIndex((prevIndex) => prevIndex === images.length - 1 ? 0 : prevIndex + 1);
     };
 
-    const currentImage = images[currentIndex].url || images[currentIndex];
+    const rawImage = images[currentIndex]?.url || images[currentIndex];
+    const currentImage = getImageUrl(rawImage);
 
     return (
         <div className="hotel-image-slider">
