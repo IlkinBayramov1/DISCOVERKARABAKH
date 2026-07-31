@@ -41,7 +41,7 @@ export default function DriverForm({ onClose }: DriverFormProps) {
                 onClose();
             },
             onError: (err: any) => {
-                const msg = err.response?.data?.message || err.message || 'Sürücü yaradılarkən xəta baş verdi.';
+                const msg = err.message || err.response?.data?.message || 'Sürücü yaradılarkən xəta baş verdi.';
                 setError(msg);
             }
         });
