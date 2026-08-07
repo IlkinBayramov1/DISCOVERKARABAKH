@@ -1,104 +1,116 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
-
-// ─── Home Module ─────────────────────────────────────────────────────────────
-import {
-    HomeLayout,
-    HomePage as Home,
-    AccommodationPage,
-    ArticlesPage,
-    ContactPage,
-    CorporatePage,
-    ExploreAboutPage,
-    ExploreCulturePage,
-    ExploreNaturePage,
-    VisaPermissionsPage,
-    TransportationPage,
-    DiscoverCardPage,
-    PartnershipsPage,
-    InvestmentsPage,
-    JobsPage,
-    InternationalPage
-} from '../modules/home';
-
-import CityPage from '../modules/home/pages/City/City';
 import ErrorBoundary from '../shared/components/Error/ErrorBoundary';
 import ErrorPage from '../shared/components/Error/ErrorPage';
 
-// ─── Service Layouts ─────────────────────────────────────────────────────────
-import WebLayout from '../modules/layout/WebLayout/WebLayout';
-import WebLogin from '../modules/auth/pages/WebLogin';
-import WebRegister from '../modules/auth/pages/WebRegister';
-import { HotelSearchPage } from '../modules/hotel/pages/HotelSearch';
-import { HotelDetailPage } from '../modules/hotel/pages/HotelDetail';
-import { RoomDetailPage } from '../modules/hotel/pages/RoomDetail/RoomDetailPage';
-import { ReservationPage } from '../modules/hotel/pages/Reservation';
-import { BookingConfirmationPage } from '../modules/booking/pages/BookingConfirmation';
-import { PassengerTransportPage, TransportDetailsPage } from '../modules/transport/pages/passenger';
-import { TransportReservationPage } from '../modules/transport/pages/passenger/TransportReservationPage';
-import { CargoTransportPage } from '../modules/transport/pages/cargo/CargoTransportPage';
-import { DriverTransportPage } from '../modules/transport/pages/driver/DriverTransportPage';
-import { ToursPage } from '../modules/tour/pages/ToursPage/ToursPage';
-import { TourDetailsPage } from '../modules/tour/pages/TourDetailsPage/TourDetailsPage';
-import { TourReservationPage } from '../modules/tour/pages/TourReservationPage/TourReservationPage';
-import { AttractionsPage } from '../modules/attraction/pages/AttractionsPage/AttractionsPage';
-import { AttractionDetailsPage } from '../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage';
-import { AttractionReservationPage } from '../modules/attraction/pages/AttractionReservationPage/AttractionReservationPage';
+// ─── Minimal Page Loading Fallback Spinner ─────────────────────────────────────
+const PageLoader = () => (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <div style={{
+            width: 36,
+            height: 36,
+            border: '3px solid #e2e8f0',
+            borderTopColor: '#059669',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite'
+        }} />
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+    </div>
+);
 
-import { ProfilePage } from '../modules/account/pages/ProfilePage/ProfilePage';
-import { TripsPage } from '../modules/account/pages/TripsPage/TripsPage';
-import { FavoritesPage } from '../modules/account/pages/FavoritesPage/FavoritesPage';
-import { WalletPage } from '../modules/account/pages/WalletPage/WalletPage';
-import UtilitySearch from '../modules/utility/pages/UtilitySearch';
-import UtilityProviders from '../modules/utility/pages/UtilityProviders';
-import UtilityConfirmationPage from '../modules/utility/pages/UtilityConfirmationPage';
-import UtilityCheckoutPage from '../modules/utility/pages/UtilityCheckoutPage';
+// ─── Home Module (Home & HomeLayout remain direct for instant LCP) ─────────────
+import { HomeLayout, HomePage as Home } from '../modules/home';
+
+// Lazy-loaded Home subpages
+const ExploreAboutPage = lazy(() => import('../modules/home/pages/ExploreAbout/ExploreAbout'));
+const ExploreCulturePage = lazy(() => import('../modules/home/pages/ExploreCulture/ExploreCulture'));
+const ExploreNaturePage = lazy(() => import('../modules/home/pages/ExploreNature/ExploreNature'));
+const ArticlesPage = lazy(() => import('../modules/home/pages/Articles/Articles'));
+const AccommodationPage = lazy(() => import('../modules/home/pages/Accommodation/Accommodation'));
+const ContactPage = lazy(() => import('../modules/home/pages/Contact/Contact'));
+const CorporatePage = lazy(() => import('../modules/home/pages/Corporate/Corporate'));
+const VisaPermissionsPage = lazy(() => import('../modules/home/pages/VisaPermissions/VisaPermissions'));
+const TransportationPage = lazy(() => import('../modules/home/pages/Transportation/Transportation'));
+const DiscoverCardPage = lazy(() => import('../modules/home/pages/DiscoverCard/DiscoverCard'));
+const PartnershipsPage = lazy(() => import('../modules/home/pages/Partnerships/Partnerships'));
+const InvestmentsPage = lazy(() => import('../modules/home/pages/Investments/Investments'));
+const JobsPage = lazy(() => import('../modules/home/pages/Jobs/Jobs'));
+const InternationalPage = lazy(() => import('../modules/home/pages/International/International'));
+const CityPage = lazy(() => import('../modules/home/pages/City/City'));
+
+// ─── Service Layouts & Pages ───────────────────────────────────────────────────
+const WebLayout = lazy(() => import('../modules/layout/WebLayout/WebLayout'));
+const WebLogin = lazy(() => import('../modules/auth/pages/WebLogin'));
+const WebRegister = lazy(() => import('../modules/auth/pages/WebRegister'));
+
+const HotelSearchPage = lazy(() => import('../modules/hotel/pages/HotelSearch').then(m => ({ default: m.HotelSearchPage })));
+const HotelDetailPage = lazy(() => import('../modules/hotel/pages/HotelDetail').then(m => ({ default: m.HotelDetailPage })));
+const RoomDetailPage = lazy(() => import('../modules/hotel/pages/RoomDetail/RoomDetailPage').then(m => ({ default: m.RoomDetailPage })));
+const ReservationPage = lazy(() => import('../modules/hotel/pages/Reservation').then(m => ({ default: m.ReservationPage })));
+const BookingConfirmationPage = lazy(() => import('../modules/booking/pages/BookingConfirmation').then(m => ({ default: m.BookingConfirmationPage })));
+
+const PassengerTransportPage = lazy(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.PassengerTransportPage })));
+const TransportDetailsPage = lazy(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.TransportDetailsPage })));
+const TransportReservationPage = lazy(() => import('../modules/transport/pages/passenger/TransportReservationPage').then(m => ({ default: m.TransportReservationPage })));
+const CargoTransportPage = lazy(() => import('../modules/transport/pages/cargo/CargoTransportPage').then(m => ({ default: m.CargoTransportPage })));
+const DriverTransportPage = lazy(() => import('../modules/transport/pages/driver/DriverTransportPage').then(m => ({ default: m.DriverTransportPage })));
+
+const ToursPage = lazy(() => import('../modules/tour/pages/ToursPage/ToursPage').then(m => ({ default: m.ToursPage })));
+const TourDetailsPage = lazy(() => import('../modules/tour/pages/TourDetailsPage/TourDetailsPage').then(m => ({ default: m.TourDetailsPage })));
+const TourReservationPage = lazy(() => import('../modules/tour/pages/TourReservationPage/TourReservationPage').then(m => ({ default: m.TourReservationPage })));
+
+const AttractionsPage = lazy(() => import('../modules/attraction/pages/AttractionsPage/AttractionsPage').then(m => ({ default: m.AttractionsPage })));
+const AttractionDetailsPage = lazy(() => import('../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage').then(m => ({ default: m.AttractionDetailsPage })));
+const AttractionReservationPage = lazy(() => import('../modules/attraction/pages/AttractionReservationPage/AttractionReservationPage').then(m => ({ default: m.AttractionReservationPage })));
+
+const ProfilePage = lazy(() => import('../modules/account/pages/ProfilePage/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const TripsPage = lazy(() => import('../modules/account/pages/TripsPage/TripsPage').then(m => ({ default: m.TripsPage })));
+const FavoritesPage = lazy(() => import('../modules/account/pages/FavoritesPage/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
+const WalletPage = lazy(() => import('../modules/account/pages/WalletPage/WalletPage').then(m => ({ default: m.WalletPage })));
+
+const UtilitySearch = lazy(() => import('../modules/utility/pages/UtilitySearch'));
+const UtilityProviders = lazy(() => import('../modules/utility/pages/UtilityProviders'));
+const UtilityConfirmationPage = lazy(() => import('../modules/utility/pages/UtilityConfirmationPage'));
+const UtilityCheckoutPage = lazy(() => import('../modules/utility/pages/UtilityCheckoutPage'));
 
 // ─── Driver Portal ────────────────────────────────────────────────────────────
-import DriverLayout from '../modules/driver/components/DriverLayout';
-import DriverDashboard from '../modules/driver/pages/DriverDashboard';
-import DriverProfile from '../modules/driver/pages/DriverProfile';
-import DriverOrders from '../modules/driver/pages/DriverOrders';
+const DriverLayout = lazy(() => import('../modules/driver/components/DriverLayout'));
+const DriverDashboard = lazy(() => import('../modules/driver/pages/DriverDashboard'));
+const DriverProfile = lazy(() => import('../modules/driver/pages/DriverProfile'));
+const DriverOrders = lazy(() => import('../modules/driver/pages/DriverOrders'));
 
-/**
- * ROUTER ARXITEKTURASI
- * ─────────────────────────────────────────────────────────────────────────────
- * React Router v6-da "pathless layout routes" istifadə olunur.
- * path olmayan element={<Layout />} — sadəcə layout wrapperı kimi işləyir.
- * Bu, iki `path: '/'` konflikitini tam aradan qaldırır.
- */
 const router = createBrowserRouter([
     {
         path: '/',
         errorElement: <ErrorBoundary />,
         children: [
             {
-                // ─── HomeLayout — Landing & Content Pages ─────────────────────────────
                 element: <HomeLayout />,
                 children: [
                     {
-                        index: true,          // localhost:PORT/  →  Home
+                        index: true,
                         element: <Home />,
                     },
                     {
                         path: 'about',
-                        element: <ExploreAboutPage />,
+                        element: <Suspense fallback={<PageLoader />}><ExploreAboutPage /></Suspense>,
                     },
                     {
                         path: 'explore/about',
-                        element: <ExploreAboutPage />,
+                        element: <Suspense fallback={<PageLoader />}><ExploreAboutPage /></Suspense>,
                     },
                     {
                         path: 'explore/culture',
-                        element: <ExploreCulturePage />,
+                        element: <Suspense fallback={<PageLoader />}><ExploreCulturePage /></Suspense>,
                     },
                     {
                         path: 'explore/nature',
-                        element: <ExploreNaturePage />,
+                        element: <Suspense fallback={<PageLoader />}><ExploreNaturePage /></Suspense>,
                     },
                     {
                         path: 'explore/articles',
-                        element: <ArticlesPage />,
+                        element: <Suspense fallback={<PageLoader />}><ArticlesPage /></Suspense>,
                     },
                     {
                         path: 'explore/articles/:slug',
@@ -110,7 +122,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'things-to-do/attractions',
-                        element: <AttractionsPage />,
+                        element: <Suspense fallback={<PageLoader />}><AttractionsPage /></Suspense>,
                     },
                     {
                         path: 'things-to-do/restaurants',
@@ -126,86 +138,84 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'corporate',
-                        element: <CorporatePage />,
+                        element: <Suspense fallback={<PageLoader />}><CorporatePage /></Suspense>,
                     },
                     {
                         path: 'corporate/investments',
-                        element: <InvestmentsPage />,
+                        element: <Suspense fallback={<PageLoader />}><InvestmentsPage /></Suspense>,
                     },
                     {
                         path: 'corporate/partnerships',
-                        element: <PartnershipsPage />,
+                        element: <Suspense fallback={<PageLoader />}><PartnershipsPage /></Suspense>,
                     },
                     {
                         path: 'corporate/international',
-                        element: <InternationalPage />,
+                        element: <Suspense fallback={<PageLoader />}><InternationalPage /></Suspense>,
                     },
                     {
                         path: 'corporate/jobs',
-                        element: <JobsPage />,
+                        element: <Suspense fallback={<PageLoader />}><JobsPage /></Suspense>,
                     },
                     {
                         path: 'contact',
-                        element: <ContactPage />,
+                        element: <Suspense fallback={<PageLoader />}><ContactPage /></Suspense>,
                     },
                     {
                         path: 'plan/accommodation',
-                        element: <AccommodationPage />,
+                        element: <Suspense fallback={<PageLoader />}><AccommodationPage /></Suspense>,
                     },
                     {
                         path: 'plan/visa-permissions',
-                        element: <VisaPermissionsPage />,
+                        element: <Suspense fallback={<PageLoader />}><VisaPermissionsPage /></Suspense>,
                     },
                     {
                         path: 'plan/transportation',
-                        element: <TransportationPage />,
+                        element: <Suspense fallback={<PageLoader />}><TransportationPage /></Suspense>,
                     },
                     {
                         path: 'card-and-passes',
-                        element: <DiscoverCardPage />,
+                        element: <Suspense fallback={<PageLoader />}><DiscoverCardPage /></Suspense>,
                     },
                     {
-                        // City detail — CityPage city prop-u optional etdiyi üçün placeholder göstərəcək
                         path: 'where/:slug',
-                        element: <CityPage />,
+                        element: <Suspense fallback={<PageLoader />}><CityPage /></Suspense>,
                     },
                 ],
             },
             {
-                // ─── WebLayout — Travel Services (Search & Booking) ───────────────────
-                element: <WebLayout />,
+                element: <Suspense fallback={<PageLoader />}><WebLayout /></Suspense>,
                 children: [
                     {
                         path: 'hotels',
-                        element: <HotelSearchPage />,
+                        element: <Suspense fallback={<PageLoader />}><HotelSearchPage /></Suspense>,
                     },
                     {
                         path: 'hotels/:id',
-                        element: <HotelDetailPage />,
+                        element: <Suspense fallback={<PageLoader />}><HotelDetailPage /></Suspense>,
                     },
                     {
                         path: 'hotels/:hotelId/rooms/:roomId',
-                        element: <RoomDetailPage />,
+                        element: <Suspense fallback={<PageLoader />}><RoomDetailPage /></Suspense>,
                     },
                     {
                         path: 'checkout',
-                        element: <ReservationPage />,
+                        element: <Suspense fallback={<PageLoader />}><ReservationPage /></Suspense>,
                     },
                     {
                         path: 'booking-confirmation/:id',
-                        element: <BookingConfirmationPage />,
+                        element: <Suspense fallback={<PageLoader />}><BookingConfirmationPage /></Suspense>,
                     },
                     {
                         path: 'tours',
-                        element: <ToursPage />,
+                        element: <Suspense fallback={<PageLoader />}><ToursPage /></Suspense>,
                     },
                     {
                         path: 'tours/:id',
-                        element: <TourDetailsPage />,
+                        element: <Suspense fallback={<PageLoader />}><TourDetailsPage /></Suspense>,
                     },
                     {
                         path: 'tour-checkout',
-                        element: <TourReservationPage />,
+                        element: <Suspense fallback={<PageLoader />}><TourReservationPage /></Suspense>,
                     },
                     {
                         path: 'events',
@@ -217,78 +227,78 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'attractions',
-                        element: <AttractionsPage />,
+                        element: <Suspense fallback={<PageLoader />}><AttractionsPage /></Suspense>,
                     },
                     {
                         path: 'attractions/:id',
-                        element: <AttractionDetailsPage />,
+                        element: <Suspense fallback={<PageLoader />}><AttractionDetailsPage /></Suspense>,
                     },
                     {
                         path: 'attraction-checkout',
-                        element: <AttractionReservationPage />,
+                        element: <Suspense fallback={<PageLoader />}><AttractionReservationPage /></Suspense>,
                     },
                     {
                         path: 'transport/cargo',
-                        element: <CargoTransportPage />,
+                        element: <Suspense fallback={<PageLoader />}><CargoTransportPage /></Suspense>,
                     },
                     {
                         path: 'transport/passenger',
-                        element: <PassengerTransportPage />,
+                        element: <Suspense fallback={<PageLoader />}><PassengerTransportPage /></Suspense>,
                     },
                     {
                         path: 'transport/details/:id',
-                        element: <TransportDetailsPage />,
+                        element: <Suspense fallback={<PageLoader />}><TransportDetailsPage /></Suspense>,
                     },
                     {
                         path: 'transport-checkout',
-                        element: <TransportReservationPage />,
+                        element: <Suspense fallback={<PageLoader />}><TransportReservationPage /></Suspense>,
                     },
                     {
                         path: 'transport/driver',
-                        element: <DriverTransportPage />,
+                        element: <Suspense fallback={<PageLoader />}><DriverTransportPage /></Suspense>,
                     },
                     {
                         path: 'account/profile',
-                        element: <ProfilePage />,
+                        element: <Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>,
                     },
                     {
                         path: 'account/wallet',
-                        element: <WalletPage />,
+                        element: <Suspense fallback={<PageLoader />}><WalletPage /></Suspense>,
                     },
                     {
                         path: 'account/trips',
-                        element: <TripsPage />,
+                        element: <Suspense fallback={<PageLoader />}><TripsPage /></Suspense>,
                     },
                     {
                         path: 'account/favorites',
-                        element: <FavoritesPage />,
+                        element: <Suspense fallback={<PageLoader />}><FavoritesPage /></Suspense>,
                     },
                     {
                         path: 'auth/login',
-                        element: <WebLogin />,
+                        element: <Suspense fallback={<PageLoader />}><WebLogin /></Suspense>,
                     },
                     {
                         path: 'auth/register',
-                        element: <WebRegister />,
+                        element: <Suspense fallback={<PageLoader />}><WebRegister /></Suspense>,
                     },
                     {
                         element: <ProtectedRoute />,
                         children: [
                             {
                                 path: 'utility',
-                                element: <UtilityProviders />,
+                                element: <Suspense fallback={<PageLoader />}><UtilityProviders /></Suspense>,
                             },
                             {
                                 path: 'utility/:provider',
-                                element: <UtilitySearch />,
+                                element: <Suspense fallback={<PageLoader />}><UtilitySearch /></Suspense>,
                             },
                             {
                                 path: 'utility-confirmation/:paymentId',
-                                element: <UtilityConfirmationPage />,
+                                element: <Suspense fallback={<PageLoader />}><UtilityConfirmationPage /></Suspense>,
                             },
                             {
                                 path: 'utility-checkout/:paymentId',
-                                element: <UtilityCheckoutPage />,
+                                element: <Suspense fallback={<PageLoader />}><UtilityCheckoutPage /></Suspense>,
                             }
                         ]
                     },
@@ -296,17 +306,16 @@ const router = createBrowserRouter([
             },
 
             {
-                // ─── Driver Portal (Standalone) ───────────────────────────────────────
                 path: '/driver',
                 element: <ProtectedRoute allowedRoles={['driver', 'admin']} />,
                 children: [
                     {
                         path: '',
-                        element: <DriverLayout />,
+                        element: <Suspense fallback={<PageLoader />}><DriverLayout /></Suspense>,
                         children: [
-                            { path: 'dashboard', element: <DriverDashboard /> },
-                            { path: 'orders', element: <DriverOrders /> },
-                            { path: 'profile', element: <DriverProfile /> },
+                            { path: 'dashboard', element: <Suspense fallback={<PageLoader />}><DriverDashboard /></Suspense> },
+                            { path: 'orders', element: <Suspense fallback={<PageLoader />}><DriverOrders /></Suspense> },
+                            { path: 'profile', element: <Suspense fallback={<PageLoader />}><DriverProfile /></Suspense> },
                         ],
                     },
                 ],
