@@ -153,7 +153,7 @@ export const ReservationPage: React.FC = () => {
     }
 
     const getImageUrl = (url: string) => {
-        if (!url) return 'https://placehold.co/800x600?text=No+Image';
+        if (!url) return '/uploads/no-image.svg';
         if (url.startsWith('http') || url.startsWith('/images/')) return url;
         const baseUrl = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '';
         return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;

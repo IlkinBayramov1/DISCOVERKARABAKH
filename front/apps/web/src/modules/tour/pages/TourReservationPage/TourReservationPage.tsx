@@ -8,6 +8,7 @@ import type { ITour } from '../../types';
 import { useProfile } from '../../../account/hooks/useProfile';
 import { WalletPaymentBox } from '../../../booking/components/WalletPaymentBox';
 import { useAuth } from '../../../../shared/context/AuthContext';
+import { getImageUrl } from '../../../../shared/utils/image';
 import './TourReservationPage.css';
 
 export const TourReservationPage: React.FC = () => {
@@ -218,7 +219,7 @@ export const TourReservationPage: React.FC = () => {
                         <div className="summary-card card sticky-sidebar">
                             
                             <div className="hotel-brief">
-                                <img src={tour.images && tour.images.length > 0 ? tour.images[0] : 'https://placehold.co/100x100?text=Tour'} alt={tour.name} className="brief-image" />
+                                <img src={getImageUrl(tour.images && tour.images.length > 0 ? tour.images[0] : undefined)} alt={tour.name} className="brief-image" />
                                 <div className="brief-details">
                                     <h3>{tour.name}</h3>
                                     <p className="hotel-city"><MapPin size={12} /> {tour.city || 'Karabakh'}, Azerbaijan</p>

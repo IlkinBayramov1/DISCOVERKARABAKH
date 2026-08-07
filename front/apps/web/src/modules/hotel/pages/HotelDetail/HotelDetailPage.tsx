@@ -111,12 +111,12 @@ export const HotelDetailPage: React.FC = () => {
     if (!hotel) return <div className="empty-state">Hotel not found</div>;
 
     const images = hotel.images && hotel.images.length > 0 ? hotel.images : [{ id: '1', url: '/images/shusha-hotel.png', order: 0 }];
-    const mainImg = getImageUrl(images[0].url, 'https://placehold.co/800x600?text=No+Image');
+    const mainImg = getImageUrl(images[0].url);
     const sideImgs = [
-        getImageUrl(images[1 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
-        getImageUrl(images[2 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
-        getImageUrl(images[3 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
-        getImageUrl(images[4 % images.length].url, 'https://placehold.co/800x600?text=No+Image'),
+        getImageUrl(images[1 % images.length].url),
+        getImageUrl(images[2 % images.length].url),
+        getImageUrl(images[3 % images.length].url),
+        getImageUrl(images[4 % images.length].url),
     ];
 
     const getAmenityConfig = (name: string) => {
@@ -412,7 +412,7 @@ export const HotelDetailPage: React.FC = () => {
                                     // Otağın şəkilləri yoxdursa placeholder qoyuruq
                                     const roomImages = room.images && room.images.length > 0
                                         ? room.images
-                                        : [{ id: '1', url: 'https://placehold.co/400x300?text=Room', order: 0 }];
+                                        : [{ id: '1', url: '/uploads/no-image.svg', order: 0 }];
 
                                     // Bu otaq üçün aktiv olan şəklin indeksi (default 0)
                                     const activeImgIdx = cardImageIndexes[room.id] || 0;

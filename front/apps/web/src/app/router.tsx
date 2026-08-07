@@ -39,7 +39,8 @@ const lazyWithRetry = (componentImport: () => Promise<any>) =>
     });
 
 // ─── Home Module (Home & HomeLayout remain direct for instant LCP) ─────────────
-import { HomeLayout, HomePage as Home } from '../modules/home';
+import HomeLayout from '../modules/home/pages/HomeLayout';
+import Home from '../modules/home/pages/Home/Home';
 
 // Lazy-loaded Home subpages
 const ExploreAboutPage = lazyWithRetry(() => import('../modules/home/pages/ExploreAbout/ExploreAbout'));

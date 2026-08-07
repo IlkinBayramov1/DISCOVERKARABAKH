@@ -208,7 +208,7 @@ export const TransportReservationPage: React.FC = () => {
                             
                             <div className="hotel-brief">
                                 <img 
-                                    src={vehicleImage || 'https://placehold.co/100x100?text=Vehicle'} 
+                                    src={vehicleImage || '/uploads/no-image.svg'} 
                                     alt="Vehicle" 
                                     className="brief-image" 
                                 />

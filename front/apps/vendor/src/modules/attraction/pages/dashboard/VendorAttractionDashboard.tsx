@@ -218,7 +218,7 @@ export default function VendorAttractionDashboard() {
                                                     alt={attraction.name}
                                                     className="attr-img"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=DK+Preview';
+                                                        (e.target as HTMLImageElement).src = getImageUrl('/uploads/no-image.svg');
                                                     }}
                                                 />
                                             ) : (

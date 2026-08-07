@@ -14,7 +14,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onSelect }) =
     const rawUrl = room.images && room.images.length > 0
         ? (typeof room.images[0] === 'string' ? room.images[0] : room.images[0]?.url)
         : undefined;
-    const imageUrl = getImageUrl(rawUrl, 'https://placehold.co/400x300?text=Room+Image');
+    const imageUrl = getImageUrl(rawUrl);
 
     return (
         <div className="room-card">

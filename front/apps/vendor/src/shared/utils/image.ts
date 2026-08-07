@@ -1,6 +1,6 @@
-export const getImageUrl = (url?: string, fallback = 'https://placehold.co/600x400?text=No+Image'): string => {
-    if (!url) return fallback;
-    if (typeof url !== 'string') return fallback;
+export const getImageUrl = (url?: string, fallback = '/uploads/no-image.svg'): string => {
+    if (!url) return fallback === '/uploads/no-image.svg' ? getImageUrl(fallback) : fallback;
+    if (typeof url !== 'string') return fallback === '/uploads/no-image.svg' ? getImageUrl(fallback) : fallback;
 
     // Convert any legacy hardcoded localhost/127.0.0.1 URLs saved in DB to clean path
     if (url.includes('localhost') || url.includes('127.0.0.1')) {

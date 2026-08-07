@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ITour } from '../types';
 import { FavoriteButton } from '../../../shared/components/FavoriteButton/FavoriteButton';
+import { getImageUrl } from '../../../shared/utils/image';
 import './TourCard.css';
 
 interface TourCardProps {
@@ -10,9 +11,7 @@ interface TourCardProps {
 }
 
 export const TourCard: React.FC<TourCardProps> = ({ tour, onClick, isFavorited }) => {
-    const imageUrl = tour.images && tour.images.length > 0 
-        ? tour.images[0] 
-        : 'https://placehold.co/400x300?text=No+Image';
+    const imageUrl = getImageUrl(tour.images && tour.images.length > 0 ? tour.images[0] : undefined);
 
     return (
         <div className="premium-tour-card" onClick={() => onClick && onClick(tour.id)}>
@@ -25,7 +24,7 @@ export const TourCard: React.FC<TourCardProps> = ({ tour, onClick, isFavorited }
                         const target = e.currentTarget;
                         if (!target.dataset.fallback) {
                             target.dataset.fallback = 'true';
-                            target.src = 'https://placehold.co/400x300?text=No+Image';
+                            target.src = getImageUrl('/uploads/no-image.svg');
                         }
                     }}
                 />
