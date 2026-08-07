@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 WORKDIR /app/front
 
 # Copy frontend source
@@ -14,7 +14,7 @@ RUN npm install
 RUN node scripts/build.js
 
 # Stage 2: Build Backend & Final Image
-FROM node:18-alpine
+FROM node:20-alpine
 RUN apk add --no-cache openssl libc6-compat
 WORKDIR /app
 
