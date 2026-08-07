@@ -12,12 +12,15 @@ export default function WebLayout() {
     const location = useLocation();
     const mainContentRef = useRef<HTMLElement>(null);
 
-    // Hər dəfə pathname (link) dəyişəndə scroll-u ən yuxarı çək
+    // Hər dəfə pathname (link) dəyişəndə scroll-u ən yuxarı çək (Forced reflow qarşısını almaq üçün rAF istifadə olunur)
     useEffect(() => {
-        if (mainContentRef.current) {
-            // Səhifə dəyişəndə anında (və ya smooth) yuxarı qalxması üçün
-            mainContentRef.current.scrollTo({ top: 0, behavior: 'auto' });
-        }
+        const handle = requestAnimationFrame(() => {
+            if (mainContentRef.current) {
+                mainContentRef.current.scrollTop = 0;
+            }
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+        });
+        return () => cancelAnimationFrame(handle);
     }, [location.pathname]);
 
     return (
