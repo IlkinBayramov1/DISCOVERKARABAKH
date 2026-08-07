@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Star } from 'lucide-react';
+import { ResponsiveImage } from '../../../../shared/components/ResponsiveImage/ResponsiveImage';
 import './Home.css';
 
 // ─── Static Data ─────────────────────────────────────────────────────────
@@ -10,7 +11,9 @@ const HERO_SLIDES = [
     tag: 'EXPLORE',
     title: 'A Karabakh to remember',
     desc: 'Immerse yourself in local culture, heritage, dining and unforgettable seasonal experiences across Karabakh.',
-    img: 'https://i.redd.it/bfp6j7bias841.jpg',
+    imageName: 'hero-slide',
+    width: 1200,
+    height: 600,
     ctaText: 'Learn more',
     ctaLink: '/explore/about'
   },
@@ -19,7 +22,9 @@ const HERO_SLIDES = [
     tag: 'REKLAM',
     title: 'Burada Sizin Reklamınız Ola Bilər',
     desc: '',
-    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+    imageName: 'shusha',
+    width: 1200,
+    height: 600,
     ctaText: 'Reklam Yerləşdir',
     ctaLink: '#'
   },
@@ -28,7 +33,9 @@ const HERO_SLIDES = [
     tag: 'REKLAM',
     title: 'Burada Sizin Reklamınız Ola Bilər',
     desc: '',
-    img: 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+    imageName: 'khankendi',
+    width: 1200,
+    height: 600,
     ctaText: 'Reklam Yerləşdir',
     ctaLink: '#'
   },
@@ -109,32 +116,32 @@ const SERVICES = [
 ];
 
 const CITIES = [
-  { slug: 'shusha', name: 'Shusha', desc: 'Culture, music heritage, historic streets and viewpoints.', img: 'https://shusha.gov.az/storage/app/uploads/public/662/0b9/eda/6620b9eda8f16612520717.jpg' },
-  { slug: 'khankendi', name: 'Khankendi', desc: 'Urban life, local dining and events calendar highlights.', img: 'https://www.azernews.az/media/2023/08/03/eko7spowaaah2rq.jpg' },
-  { slug: 'agdam', name: 'Aghdam', desc: 'Modern development, memorial sites and regional routes.', img: 'https://www.flax.az/images/layiheler/08-agdam-mosque/001.jpg' },
-  { slug: 'lachin', name: 'Lachin', desc: 'Mountains, nature trails and panoramic landscapes.', img: 'https://upload.wikimedia.org/wikipedia/commons/0/08/La%C3%A7%C4%B1n_%C5%9F%C9%99h%C9%99rinin_%C3%BCmumi_g%C3%B6r%C3%BCn%C3%BC%C5%9F%C3%BC.jpg' },
+  { slug: 'shusha', name: 'Shusha', desc: 'Culture, music heritage, historic streets and viewpoints.', imageName: 'shusha', width: 600, height: 400 },
+  { slug: 'khankendi', name: 'Khankendi', desc: 'Urban life, local dining and events calendar highlights.', imageName: 'khankendi', width: 600, height: 400 },
+  { slug: 'agdam', name: 'Aghdam', desc: 'Modern development, memorial sites and regional routes.', imageName: 'agdam', width: 600, height: 400 },
+  { slug: 'lachin', name: 'Lachin', desc: 'Mountains, nature trails and panoramic landscapes.', imageName: 'lachin', width: 600, height: 400 },
 ];
 
 const ARTICLES_MINI = [
-  { tag: 'GUIDES', title: 'Where to experience seasonal highlights', min: 7, href: '/explore/articles', img: 'https://www.virtualkarabakh.az/sekiller/da63108bb0c61515670390.jpg' },
-  { tag: 'FOOD & DRINK', title: 'Local dishes you should try first', min: 5, href: '/explore/articles', img: 'https://www.azernews.az/media/2017/11/24/qarabagh_mtb.jpg' },
-  { tag: 'CULTURE', title: 'Museums & heritage sites worth a visit', min: 6, href: '/explore/articles', img: 'https://cdn.iticket.az/event/gallery/wcfM5dcnWaWgPSNGPCkxiDI6OUbJwPD9Bu5vUR2R.jpg' },
-  { tag: 'NATURE', title: 'Best viewpoints for golden hour photos', min: 4, href: '/explore/articles', img: 'https://azerbaijan.travel/resize3000/center/pages/9166/0af37ede-c016-4967-88d6-3ea71a019307.png' },
+  { tag: 'GUIDES', title: 'Where to experience seasonal highlights', min: 7, href: '/explore/articles', imageName: 'dadivank', width: 400, height: 260 },
+  { tag: 'FOOD & DRINK', title: 'Local dishes you should try first', min: 5, href: '/explore/articles', imageName: 'khan-sofrasi', width: 400, height: 260 },
+  { tag: 'CULTURE', title: 'Museums & heritage sites worth a visit', min: 6, href: '/explore/articles', imageName: 'gala', width: 400, height: 260 },
+  { tag: 'NATURE', title: 'Best viewpoints for golden hour photos', min: 4, href: '/explore/articles', imageName: 'golden-hour', width: 400, height: 260 },
 ];
 
 const PLAN_CARDS = [
-  { kicker: 'Visa guide', title: 'Entry rules & permits', desc: 'What you need before you plan your trip to Karabakh.', href: '/plan/visa-permissions', img: 'https://shusha.gov.az/storage/app/media/9b663a2f-2b51-49ac-8bec-6646e783c957_20250822142737.jpg' },
-  { kicker: 'Transport', title: 'Getting around', desc: 'Routes, transfers, and practical tips for moving between cities.', href: '/plan/transportation', img: 'https://konkret.az/cloud/uploads/2020/10/a1-16.jpg' },
-  { kicker: 'Places to stay', title: 'Hotels & guesthouses', desc: 'Choose the best area and stay style for your itinerary.', href: '/plan/accommodation', img: 'https://qafqazinfo.az/uploads/1683742802/13.jpg' },
-  { kicker: 'About Karabakh', title: 'Know before you go', desc: 'A quick overview of culture, seasons, and local essentials.', href: '/explore/about', img: 'https://wmf.imgix.net/images/ca_aerial_view_of_dadivank_monastery_built_between_the_9th_and_13th_centuries._copy.jpg?auto=format,compress&fit=max&w=4040' },
+  { kicker: 'Visa guide', title: 'Entry rules & permits', desc: 'What you need before you plan your trip to Karabakh.', href: '/plan/visa-permissions', imageName: 'visa-guide', width: 600, height: 400 },
+  { kicker: 'Transport', title: 'Getting around', desc: 'Routes, transfers, and practical tips for moving between cities.', href: '/plan/transportation', imageName: 'getting-around', width: 600, height: 400 },
+  { kicker: 'Places to stay', title: 'Hotels & guesthouses', desc: 'Choose the best area and stay style for your itinerary.', href: '/plan/accommodation', imageName: 'hotels', width: 600, height: 400 },
+  { kicker: 'About Karabakh', title: 'Know before you go', desc: 'A quick overview of culture, seasons, and local essentials.', href: '/explore/about', imageName: 'dadivank', width: 600, height: 400 },
 ];
 
 const TODO_TABS = ['All', 'Attractions', 'Food & Drink', 'Guided Tours', 'Wellness', 'Entertainment'];
 
 const TODO_CARDS = [
-  { tag: 'Attraction', title: 'Shusha Fortress', desc: 'The 18th-century fortress walls overlooking dramatic cliffs — a symbol of Karabakh\'s cultural capital.', img: 'https://shusha.gov.az/storage/app/media/initial/Gala.jpg', rating: 4.9, reviews: 412 },
-  { tag: 'Restaurant', title: 'Karabakh Khan Sofrası', desc: 'Authentic regional cuisine featuring piti, dolma, and tandır bread in a refined historic setting.', img: 'https://www.shushahotel.com/storage/app/media/initial/Gallery%20Dining.jpg', rating: 4.6, reviews: 238 },
-  { tag: 'Wellness', title: 'Istisu Thermal Springs', desc: 'Natural mineral springs in the mountains of Kalbajar — known for therapeutic relaxation and scenic views.', img: 'https://fed.az/upload/news/358065.jpg', rating: 4.8, reviews: 189 },
+  { tag: 'Attraction', title: 'Shusha Fortress', desc: 'The 18th-century fortress walls overlooking dramatic cliffs — a symbol of Karabakh\'s cultural capital.', imageName: 'gala', width: 600, height: 400, rating: 4.9, reviews: 412 },
+  { tag: 'Restaurant', title: 'Karabakh Khan Sofrası', desc: 'Authentic regional cuisine featuring piti, dolma, and tandır bread in a refined historic setting.', imageName: 'khan-sofrasi', width: 600, height: 400, rating: 4.6, reviews: 238 },
+  { tag: 'Wellness', title: 'Istisu Thermal Springs', desc: 'Natural mineral springs in the mountains of Kalbajar — known for therapeutic relaxation and scenic views.', imageName: 'istisu', width: 600, height: 400, rating: 4.8, reviews: 189 },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -146,7 +153,6 @@ export default function Home() {
   const trackRef = useRef<HTMLDivElement>(null);
   const slidesCount = HERO_SLIDES.length;
 
-  // ✅ Correctly defined auto-play time
   const autoPlayTime = 6000;
 
   const scrollToSlide = useCallback((index: number) => {
@@ -170,7 +176,6 @@ export default function Home() {
     scrollToSlide(newIndex);
   }, [currentIndex, slidesCount, scrollToSlide]);
 
-  // Handle auto-play
   useEffect(() => {
     const playInterval = setInterval(() => {
       navRight();
@@ -179,7 +184,6 @@ export default function Home() {
     return () => clearInterval(playInterval);
   }, [navRight]);
 
-  // Handle resize updates
   useEffect(() => {
     const handleResize = () => {
       if (trackRef.current) {
@@ -205,7 +209,16 @@ export default function Home() {
               {HERO_SLIDES.map((slide) => (
                 <div key={slide.id} className="bannerSlide">
                   <div className="heroMedia" aria-hidden="true">
-                    <img src={slide.img} alt={slide.title} />
+                    <ResponsiveImage
+                      image={{
+                        name: slide.imageName,
+                        alt: slide.title,
+                        width: slide.width,
+                        height: slide.height
+                      }}
+                      isHero={slide.id === 1}
+                      sizes="100vw"
+                    />
                   </div>
                   <div className="heroOverlay" aria-hidden="true" />
 
@@ -286,7 +299,15 @@ export default function Home() {
             {CITIES.map((c) => (
               <Link key={c.slug} className="fcCard" to={`/where/${c.slug}`}>
                 <div className="fcCard__media">
-                  <img src={c.img} alt={c.name} />
+                  <ResponsiveImage
+                    image={{
+                      name: c.imageName,
+                      alt: c.name,
+                      width: c.width,
+                      height: c.height
+                    }}
+                    sizes="(max-width: 768px) 100vw, 300px"
+                  />
                 </div>
                 <div className="fcCard__info">
                   <div className="fcCard__meta">CITY</div>
@@ -310,7 +331,15 @@ export default function Home() {
             {/* Featured */}
             <article className="artFeat">
               <Link className="artFeat__media" to="/explore/articles">
-                <img src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1400&q=80" alt="Featured article" />
+                <ResponsiveImage
+                  image={{
+                    name: 'shusha',
+                    alt: 'Featured article',
+                    width: 800,
+                    height: 500
+                  }}
+                  sizes="(max-width: 768px) 100vw, 600px"
+                />
                 <span className="artFeat__shade" aria-hidden="true" />
               </Link>
               <div className="artFeat__content">
@@ -329,7 +358,15 @@ export default function Home() {
               {ARTICLES_MINI.map((a, i) => (
                 <article key={i} className="artCard">
                   <Link className="artCard__media" to={a.href}>
-                    <img src={a.img} alt={a.title} />
+                    <ResponsiveImage
+                      image={{
+                        name: a.imageName,
+                        alt: a.title,
+                        width: a.width,
+                        height: a.height
+                      }}
+                      sizes="(max-width: 768px) 100vw, 200px"
+                    />
                   </Link>
                   <div className="artCard__body">
                     <div className="artTag">{a.tag}</div>
@@ -358,7 +395,15 @@ export default function Home() {
             {PLAN_CARDS.map((c, i) => (
               <Link key={i} className="planCard" to={c.href}>
                 <div className="planCard__media">
-                  <img src={c.img} alt={c.title} />
+                  <ResponsiveImage
+                    image={{
+                      name: c.imageName,
+                      alt: c.title,
+                      width: c.width,
+                      height: c.height
+                    }}
+                    sizes="(max-width: 768px) 100vw, 300px"
+                  />
                 </div>
                 <div className="planCard__body">
                   <div className="planCard__kicker">{c.kicker}</div>
@@ -394,7 +439,15 @@ export default function Home() {
             {TODO_CARDS.map((c, i) => (
               <article key={i} className="todoCard">
                 <div className="todoCard__media">
-                  <img src={c.img} alt={c.title} />
+                  <ResponsiveImage
+                    image={{
+                      name: c.imageName,
+                      alt: c.title,
+                      width: c.width,
+                      height: c.height
+                    }}
+                    sizes="(max-width: 768px) 100vw, 350px"
+                  />
                   <span className="todoCard__tag">{c.tag}</span>
                 </div>
                 <div className="todoCard__body">

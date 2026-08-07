@@ -23,14 +23,31 @@ if (hasR2) {
  * Helper to upload a single file to storage (R2/S3 or Local Disk)
  */
 export const uploadFileToStorage = async (file, isPrivate = false) => {
+    let fileBuffer = file.buffer;
+    let ext = path.extname(file.originalname).toLowerCase();
+    let contentType = file.mimetype;
+
+    // Automatic Sharp image compression for uploaded vendor/user images
+    if (file.mimetype.startsWith('image/') && ext !== '.svg') {
+        try {
+            const sharp = (await import('sharp')).default;
+            fileBuffer = await sharp(file.buffer || fs.readFileSync(file.path))
+                .resize({ width: 1600, withoutEnlargement: true })
+                .webp({ quality: 80 })
+                .toBuffer();
+            ext = '.webp';
+            contentType = 'image/webp';
+        } catch (sharpErr) {
+            console.warn('Sharp compression skipped:', sharpErr.message);
+        }
+    }
+
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
     const fileName = `${file.fieldname}-${uniqueSuffix}${ext}`;
     const prefix = isPrivate ? 'private' : 'public';
     const key = `${prefix}/${fileName}`;
 
     if (hasR2 && s3Client) {
-        const fileBuffer = file.buffer;
         if (!fileBuffer) {
             throw new Error('File buffer is empty. Memory storage is required for R2 uploads.');
         }
@@ -39,14 +56,14 @@ export const uploadFileToStorage = async (file, isPrivate = false) => {
             Bucket: env.s3.bucketName,
             Key: key,
             Body: fileBuffer,
-            ContentType: file.mimetype
+            ContentType: contentType
         });
 
         await s3Client.send(command);
 
         if (isPrivate) {
             return {
-                url: key, // Private files return their key
+                url: key,
                 key: key,
                 isPrivate: true
             };
@@ -66,8 +83,8 @@ export const uploadFileToStorage = async (file, isPrivate = false) => {
         }
 
         const localPath = path.join(uploadDir, fileName);
-        if (file.buffer) {
-            fs.writeFileSync(localPath, file.buffer);
+        if (fileBuffer) {
+            fs.writeFileSync(localPath, fileBuffer);
         } else if (file.path) {
             fs.renameSync(file.path, localPath);
         }

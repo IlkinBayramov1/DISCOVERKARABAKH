@@ -1,13 +1,34 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    visualizer({
+      filename: './dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+    })
+  ],
   resolve: {
     alias: {
       '@dk/ui': path.resolve(__dirname, '../../packages/ui/src')
+    }
+  },
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-icons': ['lucide-react']
+        }
+      }
     }
   },
   server: {
@@ -31,4 +52,4 @@ export default defineConfig({
       }
     }
   }
-})
+});
