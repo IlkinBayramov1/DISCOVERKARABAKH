@@ -7,12 +7,14 @@ import { visualizer } from 'rollup-plugin-visualizer';
 export default defineConfig({
   plugins: [
     react(),
-    visualizer({
-      filename: './dist/stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-    })
+    ...(process.env.ANALYZE ? [
+      visualizer({
+        filename: 'stats.html',
+        emitFile: true,
+        gzipSize: true,
+        brotliSize: true,
+      })
+    ] : [])
   ],
   resolve: {
     alias: {
