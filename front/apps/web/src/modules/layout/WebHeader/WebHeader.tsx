@@ -10,7 +10,6 @@ import { notificationApi } from '../../../shared/api/notification.api';
 import type { INotification } from '../../../shared/types/notification.types';
 import { io, Socket } from 'socket.io-client';
 import { getToken } from '../../../shared/utils/token';
-import logoImg from '../../../assets/dk-logo3.png';
 import './WebHeader.css';
 
 interface WebHeaderProps {
