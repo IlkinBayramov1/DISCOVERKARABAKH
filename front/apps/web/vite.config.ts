@@ -3,23 +3,10 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 
-function asyncCssPlugin() {
-  return {
-    name: 'async-css-plugin',
-    transformIndexHtml(html: string) {
-      return html.replace(
-        /<link rel="stylesheet" (.*?)href="(.*?)"(.*?)>/g,
-        '<link rel="stylesheet" $1href="$2"$3 media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" $1href="$2"$3></noscript>'
-      );
-    }
-  };
-}
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    asyncCssPlugin(),
     ...(process.env.ANALYZE ? [
       visualizer({
         filename: 'stats.html',
