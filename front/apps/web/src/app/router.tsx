@@ -19,66 +19,85 @@ const PageLoader = () => (
     </div>
 );
 
+// ─── Resilient Dynamic Import with Automatic Network Retry ───────────────────
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+    lazy(async () => {
+        const pageHasBeenRefreshed = JSON.parse(
+            window.sessionStorage.getItem('retry-lazy-refreshed') || 'false'
+        );
+        try {
+            const component = await componentImport();
+            window.sessionStorage.setItem('retry-lazy-refreshed', 'false');
+            return component;
+        } catch (error) {
+            if (!pageHasBeenRefreshed) {
+                window.sessionStorage.setItem('retry-lazy-refreshed', 'true');
+                window.location.reload();
+            }
+            throw error;
+        }
+    });
+
 // ─── Home Module (Home & HomeLayout remain direct for instant LCP) ─────────────
 import { HomeLayout, HomePage as Home } from '../modules/home';
 
 // Lazy-loaded Home subpages
-const ExploreAboutPage = lazy(() => import('../modules/home/pages/ExploreAbout/ExploreAbout'));
-const ExploreCulturePage = lazy(() => import('../modules/home/pages/ExploreCulture/ExploreCulture'));
-const ExploreNaturePage = lazy(() => import('../modules/home/pages/ExploreNature/ExploreNature'));
-const ArticlesPage = lazy(() => import('../modules/home/pages/Articles/Articles'));
-const AccommodationPage = lazy(() => import('../modules/home/pages/Accommodation/Accommodation'));
-const ContactPage = lazy(() => import('../modules/home/pages/Contact/Contact'));
-const CorporatePage = lazy(() => import('../modules/home/pages/Corporate/Corporate'));
-const VisaPermissionsPage = lazy(() => import('../modules/home/pages/VisaPermissions/VisaPermissions'));
-const TransportationPage = lazy(() => import('../modules/home/pages/Transportation/Transportation'));
-const DiscoverCardPage = lazy(() => import('../modules/home/pages/DiscoverCard/DiscoverCard'));
-const PartnershipsPage = lazy(() => import('../modules/home/pages/Partnerships/Partnerships'));
-const InvestmentsPage = lazy(() => import('../modules/home/pages/Investments/Investments'));
-const JobsPage = lazy(() => import('../modules/home/pages/Jobs/Jobs'));
-const InternationalPage = lazy(() => import('../modules/home/pages/International/International'));
-const CityPage = lazy(() => import('../modules/home/pages/City/City'));
+const ExploreAboutPage = lazyWithRetry(() => import('../modules/home/pages/ExploreAbout/ExploreAbout'));
+const ExploreCulturePage = lazyWithRetry(() => import('../modules/home/pages/ExploreCulture/ExploreCulture'));
+const ExploreNaturePage = lazyWithRetry(() => import('../modules/home/pages/ExploreNature/ExploreNature'));
+const ArticlesPage = lazyWithRetry(() => import('../modules/home/pages/Articles/Articles'));
+const AccommodationPage = lazyWithRetry(() => import('../modules/home/pages/Accommodation/Accommodation'));
+const ContactPage = lazyWithRetry(() => import('../modules/home/pages/Contact/Contact'));
+const CorporatePage = lazyWithRetry(() => import('../modules/home/pages/Corporate/Corporate'));
+const VisaPermissionsPage = lazyWithRetry(() => import('../modules/home/pages/VisaPermissions/VisaPermissions'));
+const TransportationPage = lazyWithRetry(() => import('../modules/home/pages/Transportation/Transportation'));
+const DiscoverCardPage = lazyWithRetry(() => import('../modules/home/pages/DiscoverCard/DiscoverCard'));
+const PartnershipsPage = lazyWithRetry(() => import('../modules/home/pages/Partnerships/Partnerships'));
+const InvestmentsPage = lazyWithRetry(() => import('../modules/home/pages/Investments/Investments'));
+const JobsPage = lazyWithRetry(() => import('../modules/home/pages/Jobs/Jobs'));
+const InternationalPage = lazyWithRetry(() => import('../modules/home/pages/International/International'));
+const CityPage = lazyWithRetry(() => import('../modules/home/pages/City/City'));
 
 // ─── Service Layouts & Pages ───────────────────────────────────────────────────
-const WebLayout = lazy(() => import('../modules/layout/WebLayout/WebLayout'));
-const WebLogin = lazy(() => import('../modules/auth/pages/WebLogin'));
-const WebRegister = lazy(() => import('../modules/auth/pages/WebRegister'));
+const WebLayout = lazyWithRetry(() => import('../modules/layout/WebLayout/WebLayout'));
+const WebLogin = lazyWithRetry(() => import('../modules/auth/pages/WebLogin'));
+const WebRegister = lazyWithRetry(() => import('../modules/auth/pages/WebRegister'));
 
-const HotelSearchPage = lazy(() => import('../modules/hotel/pages/HotelSearch').then(m => ({ default: m.HotelSearchPage })));
-const HotelDetailPage = lazy(() => import('../modules/hotel/pages/HotelDetail').then(m => ({ default: m.HotelDetailPage })));
-const RoomDetailPage = lazy(() => import('../modules/hotel/pages/RoomDetail/RoomDetailPage').then(m => ({ default: m.RoomDetailPage })));
-const ReservationPage = lazy(() => import('../modules/hotel/pages/Reservation').then(m => ({ default: m.ReservationPage })));
-const BookingConfirmationPage = lazy(() => import('../modules/booking/pages/BookingConfirmation').then(m => ({ default: m.BookingConfirmationPage })));
+const HotelSearchPage = lazyWithRetry(() => import('../modules/hotel/pages/HotelSearch').then(m => ({ default: m.HotelSearchPage })));
+const HotelDetailPage = lazyWithRetry(() => import('../modules/hotel/pages/HotelDetail').then(m => ({ default: m.HotelDetailPage })));
+const RoomDetailPage = lazyWithRetry(() => import('../modules/hotel/pages/RoomDetail/RoomDetailPage').then(m => ({ default: m.RoomDetailPage })));
+const ReservationPage = lazyWithRetry(() => import('../modules/hotel/pages/Reservation').then(m => ({ default: m.ReservationPage })));
+const BookingConfirmationPage = lazyWithRetry(() => import('../modules/booking/pages/BookingConfirmation').then(m => ({ default: m.BookingConfirmationPage })));
 
-const PassengerTransportPage = lazy(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.PassengerTransportPage })));
-const TransportDetailsPage = lazy(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.TransportDetailsPage })));
-const TransportReservationPage = lazy(() => import('../modules/transport/pages/passenger/TransportReservationPage').then(m => ({ default: m.TransportReservationPage })));
-const CargoTransportPage = lazy(() => import('../modules/transport/pages/cargo/CargoTransportPage').then(m => ({ default: m.CargoTransportPage })));
-const DriverTransportPage = lazy(() => import('../modules/transport/pages/driver/DriverTransportPage').then(m => ({ default: m.DriverTransportPage })));
+const PassengerTransportPage = lazyWithRetry(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.PassengerTransportPage })));
+const TransportDetailsPage = lazyWithRetry(() => import('../modules/transport/pages/passenger').then(m => ({ default: m.TransportDetailsPage })));
+const TransportReservationPage = lazyWithRetry(() => import('../modules/transport/pages/passenger/TransportReservationPage').then(m => ({ default: m.TransportReservationPage })));
+const CargoTransportPage = lazyWithRetry(() => import('../modules/transport/pages/cargo/CargoTransportPage').then(m => ({ default: m.CargoTransportPage })));
+const DriverTransportPage = lazyWithRetry(() => import('../modules/transport/pages/driver/DriverTransportPage').then(m => ({ default: m.DriverTransportPage })));
 
-const ToursPage = lazy(() => import('../modules/tour/pages/ToursPage/ToursPage').then(m => ({ default: m.ToursPage })));
-const TourDetailsPage = lazy(() => import('../modules/tour/pages/TourDetailsPage/TourDetailsPage').then(m => ({ default: m.TourDetailsPage })));
-const TourReservationPage = lazy(() => import('../modules/tour/pages/TourReservationPage/TourReservationPage').then(m => ({ default: m.TourReservationPage })));
+const ToursPage = lazyWithRetry(() => import('../modules/tour/pages/ToursPage/ToursPage').then(m => ({ default: m.ToursPage })));
+const TourDetailsPage = lazyWithRetry(() => import('../modules/tour/pages/TourDetailsPage/TourDetailsPage').then(m => ({ default: m.TourDetailsPage })));
+const TourReservationPage = lazyWithRetry(() => import('../modules/tour/pages/TourReservationPage/TourReservationPage').then(m => ({ default: m.TourReservationPage })));
 
-const AttractionsPage = lazy(() => import('../modules/attraction/pages/AttractionsPage/AttractionsPage').then(m => ({ default: m.AttractionsPage })));
-const AttractionDetailsPage = lazy(() => import('../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage').then(m => ({ default: m.AttractionDetailsPage })));
-const AttractionReservationPage = lazy(() => import('../modules/attraction/pages/AttractionReservationPage/AttractionReservationPage').then(m => ({ default: m.AttractionReservationPage })));
+const AttractionsPage = lazyWithRetry(() => import('../modules/attraction/pages/AttractionsPage/AttractionsPage').then(m => ({ default: m.AttractionsPage })));
+const AttractionDetailsPage = lazyWithRetry(() => import('../modules/attraction/pages/AttractionDetailsPage/AttractionDetailsPage').then(m => ({ default: m.AttractionDetailsPage })));
+const AttractionReservationPage = lazyWithRetry(() => import('../modules/attraction/pages/AttractionReservationPage/AttractionReservationPage').then(m => ({ default: m.AttractionReservationPage })));
 
-const ProfilePage = lazy(() => import('../modules/account/pages/ProfilePage/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const TripsPage = lazy(() => import('../modules/account/pages/TripsPage/TripsPage').then(m => ({ default: m.TripsPage })));
-const FavoritesPage = lazy(() => import('../modules/account/pages/FavoritesPage/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
-const WalletPage = lazy(() => import('../modules/account/pages/WalletPage/WalletPage').then(m => ({ default: m.WalletPage })));
+const ProfilePage = lazyWithRetry(() => import('../modules/account/pages/ProfilePage/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const TripsPage = lazyWithRetry(() => import('../modules/account/pages/TripsPage/TripsPage').then(m => ({ default: m.TripsPage })));
+const FavoritesPage = lazyWithRetry(() => import('../modules/account/pages/FavoritesPage/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
+const WalletPage = lazyWithRetry(() => import('../modules/account/pages/WalletPage/WalletPage').then(m => ({ default: m.WalletPage })));
 
-const UtilitySearch = lazy(() => import('../modules/utility/pages/UtilitySearch'));
-const UtilityProviders = lazy(() => import('../modules/utility/pages/UtilityProviders'));
-const UtilityConfirmationPage = lazy(() => import('../modules/utility/pages/UtilityConfirmationPage'));
-const UtilityCheckoutPage = lazy(() => import('../modules/utility/pages/UtilityCheckoutPage'));
+const UtilitySearch = lazyWithRetry(() => import('../modules/utility/pages/UtilitySearch'));
+const UtilityProviders = lazyWithRetry(() => import('../modules/utility/pages/UtilityProviders'));
+const UtilityConfirmationPage = lazyWithRetry(() => import('../modules/utility/pages/UtilityConfirmationPage'));
+const UtilityCheckoutPage = lazyWithRetry(() => import('../modules/utility/pages/UtilityCheckoutPage'));
 
 // ─── Driver Portal ────────────────────────────────────────────────────────────
-const DriverLayout = lazy(() => import('../modules/driver/components/DriverLayout'));
-const DriverDashboard = lazy(() => import('../modules/driver/pages/DriverDashboard'));
-const DriverProfile = lazy(() => import('../modules/driver/pages/DriverProfile'));
-const DriverOrders = lazy(() => import('../modules/driver/pages/DriverOrders'));
+const DriverLayout = lazyWithRetry(() => import('../modules/driver/components/DriverLayout'));
+const DriverDashboard = lazyWithRetry(() => import('../modules/driver/pages/DriverDashboard'));
+const DriverProfile = lazyWithRetry(() => import('../modules/driver/pages/DriverProfile'));
+const DriverOrders = lazyWithRetry(() => import('../modules/driver/pages/DriverOrders'));
 
 const router = createBrowserRouter([
     {
