@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 import type { MegaMenu, NavItem } from '../../types/home.types';
-import logoImg from '../../../../assets/dk-logo3.png';
 import './Header.css';
 
 interface HeaderProps {
@@ -107,7 +106,10 @@ export default function Header({ nav, mega }: HeaderProps) {
             <div className="container hdr__inner">
                 <div className="hdr__left">
                     <a className="hdr__brand" href="/" aria-label="Discover Karabakh home">
-                        <img className="hdr__logo" src={logoImg} alt="Discover Karabakh" width={140} height={52} style={{ objectFit: 'contain' }} />
+                        <picture>
+                            <source type="image/webp" srcSet="/images/dk-logo3-140.webp 1x, /images/dk-logo3-280.webp 2x" />
+                            <img className="hdr__logo" src="/images/dk-logo3-140.webp" alt="Discover Karabakh" width={140} height={52} style={{ objectFit: 'contain' }} />
+                        </picture>
                     </a>
                 </div>
 
@@ -182,7 +184,10 @@ export default function Header({ nav, mega }: HeaderProps) {
                 <div className="hdr__mSheet" role="dialog" aria-modal="true" aria-label="Mobile navigation">
                     
                     <div className="hdr__mTop">
-                        <img src={logoImg} alt="Discover Karabakh" className="hdr__mLogo" />
+                        <picture>
+                            <source type="image/webp" srcSet="/images/dk-logo3-140.webp 1x, /images/dk-logo3-280.webp 2x" />
+                            <img src="/images/dk-logo3-140.webp" alt="Discover Karabakh" className="hdr__mLogo" width={140} height={52} style={{ objectFit: 'contain' }} />
+                        </picture>
                         <button className="hdr__mClose" type="button" aria-label="Close menu" onClick={closeMobile}>
                             <X size={20} />
                         </button>

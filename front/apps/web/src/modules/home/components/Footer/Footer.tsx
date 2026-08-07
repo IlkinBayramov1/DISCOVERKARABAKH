@@ -1,6 +1,5 @@
 import React from 'react';
 import type { FormEvent } from 'react';
-import logo from '../../../../assets/dk-logo3.png';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -19,11 +18,17 @@ const Footer: React.FC = () => {
         <div className="footerTop">
           <div className="footerBrand">
             <a className="brand" href="/" aria-label="Discover Karabakh">
-              <img
-                className="brand__logoImg"
-                src={logo}
-                alt="Discover Karabakh"
-              />
+              <picture>
+                <source type="image/webp" srcSet="/images/dk-logo3-140.webp 1x, /images/dk-logo3-280.webp 2x" />
+                <img
+                  className="brand__logoImg"
+                  src="/images/dk-logo3-140.webp"
+                  alt="Discover Karabakh"
+                  width={140}
+                  height={52}
+                  style={{ objectFit: 'contain' }}
+                />
+              </picture>
             </a>
             <p className="footerTag">
               A smart travel & city-services platform for Karabakh — explore places, plan trips, book services, and save with City Pass.
