@@ -32,7 +32,7 @@ services:
       redis:
         condition: service_started
     volumes:
-      - uploads_data:/app/uploads
+      - uploads_data:/app/back/uploads
 
   # 2. Managed MySQL Database
   mysql:
