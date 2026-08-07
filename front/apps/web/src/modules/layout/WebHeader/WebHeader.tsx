@@ -289,7 +289,10 @@ export default function WebHeader({ onMenuClick }: WebHeaderProps) {
                         <Menu size={24} /> 
                     </button>
                     <div className="header-logo-link">
-                        <img src={logoImg} alt="Discover Karabakh Logo" className="header-logo" />
+                        <picture>
+                            <source type="image/webp" srcSet="/images/dk-logo3-140.webp 1x, /images/dk-logo3-280.webp 2x" />
+                            <img src="/images/dk-logo3-140.webp" alt="Discover Karabakh Logo" className="header-logo" width="140" height="52" style={{ objectFit: 'contain' }} />
+                        </picture>
                     </div>
                 </div>
                 <div className="header-weather-wrapper">
