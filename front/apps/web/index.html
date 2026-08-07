@@ -18,6 +18,9 @@
   <!-- Favicon & Icons -->
   <link rel="icon" type="image/png" href="/favicon.png" />
 
+  <!-- Preload Critical App JS Module to shorten Network Dependency Tree Latency -->
+  <link rel="modulepreload" href="/src/main.tsx" />
+
   <!-- Preload Critical App CSS to prevent render-blocking delay -->
   <link rel="preload" href="/src/index.css" as="style" fetchpriority="high" />
   <link rel="stylesheet" href="/src/index.css" />
