@@ -270,7 +270,7 @@ export default function Home() {
             </button>
 
             {/* Bottom Dots Navigation */}
-            <div className="heroBottom" aria-hidden="true">
+            <div className="heroBottom">
               <div className="heroDots">
                 {HERO_SLIDES.map((_, index) => (
                   <button
@@ -447,6 +447,8 @@ export default function Home() {
               {TODO_TABS.map(tab => (
                 <button
                   key={tab}
+                  role="tab"
+                  aria-selected={activeTab === tab}
                   className={`todoTab${activeTab === tab ? ' is-active' : ''}`}
                   onClick={() => setActiveTab(tab)}
                 >
