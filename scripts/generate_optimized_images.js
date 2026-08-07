@@ -83,18 +83,18 @@ async function processImage(imgObj) {
 
         const widths = [400, 800, 1200];
         for (const w of widths) {
-            // AVIF (quality 68 for crisp details without large file size)
+            // AVIF (quality 60, effort 6, chromaSubsampling 4:2:0)
             const avifPath = path.join(targetDir, `${imgObj.name}-${w}.avif`);
             await sharp(inputBuffer)
                 .resize({ width: w, fit: 'cover', withoutEnlargement: true })
-                .toFormat('avif', { quality: 68 })
+                .toFormat('avif', { quality: 60, effort: 6, chromaSubsampling: '4:2:0' })
                 .toFile(avifPath);
 
-            // WebP (quality 75)
+            // WebP (quality 70, smartSubsample true)
             const webpPath = path.join(targetDir, `${imgObj.name}-${w}.webp`);
             await sharp(inputBuffer)
                 .resize({ width: w, fit: 'cover', withoutEnlargement: true })
-                .toFormat('webp', { quality: 75 })
+                .toFormat('webp', { quality: 70, smartSubsample: true })
                 .toFile(webpPath);
         }
 

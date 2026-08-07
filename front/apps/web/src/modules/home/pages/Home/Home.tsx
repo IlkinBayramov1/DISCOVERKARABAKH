@@ -150,12 +150,18 @@ export default function Home() {
 
   // ─── DYNAMIC BANNER LOGIC ───────────────────────────────────────────────
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loadedSlides, setLoadedSlides] = useState<number[]>([0]);
   const trackRef = useRef<HTMLDivElement>(null);
   const slidesCount = HERO_SLIDES.length;
 
   const autoPlayTime = 6000;
 
+  const loadSlide = useCallback((index: number) => {
+    setLoadedSlides((prev) => (prev.includes(index) ? prev : [...prev, index]));
+  }, []);
+
   const scrollToSlide = useCallback((index: number) => {
+    loadSlide(index);
     if (trackRef.current) {
       const slideWidth = trackRef.current.clientWidth;
       trackRef.current.scrollTo({
@@ -164,7 +170,15 @@ export default function Home() {
       });
       setCurrentIndex(index);
     }
-  }, []);
+  }, [loadSlide]);
+
+  // Initial LCP bitdikdən 3 saniyə sonra 2-ci slaydı (index 1) arxa planda prefetch et
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadSlide(1);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [loadSlide]);
 
   const navLeft = () => {
     const newIndex = currentIndex === 0 ? slidesCount - 1 : currentIndex - 1;
@@ -206,38 +220,45 @@ export default function Home() {
 
             {/* Slides Track */}
             <div className="bannerTrack" ref={trackRef}>
-              {HERO_SLIDES.map((slide) => (
-                <div key={slide.id} className="bannerSlide">
-                  <div className="heroMedia" aria-hidden="true">
-                    <ResponsiveImage
-                      image={{
-                        name: slide.imageName,
-                        alt: slide.title,
-                        width: slide.width,
-                        height: slide.height
-                      }}
-                      isHero={slide.id === 1}
-                      sizes="(max-width: 1200px) 100vw, 1200px"
-                    />
-                  </div>
-                  <div className="heroOverlay" aria-hidden="true" />
+              {HERO_SLIDES.map((slide, index) => {
+                const isLoaded = loadedSlides.includes(index);
+                return (
+                  <div key={slide.id} className="bannerSlide">
+                    <div className="heroMedia" aria-hidden="true">
+                      {isLoaded ? (
+                        <ResponsiveImage
+                          image={{
+                            name: slide.imageName,
+                            alt: slide.title,
+                            width: slide.width,
+                            height: slide.height
+                          }}
+                          isHero={index === 0}
+                          sizes="(max-width: 1200px) 100vw, 1200px"
+                        />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(180deg, #1f2937 0%, #111827 100%)' }} />
+                      )}
+                    </div>
+                    <div className="heroOverlay" aria-hidden="true" />
 
-                  <div className="heroContent">
-                    <span className="heroKicker">{slide.tag}</span>
-                    <h1 className="heroTitle">{slide.title}</h1>
-                    <p className="heroDesc">{slide.desc}</p>
+                    <div className="heroContent">
+                      <span className="heroKicker">{slide.tag}</span>
+                      <h1 className="heroTitle">{slide.title}</h1>
+                      <p className="heroDesc">{slide.desc}</p>
 
-                    <div className="heroCtas">
-                      <Link className="heroBtn heroBtn--primary" to={slide.ctaLink}>
-                        {slide.ctaText} <span className="heroArrow" aria-hidden="true">›</span>
-                      </Link>
-                      <Link className="heroBtn heroBtn--ghost" to="/explore/articles">
-                        Explore more <span className="heroArrow" aria-hidden="true">›</span>
-                      </Link>
+                      <div className="heroCtas">
+                        <Link className="heroBtn heroBtn--primary" to={slide.ctaLink}>
+                          {slide.ctaText} <span className="heroArrow" aria-hidden="true">›</span>
+                        </Link>
+                        <Link className="heroBtn heroBtn--ghost" to="/explore/articles">
+                          Explore more <span className="heroArrow" aria-hidden="true">›</span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Side Navigation */}
