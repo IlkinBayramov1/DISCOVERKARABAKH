@@ -146,8 +146,12 @@ app.use('/uploads', (req, res, next) => {
     res.setHeader('Cache-Control', 'public, max-age=86400');
     next();
 }, express.static(uploadDir), (req, res) => {
-    if (req.path.match(/\.(jpg|jpeg|png|webp|avif|gif)$/i)) {
-        return res.redirect('https://placehold.co/400x300?text=No+Image');
+    if (req.path.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i)) {
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.status(200).send(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#94a3b8">No Image Available</text></svg>'
+        );
     }
     res.status(404).send('Not Found');
 });
