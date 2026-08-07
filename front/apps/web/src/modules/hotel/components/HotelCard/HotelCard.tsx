@@ -46,7 +46,18 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorite
     return (
         <div className="premium-hotel-card" onClick={() => onClick && onClick(hotel.id)}>
             <div className="card-image-section">
-                <img src={imageUrl} alt={hotel.name} loading="lazy" />
+                <img 
+                    src={imageUrl} 
+                    alt={hotel.name} 
+                    loading="lazy" 
+                    onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallback) {
+                            target.dataset.fallback = 'true';
+                            target.src = 'https://placehold.co/400x300?text=No+Image';
+                        }
+                    }}
+                />
                 {hotel.starRating && (
                     <div className="card-rating-badge">
                         <i className="fa-solid fa-star"></i>

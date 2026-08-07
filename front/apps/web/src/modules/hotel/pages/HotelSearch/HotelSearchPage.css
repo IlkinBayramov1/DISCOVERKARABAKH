@@ -31,7 +31,7 @@ body {
     position: relative;
     height: 260px;
     border-radius: 26px;
-    background-image: url('https://www.maritim.com/fileadmin/_processed_/0/1/csm_Bpa_363_Superior_500a005b62.jpg');
+    background-image: url('/images/hotels-800.avif');
     background-size: cover;
     background-position: center;
     overflow: hidden;
