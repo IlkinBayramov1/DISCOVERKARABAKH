@@ -34,8 +34,7 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
                 className={className}
                 style={style}
                 loading={isHero ? "eager" : "lazy"}
-                fetchPriority={isHero ? "high" : "auto"}
-                decoding="async"
+                {...(isHero ? { fetchPriority: "high", decoding: "sync" } : { decoding: "async" })}
             />
         );
     }
@@ -62,8 +61,7 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
                 className={className}
                 style={style}
                 loading={isHero ? "eager" : "lazy"}
-                fetchPriority={isHero ? "high" : "auto"}
-                decoding="async"
+                {...(isHero ? { fetchPriority: "high", decoding: "sync" } : { decoding: "async" })}
             />
         </picture>
     );

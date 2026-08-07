@@ -217,7 +217,7 @@ export default function Home() {
                         height: slide.height
                       }}
                       isHero={slide.id === 1}
-                      sizes="100vw"
+                      sizes="(max-width: 1200px) 100vw, 1200px"
                     />
                   </div>
                   <div className="heroOverlay" aria-hidden="true" />
