@@ -34,10 +34,17 @@ body {
     position: relative;
     height: 260px;
     border-radius: 26px;
-    background-image: url('https://www.cbi.eu/sites/default/files/styles/hero_banner_1920_x_480_big/public/visuals/Nature-tourism-homepage-banner.jpg');
-    background-size: cover;
-    background-position: center;
     overflow: hidden;
+}
+
+.tour-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
 }
 
 .tour-hero::before {
@@ -45,6 +52,7 @@ body {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.4);
+    z-index: 2;
 }
 
 .tour-hero-overlay {

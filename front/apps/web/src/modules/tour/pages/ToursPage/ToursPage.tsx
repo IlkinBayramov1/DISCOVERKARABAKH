@@ -86,6 +86,16 @@ export const ToursPage: React.FC = () => {
                 
                 {/* HERO SECTION */}
                 <section className="tour-hero">
+                    <img 
+                        src="/images/gala-800.avif" 
+                        alt="Unforgettable Experiences" 
+                        className="tour-hero-bg" 
+                        fetchPriority="high" 
+                        loading="eager" 
+                        decoding="async" 
+                        width="1200"
+                        height="400"
+                    />
                     <div className="tour-hero-overlay">
                         <h1>Unforgettable Experiences</h1>
                         <p>Discover the hidden gems of Karabakh with our curated tours.</p>
