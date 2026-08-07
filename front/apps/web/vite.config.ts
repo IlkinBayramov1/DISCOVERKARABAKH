@@ -23,6 +23,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    modulePreload: {
+      polyfill: true
+    },
     cssCodeSplit: true,
     chunkSizeWarningLimit: 600,
     rollupOptions: {
