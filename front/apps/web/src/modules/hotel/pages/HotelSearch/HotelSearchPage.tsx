@@ -131,18 +131,19 @@ export const HotelSearchPage: React.FC = () => {
                 
                 {/* HERO SECTION */}
                 <section className="hotel-hero">
-                    <img 
-                        src="/images/hotels-800.avif" 
-                        srcSet="/images/hotels-400.avif 400w, /images/hotels-800.avif 800w"
-                        sizes="(max-width: 600px) 100vw, 800px"
-                        alt="Hotels & Accommodations" 
-                        className="hotel-hero-bg" 
-                        fetchPriority="high" 
-                        loading="eager" 
-                        decoding="async" 
-                        width="800"
-                        height="400"
-                    />
+                    <picture>
+                        <source media="(max-width: 768px)" srcSet="/images/hotels-400.avif" type="image/avif" />
+                        <img 
+                            src="/images/hotels-800.avif" 
+                            alt="Hotels & Accommodations" 
+                            className="hotel-hero-bg" 
+                            fetchPriority="high" 
+                            loading="eager" 
+                            decoding="async" 
+                            width="800"
+                            height="400"
+                        />
+                    </picture>
                     <div className="hotel-hero-overlay">
                         <h1>Hotels & Accommodations</h1>
                         <p>Find the perfect place to stay in Karabakh.</p>
