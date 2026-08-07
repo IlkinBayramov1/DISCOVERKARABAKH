@@ -27,6 +27,15 @@ const getOrigins = (envVar, fallback) => {
     return envVar.split(',').map(url => url.trim());
 };
 
+// Enable response compression (Gzip/Brotli) for all text assets & API responses
+app.use(compression({
+    threshold: 0, // Compress all text-based responses
+    filter: (req, res) => {
+        if (req.headers['x-no-compression']) return false;
+        return compression.filter(req, res);
+    }
+}));
+
 // Enable CORS strictly for authorized frontend domains
 const allowedOrigins = [
     ...getOrigins(process.env.FRONTEND_WEB_URL, 'http://localhost:5173'),
@@ -112,11 +121,6 @@ const uploadLimiter = rateLimit({
 app.use('/api', generalLimiter);
 app.use('/api/v1/auth', authLimiter);
 app.use('/api/v1/upload', uploadLimiter);
-
-// Compression middleware for Gzip/Brotli response compression
-app.use(compression({
-    threshold: 512, // compress any response > 512 bytes
-}));
 
 // Body parser
 app.use(express.json());
