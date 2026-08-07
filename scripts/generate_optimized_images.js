@@ -5,6 +5,7 @@ const http = require('http');
 const sharp = require(path.join(__dirname, '../back/node_modules/sharp'));
 
 const targetDir = path.join(__dirname, '../front/apps/web/public/images');
+const assetsDir = path.join(__dirname, '../front/apps/web/src/assets');
 
 if (!fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir, { recursive: true });
@@ -44,27 +45,56 @@ function downloadBuffer(url) {
     });
 }
 
+async function processLogo() {
+    console.log('Processing Header Logo...');
+    const logoSource = path.join(assetsDir, 'dk-logo3.png');
+    if (!fs.existsSync(logoSource)) {
+        console.warn('dk-logo3.png not found at assets');
+        return;
+    }
+    const inputBuffer = fs.readFileSync(logoSource);
+
+    // 140px WebP
+    await sharp(inputBuffer)
+        .resize({ width: 140, withoutEnlargement: true })
+        .toFormat('webp', { quality: 85 })
+        .toFile(path.join(targetDir, 'dk-logo3-140.webp'));
+
+    // 280px WebP (Retina 2x)
+    await sharp(inputBuffer)
+        .resize({ width: 280, withoutEnlargement: true })
+        .toFormat('webp', { quality: 85 })
+        .toFile(path.join(targetDir, 'dk-logo3-280.webp'));
+
+    // Copy to assets for direct imports
+    await sharp(inputBuffer)
+        .resize({ width: 280, withoutEnlargement: true })
+        .toFormat('webp', { quality: 85 })
+        .toFile(path.join(assetsDir, 'dk-logo3-280.webp'));
+
+    console.log('✔ Finished Logo optimization!');
+}
+
 async function processImage(imgObj) {
     console.log(`Processing image: ${imgObj.name}...`);
     try {
         const inputBuffer = await downloadBuffer(imgObj.url);
         const metadata = await sharp(inputBuffer).metadata();
-        console.log(`Downloaded ${imgObj.name}: original size ${metadata.width}x${metadata.height}, ${inputBuffer.length} bytes`);
 
         const widths = [400, 800, 1200];
         for (const w of widths) {
-            // AVIF
+            // AVIF (quality 68 for crisp details without large file size)
             const avifPath = path.join(targetDir, `${imgObj.name}-${w}.avif`);
             await sharp(inputBuffer)
                 .resize({ width: w, fit: 'cover', withoutEnlargement: true })
-                .toFormat('avif', { quality: 75 })
+                .toFormat('avif', { quality: 68 })
                 .toFile(avifPath);
 
-            // WebP
+            // WebP (quality 75)
             const webpPath = path.join(targetDir, `${imgObj.name}-${w}.webp`);
             await sharp(inputBuffer)
                 .resize({ width: w, fit: 'cover', withoutEnlargement: true })
-                .toFormat('webp', { quality: 80 })
+                .toFormat('webp', { quality: 75 })
                 .toFile(webpPath);
         }
 
@@ -72,7 +102,7 @@ async function processImage(imgObj) {
         const jpgPath = path.join(targetDir, `${imgObj.name}-800.jpg`);
         await sharp(inputBuffer)
             .resize({ width: 800, fit: 'cover', withoutEnlargement: true })
-            .toFormat('jpeg', { quality: 82 })
+            .toFormat('jpeg', { quality: 78 })
             .toFile(jpgPath);
 
         console.log(`✔ Finished ${imgObj.name}`);
@@ -82,10 +112,11 @@ async function processImage(imgObj) {
 }
 
 async function run() {
+    await processLogo();
     for (const imgObj of IMAGES) {
         await processImage(imgObj);
     }
-    console.log('🎉 All images processed and saved to front/apps/web/public/images/');
+    console.log('🎉 All images and logo variants processed successfully!');
 }
 
 run();

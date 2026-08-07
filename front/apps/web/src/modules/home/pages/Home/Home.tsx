@@ -306,7 +306,7 @@ export default function Home() {
                       width: c.width,
                       height: c.height
                     }}
-                    sizes="(max-width: 768px) 100vw, 300px"
+                    sizes="(max-width: 768px) 50vw, 300px"
                   />
                 </div>
                 <div className="fcCard__info">
@@ -365,7 +365,7 @@ export default function Home() {
                         width: a.width,
                         height: a.height
                       }}
-                      sizes="(max-width: 768px) 100vw, 200px"
+                      sizes="(max-width: 768px) 35vw, 160px"
                     />
                   </Link>
                   <div className="artCard__body">
@@ -402,7 +402,7 @@ export default function Home() {
                       width: c.width,
                       height: c.height
                     }}
-                    sizes="(max-width: 768px) 100vw, 300px"
+                    sizes="(max-width: 768px) 50vw, 300px"
                   />
                 </div>
                 <div className="planCard__body">
@@ -446,7 +446,7 @@ export default function Home() {
                       width: c.width,
                       height: c.height
                     }}
-                    sizes="(max-width: 768px) 100vw, 350px"
+                    sizes="(max-width: 768px) 50vw, 350px"
                   />
                   <span className="todoCard__tag">{c.tag}</span>
                 </div>
