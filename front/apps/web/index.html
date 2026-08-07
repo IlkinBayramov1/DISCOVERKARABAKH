@@ -18,6 +18,10 @@
   <!-- Favicon & Icons -->
   <link rel="icon" type="image/png" href="/favicon.png" />
 
+  <!-- Preload Critical App CSS to prevent render-blocking delay -->
+  <link rel="preload" href="/src/index.css" as="style" fetchpriority="high" />
+  <link rel="stylesheet" href="/src/index.css" />
+
   <!-- Inline Critical Base Layout Skeleton (< 4 KB to prevent CLS & TTFB delay) -->
   <style>
     :root { --bg-dark: #0b0f17; --card-dark: #111827; }
