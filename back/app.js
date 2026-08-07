@@ -70,7 +70,8 @@ app.use(helmet({
         }
     },
     crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: false
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false
 }));
 
 // Granular Rate Limiters
