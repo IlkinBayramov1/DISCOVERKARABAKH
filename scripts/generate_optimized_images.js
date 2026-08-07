@@ -57,19 +57,19 @@ async function processLogo() {
     // 140px WebP
     await sharp(inputBuffer)
         .resize({ width: 140, withoutEnlargement: true })
-        .toFormat('webp', { quality: 85 })
+        .toFormat('webp', { quality: 72, alphaQuality: 90 })
         .toFile(path.join(targetDir, 'dk-logo3-140.webp'));
 
     // 280px WebP (Retina 2x)
     await sharp(inputBuffer)
         .resize({ width: 280, withoutEnlargement: true })
-        .toFormat('webp', { quality: 85 })
+        .toFormat('webp', { quality: 72, alphaQuality: 90 })
         .toFile(path.join(targetDir, 'dk-logo3-280.webp'));
 
     // Copy to assets for direct imports
     await sharp(inputBuffer)
         .resize({ width: 280, withoutEnlargement: true })
-        .toFormat('webp', { quality: 85 })
+        .toFormat('webp', { quality: 72, alphaQuality: 90 })
         .toFile(path.join(assetsDir, 'dk-logo3-280.webp'));
 
     console.log('✔ Finished Logo optimization!');
@@ -90,11 +90,11 @@ async function processImage(imgObj) {
                 .toFormat('avif', { quality: 60, effort: 6, chromaSubsampling: '4:2:0' })
                 .toFile(avifPath);
 
-            // WebP (quality 70, smartSubsample true)
+            // WebP (quality 68, smartSubsample true)
             const webpPath = path.join(targetDir, `${imgObj.name}-${w}.webp`);
             await sharp(inputBuffer)
                 .resize({ width: w, fit: 'cover', withoutEnlargement: true })
-                .toFormat('webp', { quality: 70, smartSubsample: true })
+                .toFormat('webp', { quality: 68, smartSubsample: true })
                 .toFile(webpPath);
         }
 
