@@ -289,8 +289,7 @@ export default function WebHeader({ onMenuClick }: WebHeaderProps) {
                     </button>
                     <div className="header-logo-link">
                         <picture>
-                            <source type="image/webp" srcSet="/images/dk-logo3-140.webp 1x, /images/dk-logo3-280.webp 2x" />
-                            <img src="/images/dk-logo3-140.webp" alt="Discover Karabakh Logo" className="header-logo" width="140" height="52" style={{ objectFit: 'contain' }} />
+                            <img src="/images/dk-logo3-140.webp" alt="Discover Karabakh Logo" className="header-logo" width="140" height="52" style={{ objectFit: 'contain' }} loading="eager" decoding="async" fetchPriority="high" />
                         </picture>
                     </div>
                 </div>
