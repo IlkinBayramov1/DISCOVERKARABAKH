@@ -184,20 +184,31 @@
 }
 
 .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .30);
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
     padding: 0;
 }
 
-.dot:hover { background: rgba(255, 255, 255, .7); }
-.dot.is-active {
-    background: rgba(255, 255, 255, .95);
-    box-shadow: 0 0 0 3px rgba(90, 46, 145, .25);
+.dot::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .40);
+    transition: all 0.3s ease;
+}
+
+.dot:hover::after { background: rgba(255, 255, 255, .85); }
+.dot.is-active::after {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(90, 46, 145, .45);
 }
 
 .bannerNav {
