@@ -23,13 +23,11 @@ import { ReviewList } from '../../components/ReviewList/ReviewList';
 import { ReviewForm } from '../../components/ReviewForm/ReviewForm';
 import { getToken, getUserId } from '../../../../shared/utils/token';
 import { attractionApi } from '../../api/attraction.api';
-import { useNearbyAttractions } from '../../hooks/useNearbyAttractions';
 
 // Components
 import { WeatherWidget } from '../../components/WeatherWidget';
 import { AudioGuide } from '../../components/AudioGuide';
 import { ReportReviewModal } from '../../components/ReportReviewModal';
-import { AttractionCard } from '../../components/AttractionCard/AttractionCard';
 
 import './AttractionDetailsPage.css';
 
@@ -44,13 +42,6 @@ export const AttractionDetailsPage: React.FC = () => {
         submitReview,
         reportReview
     } = useAttractionReviews(attraction?.id);
-
-    const { nearby, isLoading: isNearbyLoading } = useNearbyAttractions(
-        attraction?.latitude,
-        attraction?.longitude,
-        50,
-        5
-    );
 
     // Interaction States
     const [isFavoriting, setIsFavoriting] = useState(false);
@@ -110,7 +101,7 @@ export const AttractionDetailsPage: React.FC = () => {
 
     const images = attraction.images && attraction.images.length > 0 
         ? attraction.images.map(img => img.url) 
-        : ['https://placehold.co/1200x600?text=No+Image+Available'];
+        : ['/uploads/no-image.svg'];
 
     const fullLocation = `${attraction.address ? attraction.address + ', ' : ''}${attraction.city || 'Karabakh'}, Azerbaijan`;
 
@@ -185,7 +176,7 @@ export const AttractionDetailsPage: React.FC = () => {
                         </div>
                     ) : (
                         <div className="gallery-main no-image">
-                            <img src="https://placehold.co/1200x600?text=No+Image+Available" alt="Default" />
+                            <img src="/uploads/no-image.svg" alt="Default" />
                         </div>
                     )}
                 </section>

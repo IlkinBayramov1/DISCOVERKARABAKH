@@ -14,7 +14,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorite
     const rawUrl = hotel.images && hotel.images.length > 0 
         ? (typeof hotel.images[0] === 'string' ? hotel.images[0] : hotel.images[0]?.url)
         : undefined;
-    const imageUrl = getImageUrl(rawUrl, 'https://placehold.co/400x300?text=No+Image');
+    const imageUrl = getImageUrl(rawUrl);
 
     const getAmenityConfig = (rawName?: string) => {
         if (!rawName) return { icon: 'fa-solid fa-check' };
@@ -54,7 +54,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorite
                         const target = e.currentTarget;
                         if (!target.dataset.fallback) {
                             target.dataset.fallback = 'true';
-                            target.src = 'https://placehold.co/400x300?text=No+Image';
+                            target.src = getImageUrl('/uploads/no-image.svg');
                         }
                     }}
                 />

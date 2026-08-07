@@ -121,14 +121,14 @@ export const TourDetailsPage: React.FC = () => {
 
     // Image URL helper - YENI
     const getImageUrl = (url: string) => {
-        if (!url) return 'https://placehold.co/800x600?text=No+Image';
+        if (!url) return '/uploads/no-image.svg';
         if (url.startsWith('http') || url.startsWith('/images/')) return url;
         const baseUrl = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '';
         return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     // Prepare gallery images safely
-    const images = tour.images && tour.images.length > 0 ? tour.images : ['https://placehold.co/800x600?text=No+Image'];
+    const images = tour.images && tour.images.length > 0 ? tour.images : ['/uploads/no-image.svg'];
 
     // Format location string safely - YENI
     const meetingPlace = tour.address ? `${tour.address}, ` : '';
@@ -201,7 +201,7 @@ export const TourDetailsPage: React.FC = () => {
                         </div>
                     ) : (
                         <div className="gallery-main no-image">
-                            <img src="https://placehold.co/1200x600?text=No+Tour+Images" alt="Default" />
+                            <img src="/uploads/no-image.svg" alt="Default" />
                         </div>
                     )}
                 </section>

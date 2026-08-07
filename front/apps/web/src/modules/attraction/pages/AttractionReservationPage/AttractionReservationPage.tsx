@@ -224,7 +224,7 @@ export const AttractionReservationPage: React.FC = () => {
                         <div className="summary-card card sticky-sidebar">
                             <div className="attraction-brief">
                                 <img 
-                                    src={(attraction.images && attraction.images.length > 0) ? (attraction.images[0].url || attraction.images[0]) : 'https://placehold.co/600x400?text=Attraction'} 
+                                    src={(attraction.images && attraction.images.length > 0) ? (attraction.images[0].url || attraction.images[0]) : '/uploads/no-image.svg'} 
                                     alt={attraction.name} 
                                     className="brief-image"
                                 />
