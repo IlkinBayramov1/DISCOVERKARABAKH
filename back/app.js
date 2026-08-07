@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import routes from './routes/index.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
@@ -111,6 +112,11 @@ app.use('/api', generalLimiter);
 app.use('/api/v1/auth', authLimiter);
 app.use('/api/v1/upload', uploadLimiter);
 
+// Compression middleware for Gzip/Brotli response compression
+app.use(compression({
+    threshold: 512, // compress any response > 512 bytes
+}));
+
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -142,30 +148,32 @@ app.use(routes);
 // ─── Serve Built Frontend Apps (Production) ──────────────────────────
 const DIST_PATH = path.join(__dirname, '../front/dist');
 
-const noCacheOptions = {
+const staticAssetOptions = {
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.html')) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        } else if (filePath.includes('/assets/') || /\.(css|js|woff2|avif|webp|png|jpg|jpeg|svg)$/i.test(filePath)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
     }
 };
 
 // 1. Vendor Portal (Subpath /vendor)
-app.use('/vendor', express.static(path.join(DIST_PATH, 'vendor'), noCacheOptions));
+app.use('/vendor', express.static(path.join(DIST_PATH, 'vendor'), staticAssetOptions));
 app.get(/^\/vendor(\/.*)?$/, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'vendor/index.html'));
 });
 
 // 2. Admin Portal (Subpath /admin)
-app.use('/admin', express.static(path.join(DIST_PATH, 'admin'), noCacheOptions));
+app.use('/admin', express.static(path.join(DIST_PATH, 'admin'), staticAssetOptions));
 app.get(/^\/admin(\/.*)?$/, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'admin/index.html'));
 });
 
 // 3. Web (Main App at Root)
-app.use(express.static(DIST_PATH, noCacheOptions));
+app.use(express.static(DIST_PATH, staticAssetOptions));
 app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(DIST_PATH, 'index.html'));
