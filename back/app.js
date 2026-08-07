@@ -179,6 +179,12 @@ app.get('/robots.txt', (req, res) => {
     res.send("User-agent: *\nAllow: /\nSitemap: https://discoverkarabakh.az/sitemap.xml\n");
 });
 
+// llms.txt route (Agentic Browsing Markdown)
+app.get('/llms.txt', (req, res) => {
+    res.type('text/markdown');
+    res.send("# Discover Karabakh\n\n> Official Tourism & Experiences Guide for Karabakh, Azerbaijan\n\n## Core Sections\n- [About Karabakh](https://discoverkarabakh.az/explore/about)\n- [Attractions](https://discoverkarabakh.az/things-to-do/attractions)\n- [Hotels & Stays](https://discoverkarabakh.az/hotels)\n- [Plan Your Trip](https://discoverkarabakh.az/plan/visa-permissions)\n");
+});
+
 // 3. Web (Main App at Root)
 app.use(express.static(DIST_PATH, staticAssetOptions));
 app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {
