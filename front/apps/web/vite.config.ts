@@ -21,6 +21,9 @@ export default defineConfig({
       '@dk/ui': path.resolve(__dirname, '../../packages/ui/src')
     }
   },
+  esbuild: {
+    drop: ['console', 'debugger']
+  },
   build: {
     target: 'esnext',
     modulePreload: {
