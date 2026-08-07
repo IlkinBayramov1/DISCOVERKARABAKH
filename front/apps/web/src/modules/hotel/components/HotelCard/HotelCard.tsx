@@ -62,7 +62,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, isFavorite
 
             <div className="card-info-section">
                 <div className="card-header">
-                    <h3 className="card-title">{hotel.name}</h3>
+                    <h2 className="card-title">{hotel.name}</h2>
                 </div>
                 
                 <div className="card-location">

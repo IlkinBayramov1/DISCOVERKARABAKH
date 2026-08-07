@@ -284,7 +284,7 @@ export default function WebHeader({ onMenuClick }: WebHeaderProps) {
         <header className="web-header">
             <div className="web-header__left">
                 <div className="header-logo-container">
-                    <button className="mobile-menu-btn" onClick={onMenuClick}>
+                    <button className="mobile-menu-btn" aria-label="Open menu" onClick={onMenuClick}>
                         <Menu size={24} /> 
                     </button>
                     <div className="header-logo-link">
