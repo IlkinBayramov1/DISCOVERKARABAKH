@@ -150,8 +150,9 @@ const DIST_PATH = path.join(__dirname, '../front/dist');
 
 const staticAssetOptions = {
     setHeaders: (res, filePath) => {
+        res.setHeader('Vary', 'Accept-Encoding');
         if (filePath.endsWith('.html')) {
-            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.setHeader('Cache-Control', 'no-cache');
         } else if (filePath.includes('/assets/') || /\.(css|js|woff2|avif|webp|png|jpg|jpeg|svg)$/i.test(filePath)) {
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
@@ -161,21 +162,21 @@ const staticAssetOptions = {
 // 1. Vendor Portal (Subpath /vendor)
 app.use('/vendor', express.static(path.join(DIST_PATH, 'vendor'), staticAssetOptions));
 app.get(/^\/vendor(\/.*)?$/, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(DIST_PATH, 'vendor/index.html'));
 });
 
 // 2. Admin Portal (Subpath /admin)
 app.use('/admin', express.static(path.join(DIST_PATH, 'admin'), staticAssetOptions));
 app.get(/^\/admin(\/.*)?$/, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(DIST_PATH, 'admin/index.html'));
 });
 
 // 3. Web (Main App at Root)
 app.use(express.static(DIST_PATH, staticAssetOptions));
 app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
