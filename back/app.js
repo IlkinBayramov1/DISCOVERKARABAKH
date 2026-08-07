@@ -173,6 +173,12 @@ app.get(/^\/admin(\/.*)?$/, (req, res) => {
     res.sendFile(path.join(DIST_PATH, 'admin/index.html'));
 });
 
+// robots.txt route (Plain Text SEO)
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send("User-agent: *\nAllow: /\nSitemap: https://discoverkarabakh.az/sitemap.xml\n");
+});
+
 // 3. Web (Main App at Root)
 app.use(express.static(DIST_PATH, staticAssetOptions));
 app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {

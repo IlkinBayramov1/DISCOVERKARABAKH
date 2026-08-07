@@ -310,10 +310,13 @@ body {
     inset: 0;
     z-index: 1200;
     pointer-events: none; /* Let clicks pass through when closed */
+    visibility: hidden;
+    transition: visibility 0.4s ease;
 }
 
 .hdr__mNav--open {
     pointer-events: auto;
+    visibility: visible;
 }
 
 /* Backdrop */
