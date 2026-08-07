@@ -33,7 +33,7 @@ export const TourCard: React.FC<TourCardProps> = ({ tour, onClick, isFavorited }
 
             <div className="card-info-section">
                 <div className="card-header">
-                    <h3 className="card-title" title={tour.name}>{tour.name}</h3>
+                    <h2 className="card-title" title={tour.name}>{tour.name}</h2>
                 </div>
                 
                 <div className="card-location">

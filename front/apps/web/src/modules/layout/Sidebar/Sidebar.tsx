@@ -156,65 +156,63 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             ============================================== */}
                         <li className="nav-divider mobile-only-section"></li>
                         
-                        <div className="mobile-only-section">
-                            {isAuthenticated ? (
-                                <>
-                                    <li>
-                                        <div 
-                                            className="mobile-balance-card" 
-                                            onClick={() => { navigate('/account/wallet'); onClose(); }}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <Wallet size={20} className="balance-icon" />
-                                            <div className="balance-info">
-                                                <span className="balance-label">Wallet Balance</span>
-                                                <span className="balance-amount">{userBalance.toFixed(2)} ₼</span>
-                                            </div>
-                                            <button className="mobile-deposit-btn">+</button>
+                        {isAuthenticated ? (
+                            <>
+                                <li className="mobile-only-section">
+                                    <div 
+                                        className="mobile-balance-card" 
+                                        onClick={() => { navigate('/account/wallet'); onClose(); }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <Wallet size={20} className="balance-icon" />
+                                        <div className="balance-info">
+                                            <span className="balance-label">Wallet Balance</span>
+                                            <span className="balance-amount">{userBalance.toFixed(2)} ₼</span>
                                         </div>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/account/profile" onClick={onClose} className="nav-link">
-                                            <UserIcon size={20} />
-                                            <span>My Profile</span>
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/account/favorites" onClick={onClose} className="nav-link">
-                                            <Heart size={20} />
-                                            <span>Favorites</span>
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/account/trips" onClick={onClose} className="nav-link">
-                                            <Briefcase size={20} />
-                                            <span>My Trips</span>
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <button onClick={() => { logout(); onClose(); }} className="nav-link text-red">
-                                            <LogOut size={20} />
-                                            <span>Logout</span>
-                                        </button>
-                                    </li>
-                                </>
-                            ) : (
-                                <>
-                                    <li>
-                                        <NavLink to="/auth/login" onClick={onClose} className="nav-link">
-                                            <UserIcon size={20} />
-                                            <span>Login</span>
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/auth/register" onClick={onClose} className="nav-link">
-                                            <Shield size={20} />
-                                            <span>Register</span>
-                                        </NavLink>
-                                    </li>
-                                </>
-                            )}
-                        </div>
+                                        <button className="mobile-deposit-btn">+</button>
+                                    </div>
+                                </li>
+                                <li className="mobile-only-section">
+                                    <NavLink to="/account/profile" onClick={onClose} className="nav-link">
+                                        <UserIcon size={20} />
+                                        <span>My Profile</span>
+                                    </NavLink>
+                                </li>
+                                <li className="mobile-only-section">
+                                    <NavLink to="/account/favorites" onClick={onClose} className="nav-link">
+                                        <Heart size={20} />
+                                        <span>Favorites</span>
+                                    </NavLink>
+                                </li>
+                                <li className="mobile-only-section">
+                                    <NavLink to="/account/trips" onClick={onClose} className="nav-link">
+                                        <Briefcase size={20} />
+                                        <span>My Trips</span>
+                                    </NavLink>
+                                </li>
+                                <li className="mobile-only-section">
+                                    <button onClick={() => { logout(); onClose(); }} className="nav-link text-red">
+                                        <LogOut size={20} />
+                                        <span>Logout</span>
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li className="mobile-only-section">
+                                    <NavLink to="/auth/login" onClick={onClose} className="nav-link">
+                                        <UserIcon size={20} />
+                                        <span>Login</span>
+                                    </NavLink>
+                                </li>
+                                <li className="mobile-only-section">
+                                    <NavLink to="/auth/register" onClick={onClose} className="nav-link">
+                                        <Shield size={20} />
+                                        <span>Register</span>
+                                    </NavLink>
+                                </li>
+                            </>
+                        )}
 
                     </ul>
                 </nav>

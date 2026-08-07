@@ -102,13 +102,15 @@ export const ToursPage: React.FC = () => {
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                         <div style={{ width: '100%' }}>
-                            <label>TOUR NAME</label>
+                            <label htmlFor="tour-search-input">TOUR NAME</label>
                             <input 
+                                id="tour-search-input"
                                 type="text" 
                                 placeholder="Search experiences..."
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 className="search-input-naked"
+                                aria-label="Tour search"
                                 style={{ width: '100%', fontSize: '15px' }}
                             />
                         </div>
@@ -121,14 +123,16 @@ export const ToursPage: React.FC = () => {
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
                         <div>
-                            <label>LOCATION</label>
+                            <label htmlFor="tour-city-input">LOCATION</label>
                             <div className="search-value">
                                 <input 
+                                    id="tour-city-input"
                                     type="text" 
                                     placeholder="Karabakh"
                                     value={cityInput}
                                     onChange={(e) => setCityInput(e.target.value)}
                                     className="search-input-naked"
+                                    aria-label="City location"
                                     style={{ width: '100px', fontSize: '15px' }}
                                 />
                             </div>
@@ -142,15 +146,17 @@ export const ToursPage: React.FC = () => {
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
                         <div>
-                            <label>DURATION (DAYS)</label>
+                            <label htmlFor="tour-duration-input">DURATION (DAYS)</label>
                             <div className="search-value">
                                 <input 
+                                    id="tour-duration-input"
                                     type="number" 
                                     min="1"
                                     placeholder="Any"
                                     value={durationInput}
                                     onChange={(e) => setDurationInput(e.target.value ? Number(e.target.value) : '')}
                                     className="search-input-naked"
+                                    aria-label="Duration in days"
                                     style={{ width: '80px', fontSize: '15px' }}
                                 />
                             </div>
@@ -185,7 +191,7 @@ export const ToursPage: React.FC = () => {
                         <div className="ghost-btn sort-wrapper">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                             Sort:
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select">
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select" aria-label="Sort tours">
                                 <option value="recommended">Recommended</option>
                                 <option value="price_asc">Price: Low to High</option>
                                 <option value="price_desc">Price: High to Low</option>

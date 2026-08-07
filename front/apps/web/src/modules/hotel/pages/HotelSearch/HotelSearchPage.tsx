@@ -147,13 +147,15 @@ export const HotelSearchPage: React.FC = () => {
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                         <div style={{ width: '100%' }}>
-                            <label>HOTEL NAME</label>
+                            <label htmlFor="hotel-search-input">HOTEL NAME</label>
                             <input 
+                                id="hotel-search-input"
                                 type="text" 
                                 placeholder="Search by hotel name..."
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 className="search-input-naked"
+                                aria-label="Hotel name search"
                                 style={{ width: '100%', fontSize: '15px' }}
                             />
                         </div>
@@ -163,25 +165,29 @@ export const HotelSearchPage: React.FC = () => {
                     <div className="search-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         <div>
-                            <label>CHECK-IN / OUT</label>
+                            <label htmlFor="hotel-checkin-input">CHECK-IN / OUT</label>
                             <div className="date-inputs search-value" style={{ display: 'flex', alignItems: 'center' }}>
                                 <input 
+                                    id="hotel-checkin-input"
                                     type="date" 
                                     value={checkInInput} 
                                     onChange={(e) => setCheckInInput(e.target.value)} 
-                                    className="search-input-naked" 
+                                    className="search-input-naked"
+                                    aria-label="Check-in date" 
                                     onClick={(e) => {
                                         if ('showPicker' in HTMLInputElement.prototype) {
                                             (e.target as HTMLInputElement).showPicker();
                                         }
                                     }}
                                 />
-                                <span style={{ margin: '0 8px', color: '#94a3b8', fontWeight: 600 }}>-</span>
+                                <span style={{ margin: '0 8px', color: '#64748b', fontWeight: 600 }}>-</span>
                                 <input 
+                                    id="hotel-checkout-input"
                                     type="date" 
                                     value={checkOutInput} 
                                     onChange={(e) => setCheckOutInput(e.target.value)} 
-                                    className="search-input-naked" 
+                                    className="search-input-naked"
+                                    aria-label="Check-out date" 
                                     onClick={(e) => {
                                         if ('showPicker' in HTMLInputElement.prototype) {
                                             (e.target as HTMLInputElement).showPicker();
@@ -210,9 +216,9 @@ export const HotelSearchPage: React.FC = () => {
                                         <div className="guest-desc">Ages 13 or above</div>
                                     </div>
                                     <div className="guest-controls">
-                                        <button type="button" onClick={() => setAdultsInput(Math.max(1, adultsInput - 1))}>-</button>
+                                        <button type="button" aria-label="Decrease adults" onClick={() => setAdultsInput(Math.max(1, adultsInput - 1))}>-</button>
                                         <span>{adultsInput}</span>
-                                        <button type="button" onClick={() => setAdultsInput(adultsInput + 1)}>+</button>
+                                        <button type="button" aria-label="Increase adults" onClick={() => setAdultsInput(adultsInput + 1)}>+</button>
                                     </div>
                                 </div>
                                 <div className="guest-row">
@@ -221,9 +227,9 @@ export const HotelSearchPage: React.FC = () => {
                                         <div className="guest-desc">Ages 2-12</div>
                                     </div>
                                     <div className="guest-controls">
-                                        <button type="button" onClick={() => setChildrenInput(Math.max(0, childrenInput - 1))}>-</button>
+                                        <button type="button" aria-label="Decrease children" onClick={() => setChildrenInput(Math.max(0, childrenInput - 1))}>-</button>
                                         <span>{childrenInput}</span>
-                                        <button type="button" onClick={() => setChildrenInput(childrenInput + 1)}>+</button>
+                                        <button type="button" aria-label="Increase children" onClick={() => setChildrenInput(childrenInput + 1)}>+</button>
                                     </div>
                                 </div>
                                 <div className="guest-row">
@@ -231,9 +237,9 @@ export const HotelSearchPage: React.FC = () => {
                                         <div className="guest-title">Rooms</div>
                                     </div>
                                     <div className="guest-controls">
-                                        <button type="button" onClick={() => setRoomsInput(Math.max(1, roomsInput - 1))}>-</button>
+                                        <button type="button" aria-label="Decrease rooms" onClick={() => setRoomsInput(Math.max(1, roomsInput - 1))}>-</button>
                                         <span>{roomsInput}</span>
-                                        <button type="button" onClick={() => setRoomsInput(roomsInput + 1)}>+</button>
+                                        <button type="button" aria-label="Increase rooms" onClick={() => setRoomsInput(roomsInput + 1)}>+</button>
                                     </div>
                                 </div>
                             </div>
@@ -268,7 +274,7 @@ export const HotelSearchPage: React.FC = () => {
                         <div className="ghost-btn sort-wrapper">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                             Sort:
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select">
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="inline-sort-select" aria-label="Sort hotels">
                                 <option value="recommended">Recommended</option>
                                 <option value="price_asc">Price: Low to High</option>
                                 <option value="price_desc">Price: High to Low</option>
