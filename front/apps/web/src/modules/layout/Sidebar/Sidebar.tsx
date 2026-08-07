@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-    Hotel, Map as MapIcon, FerrisWheel, Car, Package, Users,
-    BadgeCheck, ChevronDown, ChevronRight, MapPin, Shield,
+    Hotel, Map as MapIcon, FerrisWheel, Car, Users,
+    ChevronDown, ChevronRight, MapPin, Shield,
     Heart, Briefcase, Wallet, LogOut, User as UserIcon, Flame
 } from 'lucide-react';
 import { getUserRole } from '../../../shared/utils/token';

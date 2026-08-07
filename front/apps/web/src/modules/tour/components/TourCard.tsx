@@ -17,7 +17,18 @@ export const TourCard: React.FC<TourCardProps> = ({ tour, onClick, isFavorited }
     return (
         <div className="premium-tour-card" onClick={() => onClick && onClick(tour.id)}>
             <div className="card-image-section">
-                <img src={imageUrl} alt={tour.name} loading="lazy" />
+                <img 
+                    src={imageUrl} 
+                    alt={tour.name} 
+                    loading="lazy" 
+                    onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallback) {
+                            target.dataset.fallback = 'true';
+                            target.src = 'https://placehold.co/400x300?text=No+Image';
+                        }
+                    }}
+                />
                 
                 <div className="card-duration-badge">
                     <i className="fa-regular fa-clock"></i>

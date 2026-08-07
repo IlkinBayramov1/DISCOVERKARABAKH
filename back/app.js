@@ -141,7 +141,12 @@ app.use('/uploads', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     next();
-}, express.static(uploadDir));
+}, express.static(uploadDir), (req, res) => {
+    if (req.path.match(/\.(jpg|jpeg|png|webp|avif|gif)$/i)) {
+        return res.redirect('https://placehold.co/400x300?text=No+Image');
+    }
+    res.status(404).send('Not Found');
+});
 
 // Routes (API)
 app.use(routes);
