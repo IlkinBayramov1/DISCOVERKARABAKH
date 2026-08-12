@@ -42,10 +42,19 @@ export const BookingConfirmationPage: React.FC = () => {
             const canvas = await html2canvas(receiptRef.current, {
                 scale: 2, // 2 is optimal for crisp text without generating massive file sizes
                 useCORS: true,
+                allowTaint: true,
                 logging: false,
                 backgroundColor: '#ffffff',
                 windowWidth: 1024, // 1. FORCE DESKTOP LAYOUT even if user is on mobile
                 onclone: (clonedDoc) => {
+                    // Ensure all image URLs in cloned DOM use HTTPS to prevent Mixed Content security blocking
+                    const allImgs = clonedDoc.querySelectorAll('img');
+                    allImgs.forEach(img => {
+                        if (img.src && img.src.startsWith('http://')) {
+                            img.src = img.src.replace('http://', 'https://');
+                        }
+                    });
+
                     const receiptCard = clonedDoc.querySelector('.dk-bc-receipt-card') as HTMLElement;
                     if (receiptCard) {
                         // Lock dimensions so mobile CSS media queries don't ruin the PDF
@@ -77,20 +86,27 @@ export const BookingConfirmationPage: React.FC = () => {
             
             const imgData = canvas.toDataURL('image/png');
             
-            // 3. DYNAMIC RECEIPT SIZING (Fixed TypeScript Error)
+            // 3. DYNAMIC RECEIPT SIZING
             const pdfWidth = 210; // Standard A4 width in mm
             const padding = 15;   // 15mm padding on all sides
             const contentWidth = pdfWidth - (padding * 2);
             
-            // Use the canvas dimensions directly instead of pdf.getImageProperties!
             const contentHeight = (canvas.height * contentWidth) / canvas.width;
             const pdfHeight = contentHeight + (padding * 2);
             
-            // Create a custom sized PDF! 
             const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]);
-            
             pdf.addImage(imgData, 'PNG', padding, padding, contentWidth, contentHeight, undefined, 'FAST');
-            pdf.save(`DK_Booking_${booking?.bookingNumber || 'Receipt'}.pdf`);
+
+            // Secure Blob Download to prevent Chrome "Insecure download blocked" warning
+            const pdfBlob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = `DK_Booking_${booking?.bookingNumber || 'Receipt'}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } catch (err) {
             console.error('PDF Generation Error:', err);
             alert('Failed to generate PDF. Please try again.');

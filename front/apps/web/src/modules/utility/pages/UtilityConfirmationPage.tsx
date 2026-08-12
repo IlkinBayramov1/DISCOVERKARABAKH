@@ -65,10 +65,18 @@ export default function UtilityConfirmationPage() {
             const canvas = await html2canvas(receiptRef.current, {
                 scale: 2,
                 useCORS: true,
+                allowTaint: true,
                 logging: false,
                 backgroundColor: '#ffffff',
                 windowWidth: 1024,
                 onclone: (clonedDoc) => {
+                    const allImgs = clonedDoc.querySelectorAll('img');
+                    allImgs.forEach(img => {
+                        if (img.src && img.src.startsWith('http://')) {
+                            img.src = img.src.replace('http://', 'https://');
+                        }
+                    });
+
                     const receiptCard = clonedDoc.querySelector('.dk-bc-receipt-card') as HTMLElement;
                     if (receiptCard) {
                         receiptCard.style.width = '800px'; 
@@ -106,7 +114,17 @@ export default function UtilityConfirmationPage() {
             
             const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]);
             pdf.addImage(imgData, 'PNG', padding, padding, contentWidth, contentHeight, undefined, 'FAST');
-            pdf.save(`DK_Utility_Receipt_${payment?.transactionId || 'Payment'}.pdf`);
+
+            // Secure Blob Download
+            const pdfBlob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = `DK_Utility_Receipt_${payment?.transactionId || 'Payment'}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } catch (err) {
             console.error('PDF Generation Error:', err);
             alert('Failed to generate PDF. Please try again.');
