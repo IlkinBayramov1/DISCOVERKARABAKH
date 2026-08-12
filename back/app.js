@@ -74,7 +74,7 @@ app.use(helmet({
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'", "*"],
-            frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+            frameSrc: ["'self'", "https://challenges.cloudflare.com", "https://maps.google.com", "https://www.google.com", "https://www.openstreetmap.org"],
             upgradeInsecureRequests: null
         }
     },
