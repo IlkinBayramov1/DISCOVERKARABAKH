@@ -1,18 +1,48 @@
 <!doctype html>
-<html lang="en">
+<html lang="az">
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>web</title>
-  <script type="module" crossorigin src="/assets/index-rZ_TP1lP.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-Ds2s4K2L.css">
+
+  <!-- SEO Meta Tags -->
+  <title>Discover Karabakh — Official Tourism & Experiences Guide</title>
+  <meta name="description"
+    content="Explore culture, heritage, attractions, hotels, and seamless travel experiences across Karabakh, Azerbaijan." />
+
+  <!-- LCP Hero Image Preload (Modern Responsive Standard) -->
+  <link rel="preload" as="image" href="/images/hotels-400.avif" type="image/avif" media="(max-width: 768px)" fetchpriority="high" />
+  <link rel="preload" as="image" href="/images/hotels-800.avif" type="image/avif" media="(min-width: 769px)" fetchpriority="high" />
+  <link rel="preload" as="image" href="/images/hero-slide-400.avif" type="image/avif" media="(max-width: 768px)" fetchpriority="high" />
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <!-- Preload Critical App JS Module to shorten Network Dependency Tree Latency -->
+  <link rel="modulepreload" href="data:application/octet-stream;base64,aW1wb3J0IHsgU3RyaWN0TW9kZSB9IGZyb20gJ3JlYWN0Jw0KaW1wb3J0IHsgY3JlYXRlUm9vdCB9IGZyb20gJ3JlYWN0LWRvbS9jbGllbnQnDQppbXBvcnQgJy4vaW5kZXguY3NzJw0KaW1wb3J0IEFwcCBmcm9tICcuL0FwcC50c3gnDQoNCmNyZWF0ZVJvb3QoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3Jvb3QnKSEpLnJlbmRlcigNCiAgPFN0cmljdE1vZGU+DQogICAgPEFwcCAvPg0KICA8L1N0cmljdE1vZGU+LA0KKQ0K" />
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+
+
+  <!-- Inline Critical Base Layout Skeleton (< 4 KB to prevent CLS & TTFB delay) -->
+  <style>
+    :root { --bg-dark: #0b0f17; --card-dark: #111827; }
+    body { margin: 0; background-color: var(--bg-dark); color: #ffffff; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
+    .hero { position: relative; width: 100%; min-height: 480px; }
+    .heroCard { position: relative; border-radius: 16px; background-color: var(--card-dark); overflow: hidden; min-height: 480px; }
+    .hdr { position: sticky; top: 0; z-index: 100; background: rgba(11, 15, 23, 0.85); backdrop-filter: blur(12px); }
+  </style>
+  <script type="module" crossorigin src="/assets/index-Bry2yk0a.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-CInqUrnG.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-BiLaDeII.css">
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root"></div>
 </body>
 
 </html>

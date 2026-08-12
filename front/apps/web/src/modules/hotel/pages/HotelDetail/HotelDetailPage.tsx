@@ -240,18 +240,39 @@ export const HotelDetailPage: React.FC = () => {
                     <div className="split-sidebar">
                         <div className="premium-card map-wrapper-card">
                             <div className="map-embed">
-                                {hotel.latitude && hotel.longitude ? (
-                                    <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://maps.google.com/maps?q=${hotel.latitude},${hotel.longitude}&z=15&output=embed`}></iframe>
-                                ) : (
-                                    <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.name}, ${hotel.city}, ${hotel.address}`)}&z=15&output=embed`}></iframe>
-                                )}
-                                <a className="map-overlay-btn" href={hotel.googleMapsUrl ? hotel.googleMapsUrl : (hotel.latitude && hotel.longitude ? `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.address}`)}`)} target="_blank" rel="noopener noreferrer">
-                                    <i className="fa-solid fa-location-crosshairs"></i> View on map
-                                </a>
+                                {(() => {
+                                    const c = (hotel.city || '').toLowerCase();
+                                    let defaultLat = 39.7539;
+                                    let defaultLng = 46.7465;
+                                    if (c.includes('lachin') || c.includes('laçın')) { defaultLat = 39.6383; defaultLng = 46.5461; }
+                                    else if (c.includes('khankendi') || c.includes('xankəndi')) { defaultLat = 39.8264; defaultLng = 46.7656; }
+                                    else if (c.includes('aghdam') || c.includes('ağdam')) { defaultLat = 39.9911; defaultLng = 46.9297; }
+
+                                    const lat = hotel.latitude || defaultLat;
+                                    const lng = hotel.longitude || defaultLng;
+                                    const embedUrl = `https://maps.google.com/maps?q=${lat},${lng}&hl=en&z=14&output=embed`;
+                                    const directUrl = hotel.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+                                    return (
+                                        <>
+                                            <iframe
+                                                title="Map"
+                                                width="100%"
+                                                height="100%"
+                                                style={{ border: 0 }}
+                                                loading="lazy"
+                                                src={embedUrl}
+                                            ></iframe>
+                                            <a className="map-overlay-btn" href={directUrl} target="_blank" rel="noopener noreferrer">
+                                                <i className="fa-solid fa-location-crosshairs"></i> View on map
+                                            </a>
+                                        </>
+                                    );
+                                })()}
                             </div>
                             <div className="map-text-info">
                                 <strong>Location</strong>
-                                <span>{hotel.address}{hotel.city ? `, ${hotel.city}` : ''}</span>
+                                <span>{hotel.address || hotel.name}{hotel.city ? `, ${hotel.city}` : ''}</span>
                             </div>
                         </div>
 
