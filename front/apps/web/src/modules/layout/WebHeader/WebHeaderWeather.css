@@ -1,5 +1,5 @@
 /* ============================================
-   ULTRA PREMIUM WEATHER WIDGET
+   ULTRA PREMIUM WEATHER WIDGET WITH CITY SELECTOR
    ============================================ */
 
 .dk-weather-wrapper {
@@ -7,6 +7,7 @@
     height: 56px;
     display: flex;
     align-items: center;
+    position: relative;
 }
 
 .dk-weather-widget {
@@ -21,6 +22,18 @@
     height: 56px;
     box-sizing: border-box;
     transition: all 0.3s ease;
+}
+
+.dk-weather-widget.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.dk-weather-widget.clickable:hover,
+.dk-weather-widget.clickable.active {
+    border-color: var(--dk-primary, #6a28c7);
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(106, 40, 199, 0.1);
 }
 
 .dk-weather-widget.loading {
@@ -72,6 +85,17 @@
     letter-spacing: 0.05em;
 }
 
+.city-arrow {
+    transition: transform 0.3s ease;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.city-arrow.open {
+    transform: rotate(180deg);
+    opacity: 1;
+}
+
 .weather-temp-row {
     display: flex;
     align-items: center;
@@ -119,6 +143,69 @@
 .w-stat-icon {
     color: #3b82f6;
     opacity: 0.8;
+}
+
+/* DROPDOWN MENU FOR CITIES */
+.dk-weather-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 220px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    padding: 8px;
+    z-index: 1000;
+    animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-header {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 8px 12px 6px;
+    letter-spacing: 0.05em;
+}
+
+.dropdown-city-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dropdown-city-item:hover {
+    background: #f1f5f9;
+    color: var(--dk-primary, #6a28c7);
+}
+
+.dropdown-city-item.selected {
+    background: #f3e8ff;
+    color: var(--dk-primary, #6a28c7);
+    font-weight: 700;
+}
+
+.check-icon {
+    color: var(--dk-primary, #6a28c7);
 }
 
 /* ============================================
