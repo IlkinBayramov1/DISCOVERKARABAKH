@@ -235,7 +235,7 @@ export default function UtilityConfirmationPage() {
                     {isCompleted && (
                         <div className="dk-bc-qr-corner">
                             <img 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${transactionId}&color=0f172a`} 
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`${window.location.origin}/utility-confirmation/${paymentId || transactionId}`)}&color=0f172a`} 
                                 alt="Authorization QR Code" 
                             />
                             <span>Doğruluğu Yoxla</span>

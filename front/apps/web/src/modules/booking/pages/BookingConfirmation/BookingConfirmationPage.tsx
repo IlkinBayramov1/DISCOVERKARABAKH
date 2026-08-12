@@ -275,7 +275,7 @@ export const BookingConfirmationPage: React.FC = () => {
                     {/* NEW: QR CODE FOR AUTHORIZATION */}
                     <div className="dk-bc-qr-corner">
                         <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${bookingNumber}&color=0f172a`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`${window.location.origin}/booking-confirmation/${id || booking?.id || bookingNumber}`)}&color=0f172a`} 
                             alt="Authorization QR Code" 
                         />
                         <span>Scan to Verify</span>
