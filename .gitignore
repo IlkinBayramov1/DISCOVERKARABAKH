@@ -6,8 +6,6 @@
 .env.production
 .env.staging
 .env.test
-!*.example
-!*.template
 
 # Dependencies & Build outputs
 node_modules/
