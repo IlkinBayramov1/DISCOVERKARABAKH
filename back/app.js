@@ -67,7 +67,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "data:", "blob:", "https://challenges.cloudflare.com", "https://cdnjs.cloudflare.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "blob:", "*"], // Allow images from any source
             connectSrc: ["'self'", "*"],
@@ -200,8 +200,11 @@ app.get('/llms.txt', (req, res) => {
 });
 
 // 3. Web (Main App at Root)
+app.use('/assets', express.static(path.join(DIST_PATH, 'assets'), staticAssetOptions), (req, res) => {
+    res.status(404).send('Asset not found');
+});
 app.use(express.static(DIST_PATH, staticAssetOptions));
-app.get(/^((?!\/uploads|\/api).)*$/, (req, res) => {
+app.get(/^((?!\/uploads|\/api|\/assets).)*$/, (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
