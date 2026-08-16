@@ -48,7 +48,7 @@ export const WebHeaderWeather: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const { weather, isLoading, error } = useWeather(selectedCity);
+    const { weather, isLoading } = useWeather(selectedCity);
 
     const handleSelectCity = (cityId: string) => {
         setSelectedCity(cityId);
