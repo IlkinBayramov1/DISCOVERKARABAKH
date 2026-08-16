@@ -9,6 +9,7 @@ services:
     container_name: discoverkarabakh_backend
     restart: always
     ports:
+      - "80:4000"
       - "4004:4000"
     environment:
       - NODE_ENV=production
