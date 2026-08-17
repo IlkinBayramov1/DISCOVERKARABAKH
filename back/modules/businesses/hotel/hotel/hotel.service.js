@@ -227,8 +227,8 @@ class HotelService {
             review: { where: { status: 'approved' }, select: { rating: true } }
         };
 
-        // Determine Prisma OrderBy (if standard)
-        let prismaOrderBy = [{ isFeatured: 'desc' }, { featuredPriority: 'desc' }];
+        // Determine Prisma OrderBy (if standard) with deterministic fallbacks
+        let prismaOrderBy = [{ isFeatured: 'desc' }, { featuredPriority: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }];
 
         // Geospatial Logic - Prisma Native RAW Haversine
         if (lat && lng) {
