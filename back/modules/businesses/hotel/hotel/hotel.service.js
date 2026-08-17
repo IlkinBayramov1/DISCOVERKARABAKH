@@ -3,7 +3,56 @@ import { ApiError } from '../../../../core/api.error.js';
 import { hotelMapper } from './hotel.mapper.js';
 import crypto from 'crypto';
 
-class HotelService {
+    /**
+     * Helper to guarantee all active hotels have at least one roomtype and daily pricing so they pass search queries
+     */
+    async ensureDefaultRoomsForHotels() {
+        try {
+            const hotelsWithoutRooms = await prisma.hotel.findMany({
+                where: { roomtype: { none: {} } },
+                select: { id: true }
+            });
+
+            for (const h of hotelsWithoutRooms) {
+                const defaultRoomId = crypto.randomUUID();
+                await prisma.roomtype.create({
+                    data: {
+                        id: defaultRoomId,
+                        hotelId: h.id,
+                        name: 'Standard Room',
+                        category: 'Standard',
+                        basePrice: 100,
+                        maxAdults: 4,
+                        maxChildren: 2,
+                        totalInventory: 10,
+                        availableInventory: 10,
+                        description: 'Standard room'
+                    }
+                });
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const pricingData = [];
+                for (let i = 0; i < 60; i++) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() + i);
+                    pricingData.push({
+                        id: crypto.randomUUID(),
+                        roomTypeId: defaultRoomId,
+                        date: d,
+                        basePrice: 100
+                    });
+                }
+                await prisma.dailypricing.createMany({
+                    data: pricingData,
+                    skipDuplicates: true
+                });
+            }
+        } catch (e) {
+            console.error('[HotelService] ensureDefaultRoomsForHotels error:', e.message);
+        }
+    }
+
     /**
      * Creates a new Hotel Entity mapped to a Vendor
      */
@@ -17,6 +66,7 @@ class HotelService {
         // Map payload strictly to Prisma schema
         const { amenities, images, nearbyPOIs, ...rest } = data;
 
+        const defaultRoomId = crypto.randomUUID();
         const hotel = await prisma.hotel.create({
             data: {
                 ...rest,
@@ -24,6 +74,22 @@ class HotelService {
                 ownerId: vendorId,
                 status: 'active',
                 updatedAt: new Date(),
+                // Auto-create a default room type so hotel passes occupancy & date availability queries immediately
+                roomtype: {
+                    create: [
+                        {
+                            id: defaultRoomId,
+                            name: 'Standard Room',
+                            category: 'Standard',
+                            basePrice: 100,
+                            maxAdults: 4,
+                            maxChildren: 2,
+                            totalInventory: 10,
+                            availableInventory: 10,
+                            description: 'Comfortable standard room with modern amenities.'
+                        }
+                    ]
+                },
                 // Handle many-to-many relationship for amenities
                 hotelamenity: amenities && amenities.length > 0 ? {
                     create: amenities.map(amenityName => ({
@@ -59,6 +125,25 @@ class HotelService {
             }
         });
 
+        // Initialize 60 days of pricing for default room
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const pricingData = [];
+        for (let i = 0; i < 60; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() + i);
+            pricingData.push({
+                id: crypto.randomUUID(),
+                roomTypeId: defaultRoomId,
+                date: d,
+                basePrice: 100
+            });
+        }
+        await prisma.dailypricing.createMany({
+            data: pricingData,
+            skipDuplicates: true
+        });
+
         return hotelMapper.toHotelDTO(hotel);
     }
 
@@ -67,6 +152,8 @@ class HotelService {
      * Supports strict Geospatial Haversine equations and Amenity relational intersect.
      */
     async findAll(query) {
+        await this.ensureDefaultRoomsForHotels();
+
         const {
             lat,
             lng,

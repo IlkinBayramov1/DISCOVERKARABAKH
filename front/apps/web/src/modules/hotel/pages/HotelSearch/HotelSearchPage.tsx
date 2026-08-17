@@ -60,11 +60,11 @@ export const HotelSearchPage: React.FC = () => {
     // Handle Header Search
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        applyFilters();
+        applyFilters(true);
     };
 
     // Construct backend filter payload
-    const applyFilters = () => {
+    const applyFilters = (forceGuests = false) => {
         let minPrice: number | undefined = undefined;
         let maxPrice: number | undefined = undefined;
 
@@ -72,6 +72,9 @@ export const HotelSearchPage: React.FC = () => {
         else if (selectedPriceRange === '$50 - $100') { minPrice = 50; maxPrice = 100; }
         else if (selectedPriceRange === '$100 - $200') { minPrice = 100; maxPrice = 200; }
         else if (selectedPriceRange === '$200+') minPrice = 200;
+
+        const hasUrlGuests = searchParams.has('adults') || searchParams.has('children') || searchParams.has('rooms');
+        const includeGuests = forceGuests || hasUrlGuests;
 
         setActiveFilters({
             city: cityInput,
@@ -84,9 +87,9 @@ export const HotelSearchPage: React.FC = () => {
             sortBy,
             checkIn: checkInInput || undefined,
             checkOut: checkOutInput || undefined,
-            adults: adultsInput,
-            children: childrenInput,
-            rooms: roomsInput
+            adults: includeGuests ? adultsInput : undefined,
+            children: includeGuests ? childrenInput : undefined,
+            rooms: includeGuests ? roomsInput : undefined
         });
     };
 
