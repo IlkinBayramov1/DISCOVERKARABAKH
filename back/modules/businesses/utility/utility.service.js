@@ -377,7 +377,7 @@ class UtilityService {
             paymentId: payment.id,
             transactionId: mockTransactionId,
             totalAmount,
-            paymentUrl: `http://localhost:4004/api/v1/utility/mock-payment-gateway?transId=${mockTransactionId}&amount=${totalAmount}`
+            paymentUrl: `${process.env.BASE_URL || 'http://localhost:4000'}/api/v1/utility/mock-payment-gateway?transId=${mockTransactionId}&amount=${totalAmount}`
         };
     }
 

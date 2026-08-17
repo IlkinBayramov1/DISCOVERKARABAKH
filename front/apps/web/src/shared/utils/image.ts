@@ -32,16 +32,16 @@ export const getImageUrl = (url?: string, fallback = '/uploads/no-image.svg'): s
     if (!apiOrigin && typeof window !== 'undefined') {
         const origin = window.location.origin;
         if (origin.includes('vercel.app')) {
-            apiOrigin = 'http://191.218.163.50:4004';
+            apiOrigin = 'http://191.218.163.50';
         } else if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
             apiOrigin = origin;
         } else {
-            apiOrigin = 'http://191.218.163.50:4004';
+            apiOrigin = 'http://191.218.163.50';
         }
     }
 
     if (!apiOrigin) {
-        apiOrigin = 'http://191.218.163.50:4004';
+        apiOrigin = 'http://191.218.163.50';
     }
 
     return `${apiOrigin}${cleanPath}`;

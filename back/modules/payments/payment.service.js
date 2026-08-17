@@ -8,7 +8,7 @@ class PaymentService {
     constructor() {
         this.providers = {
             local: new LocalBankProvider({ 
-                baseUrl: process.env.BASE_URL || 'http://localhost:4004' 
+                baseUrl: process.env.BASE_URL || 'http://localhost:4000' 
             }),
             azericard: new AzericardProvider()
         };

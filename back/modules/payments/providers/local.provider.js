@@ -7,7 +7,7 @@ import crypto from 'crypto';
 export class LocalBankProvider extends PaymentProvider {
     constructor(config) {
         super(config);
-        this.baseUrl = config.baseUrl || 'http://localhost:4004'; // Updated to 4004
+        this.baseUrl = config.baseUrl || 'http://localhost:4000';
     }
 
     /**

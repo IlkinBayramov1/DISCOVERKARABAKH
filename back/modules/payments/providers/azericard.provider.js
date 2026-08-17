@@ -109,7 +109,7 @@ export class AzericardProvider {
             MERCH_GMT: '+4',
             TIMESTAMP: timestamp,
             NONCE: nonce,
-            BACKREF: `${process.env.BASE_URL || 'http://localhost:4004'}/api/v1/payments/callback`,
+            BACKREF: `${process.env.BASE_URL || 'http://localhost:4000'}/api/v1/payments/callback`,
             P_SIGN: p_sign,
             // Additional parameters sent to frontend for auto-submission form
             __action: this.baseUrl
