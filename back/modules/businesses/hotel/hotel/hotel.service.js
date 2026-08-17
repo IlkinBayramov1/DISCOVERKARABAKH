@@ -3,6 +3,7 @@ import { ApiError } from '../../../../core/api.error.js';
 import { hotelMapper } from './hotel.mapper.js';
 import crypto from 'crypto';
 
+class HotelService {
     /**
      * Helper to guarantee all active hotels have at least one roomtype and daily pricing so they pass search queries
      */
