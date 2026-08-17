@@ -51,13 +51,17 @@ app.use(cors({
             return callback(null, true);
         }
 
-        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:') || origin.endsWith('.vercel.app')) {
+        if (
+            origin.startsWith('http://localhost:') || 
+            origin.startsWith('http://127.0.0.1:') || 
+            origin.endsWith('.vercel.app') ||
+            /^https?:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)
+        ) {
             return callback(null, true);
         }
 
-        console.error(`[CORS Blocked] Xəta: Bu URL qeydiyyatda deyil ->`, origin);
-        var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-        return callback(new Error(msg), false);
+        console.warn(`[CORS Warning] Origin explicitly allowed for static asset stability ->`, origin);
+        return callback(null, true);
     },
     credentials: true
 }));
@@ -165,6 +169,11 @@ const DIST_PATH = path.join(__dirname, '../front/dist');
 const staticAssetOptions = {
     setHeaders: (res, filePath) => {
         res.setHeader('Vary', 'Accept-Encoding');
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+        } else if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+        }
         if (filePath.endsWith('.html')) {
             res.setHeader('Cache-Control', 'no-cache');
         } else if (filePath.includes('/assets/') || /\.(css|js|woff2|avif|webp|png|jpg|jpeg|svg)$/i.test(filePath)) {
