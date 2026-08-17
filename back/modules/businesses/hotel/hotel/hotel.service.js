@@ -5,49 +5,87 @@ import crypto from 'crypto';
 
 class HotelService {
     /**
-     * Helper to guarantee all active hotels have at least one roomtype and daily pricing so they pass search queries
+     * Helper to guarantee all active hotels have valid roomtypes, pricing, and availability records so they pass all search queries
      */
     async ensureDefaultRoomsForHotels() {
         try {
-            const hotelsWithoutRooms = await prisma.hotel.findMany({
-                where: { roomtype: { none: {} } },
-                select: { id: true }
+            const allHotels = await prisma.hotel.findMany({
+                where: { status: 'active' },
+                include: { roomtype: { include: { dailypricing: true, roomavailability: true } } }
             });
 
-            for (const h of hotelsWithoutRooms) {
-                const defaultRoomId = crypto.randomUUID();
-                await prisma.roomtype.create({
-                    data: {
-                        id: defaultRoomId,
-                        hotelId: h.id,
-                        name: 'Standard Room',
-                        category: 'Standard',
-                        basePrice: 100,
-                        maxAdults: 4,
-                        maxChildren: 2,
-                        totalInventory: 10,
-                        availableInventory: 10,
-                        description: 'Standard room'
-                    }
-                });
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const pricingData = [];
-                for (let i = 0; i < 60; i++) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() + i);
-                    pricingData.push({
-                        id: crypto.randomUUID(),
-                        roomTypeId: defaultRoomId,
-                        date: d,
-                        basePrice: 100
+            for (const h of allHotels) {
+                let targetRoomIds = [];
+
+                if (!h.roomtype || h.roomtype.length === 0) {
+                    // Hotel has 0 rooms -> Create default room
+                    const defaultRoomId = crypto.randomUUID();
+                    await prisma.roomtype.create({
+                        data: {
+                            id: defaultRoomId,
+                            hotelId: h.id,
+                            name: 'Standard Room',
+                            category: 'Standard',
+                            basePrice: 100,
+                            maxAdults: 4,
+                            maxChildren: 2,
+                            totalInventory: 10,
+                            availableInventory: 10,
+                            description: 'Comfortable standard room with modern amenities.'
+                        }
+                    });
+                    targetRoomIds.push(defaultRoomId);
+                } else {
+                    // Hotel has rooms -> Ensure maxAdults >= 4 and basePrice > 0
+                    for (const rt of h.roomtype) {
+                        const needMaxAdultsUpdate = !rt.maxAdults || rt.maxAdults < 4;
+                        const needBasePriceUpdate = !rt.basePrice || rt.basePrice <= 0;
+                        if (needMaxAdultsUpdate || needBasePriceUpdate) {
+                            await prisma.roomtype.update({
+                                where: { id: rt.id },
+                                data: {
+                                    ...(needMaxAdultsUpdate ? { maxAdults: 4 } : {}),
+                                    ...(needBasePriceUpdate ? { basePrice: 100 } : {})
+                                }
+                            });
+                        }
+                        targetRoomIds.push(rt.id);
+                    }
+                }
+
+                // Guarantee 60 days of dailypricing and roomavailability for target rooms
+                for (const roomId of targetRoomIds) {
+                    const pricingData = [];
+                    const availData = [];
+                    for (let i = 0; i < 60; i++) {
+                        const d = new Date(today);
+                        d.setDate(today.getDate() + i);
+                        pricingData.push({
+                            id: crypto.randomUUID(),
+                            roomTypeId: roomId,
+                            date: d,
+                            basePrice: 100
+                        });
+                        availData.push({
+                            id: crypto.randomUUID(),
+                            roomTypeId: roomId,
+                            date: d,
+                            totalRooms: 10,
+                            availableRooms: 10
+                        });
+                    }
+                    await prisma.dailypricing.createMany({
+                        data: pricingData,
+                        skipDuplicates: true
+                    });
+                    await prisma.roomavailability.createMany({
+                        data: availData,
+                        skipDuplicates: true
                     });
                 }
-                await prisma.dailypricing.createMany({
-                    data: pricingData,
-                    skipDuplicates: true
-                });
             }
         } catch (e) {
             console.error('[HotelService] ensureDefaultRoomsForHotels error:', e.message);
