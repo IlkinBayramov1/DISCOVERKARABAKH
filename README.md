@@ -1,4 +1,4 @@
-# 🏔️ DISCOVER KARABAKH (DiscoverKarabakh Platform)
+# DISCOVER KARABAKH (DiscoverKarabakh Platform)
 
 [![Node.js](https://img.shields.io/badge/Node.js-v20.x-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=for-the-badge&logo=express)](https://expressjs.com/)
@@ -15,56 +15,56 @@ The platform connects tourists, local residents, investors, B2B vendors, drivers
 
 ---
 
-## 🌟 Key Functional Domains
+## Key Functional Domains
 
-### 🏨 1. Smart Hospitality & Accommodations
+### 1. Smart Hospitality & Accommodations
 * **Property Management**: Complete dashboard for hotels, resorts, guest houses, and apartments.
 * **Room Types & Rate Plans**: Dynamic room categorization, meal plan configurations (`RO`, `BB`, `HB`, `FB`, `AI`), prepayment policies, and cancellation rules.
 * **Dynamic Daily Pricing Engine**: Automated date-based pricing, min/max stay constraints, occupancy-based price adjustment rules, and closed-to-arrival (CTA) controls.
 * **Inventory Lock & Yield Management**: Real-time room availability tracking with temporary locks during check-out to prevent overbooking.
 
-### 🗺️ 2. Tours & Cultural Experiences
+### 2. Tours & Cultural Experiences
 * **Multi-Day Tour Packages**: Customizable itineraries with daily schedules, difficulty levels (*Easy, Medium, Hard, Extreme*), group capacity thresholds, and meeting points.
 * **Date-Specific Availability & Pricing**: Flexible date-bound seat availability and custom pricing overrides.
 
-### 🎟️ 3. Events & Digital Ticketing
+### 3. Events & Digital Ticketing
 * **Cultural Events & Concerts**: Capacity tracking, ticket tiers, and scheduling.
 * **QR-Coded E-Tickets**: Automated digital QR code ticket generation with scan-to-checkin validation for event security.
 
-### 🍽️ 4. Gastronomy & Dining (Restaurants)
+### 4. Gastronomy & Dining (Restaurants)
 * **Culinary Venue Directory**: Searchable restaurants, cafes, and traditional dining spots categorized by cuisine.
 * **Digital Menus & Add-Ons**: Item options, choice add-ons, price modifiers, promo codes, and operating hours.
 
-### 🏰 5. Smart Regional Guide & Attractions
+### 5. Smart Regional Guide & Attractions
 * **Attractions Database**: Museums, parks, historic monuments, and memorial complexes across Karabakh.
 * **Interactive Features**: 360° virtual tour embeds, audio guide streaming, live crowd-level tracking, working hours, and review analytics.
 
-### 🚖 6. Smart Transport & Ride-Hailing
+### 6. Smart Transport & Ride-Hailing
 * **On-Demand Passenger Rides**: Ride requesting for Economy, Business, Minivan, and Bus categories.
 * **Driver Verification & Capability Management**: License validation, background checks, and capability badges (*PASSENGER, LIGHT_CARGO, HEAVY_CARGO, HAZARDOUS, REFRIGERATED*).
 * **Real-Time GPS Tracking**: Powered by Socket.io for live vehicle location streaming and status updates (*Pending, DriverAssigned, OnWayToPickup, Ongoing, Completed*).
 
-### 🚚 7. Freight & Cargo Logistics
+### 7. Freight & Cargo Logistics
 * **Logistics Fleet Oversight**: Managing specialized cargo vehicles (*Box, Refrigerated, Flatbed, Liquid*).
 * **Shipment Lifecycle Management**: Weight/volume constraint calculations, hazardous/temperature-controlled cargo handling, digital proof of delivery, and signature capture.
 
-### 💡 8. Karabakh Smart Utility Billing (Abonent System)
+### 8. Karabakh Smart Utility Billing (Abonent System)
 * **Resident Abonent Integration**: Abonent account registration and binding for local infrastructure services.
 * **CSV Batch Uploads & Rollback**: Admin capability to bulk-upload utility bills with complete audit logging and batch rollback mechanisms.
 * **Online Utility Payments**: Instant online bill settlement for electricity, natural gas, water, and municipal services.
 
-### 💳 9. Universal Financial Engine & Wallets
+### 9. Universal Financial Engine & Wallets
 * **Polymorphic Booking Engine**: Single transactional pipeline supporting Stays, Tours, Events, Vehicles, and Attractions.
 * **Digital Wallets**: Vendor payout management, wallet transactions, balance tracking, and withdrawal requests.
 * **Promotions & Audit Logs**: Stackable promo codes, tax rules, and immutable booking state audit logs.
 
-### 🛡️ 10. Multi-Persona Role-Based Access Control (RBAC)
+### 10. Multi-Persona Role-Based Access Control (RBAC)
 * **7 Persona Roles**: `admin`, `vendor`, `tourist`, `resident`, `investor`, `driver`, `user`.
 * **Superadmin Governance**: System approvals, user bans, fraud detection alerts, review moderation, and regional analytics.
 
 ---
 
-## 🏗️ Architecture & Monorepo Structure
+## Architecture & Monorepo Structure
 
 The project is organized as a high-performance monorepo separating concerns between the modular Node.js/Express backend API and specialized Vite-powered React frontend applications.
 
@@ -226,7 +226,7 @@ npm run dev:admin    # Starts Admin Governance Panel on http://localhost:5176
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 The project includes a multi-stage `Dockerfile` and `docker-compose.yml` for running the entire stack (Backend, MySQL, Redis) with a single command.
 
@@ -242,7 +242,7 @@ Containers launched:
 
 ---
 
-## 📡 Main API Endpoints Summary (`/api/v1`)
+## Main API Endpoints Summary (`/api/v1`)
 
 | Module | Endpoint | Description |
 | :--- | :--- | :--- |
